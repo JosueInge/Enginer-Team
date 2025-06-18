@@ -1,21 +1,37 @@
-<?php
+<?php 
 session_start();
 include 'conexion.php';
 
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] != 'admin') {
+if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.php");
+    exit();
+}
+if ($_SESSION['usuario_rol'] !== 'Administrador') {
+    header("Location: noticias.php");
+    exit();
+}
+
+$reporte_id = isset($_GET['id']) ? intval($_GET['id']) : null;
+
+
+if ($reporte_id === null) {
+    echo "No se proporcionó ID de noticia.";
     exit();
 }
 
 $query = "SELECT r.id, n.titulo, r.fecha_reporte, u.nombre as reportero, 
-          r.motivo, r.comentario, r.estado, n.id as noticia_id
+          r.motivo, r.comentario, r.estado, n.id as propuestas_noticias_id
           FROM reportes r
-          JOIN noticias n ON r.noticia_id = n.id
+          JOIN propuestas_noticias n ON r.propuestas_noticias_id = n.id
           JOIN usuarios u ON r.usuario_id = u.id
-          ORDER BY r.fecha_reporte DESC";
+          WHERE r.propuestas_noticias_id = ?";
 
-$resultado = $conexion->query($query);
+$stmt = $conexion->prepare($query);
+$stmt->bind_param("i", $reporte_id);
+$stmt->execute();
+$resultado = $stmt->get_result();
 $reportes = $resultado->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_estado'])) {
     $reporte_id = intval($_POST['reporte_id']);
@@ -26,11 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_estado'])) {
     $stmt->execute();
     $stmt->close();
     
-    header("Location: notificacion_reporte.php");
+    $redirigir_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    header("Location: notificacion_reporte.php?id=$redirigir_id");
     exit();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -38,9 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_estado'])) {
   <title>Notificación de Reportes</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
-      background-color: white;
+      background-color: #f8f9fa;
     }
 
     header {
@@ -50,6 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_estado'])) {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     header .logo img {
@@ -60,104 +77,130 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_estado'])) {
       color: white;
       text-decoration: none;
       margin-left: 20px;
-      font-size: 14px;
+      font-size: 15px;
+      transition: color 0.3s;
+    }
+
+    header nav a:hover {
+      color: #e0e0e0;
     }
 
     .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      background-color: white;
       padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
 
     .container h2 {
-      margin-bottom: 5px;
+      margin-bottom: 10px;
+      font-size: 26px;
+      color: #333;
     }
 
     .container p {
       color: #555;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
-    
+
     hr {
       margin-bottom: 30px;
       border: none;
       height: 2px;
-      background-color: black;
-      margin-left: 5px;
-      margin-right: 10px;
+      background-color: #0d5c9b;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      border: 2px solid black;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);
     }
 
     th, td {
-      padding: 12px;
+      padding: 14px;
       text-align: left;
-      border-right: 1px solid black;
-    }
-
-    th:last-child, td:last-child {
-      border-right: none;
+      border-bottom: 1px solid #ddd;
     }
 
     th {
-      background-color: #f2f2f2;
+      background-color: #f1f1f1;
+      color: #333;
+      font-size: 14px;
     }
 
-    tr:nth-child(even) {
-      background-color: #e5e5e5;
+    tr:hover {
+      background-color: #f9f9f9;
     }
 
-    tr:nth-child(odd) {
-      background-color: white;
-    }
-    
     .estado-pendiente {
-      color: #d35400;
+      color: #e67e22;
       font-weight: bold;
     }
-    
+
     .estado-revisado {
-      color: #3498db;
+      color: #2980b9;
       font-weight: bold;
     }
-    
+
     .estado-resuelto {
       color: #27ae60;
       font-weight: bold;
     }
-    
+
     select {
-      padding: 5px;
-      border-radius: 4px;
+      padding: 6px 10px;
+      border-radius: 6px;
       border: 1px solid #ccc;
+      background-color: #fff;
+      font-size: 14px;
+      transition: border-color 0.3s;
     }
-    
+
+    select:focus {
+      outline: none;
+      border-color: #0d5c9b;
+    }
+
     .btn-accion {
-      padding: 5px 10px;
+      padding: 8px 14px;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
       color: white;
-      font-weight: bold;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
     }
-    
+
     .btn-ver {
       background-color: #0d5c9b;
     }
-    
+
     .btn-ver:hover {
       background-color: #0a4a7a;
     }
-    
+
     .mensaje-exito {
       padding: 15px;
       background-color: #dff0d8;
       color: #3c763d;
       border: 1px solid #d6e9c6;
-      border-radius: 4px;
+      border-radius: 6px;
       margin-bottom: 20px;
+      font-size: 15px;
+    }
+
+    td[colspan="7"] {
+      text-align: center;
+      font-style: italic;
+      color: #888;
+      padding: 30px 0;
     }
   </style>
 </head>
@@ -168,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_estado'])) {
       <img src="imagenes/logo.png" alt="Logo">
     </div>
     <nav>
-      <a href="noticias.php">Volver a Noticias</a>
+      <a href="revision_reportes.php">Volver</a>
       <a href="logout.php">Cerrar Sesión</a>
     </nav>
   </header>
@@ -176,13 +219,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_estado'])) {
   <div class="container">
     <h2>Notificación de reportes de noticias</h2>
     <hr>
-    
+
     <?php if (isset($_GET['exito'])): ?>
       <div class="mensaje-exito">
         <?= htmlspecialchars($_GET['exito']) ?>
       </div>
     <?php endif; ?>
-    
+
     <p>Listado de noticias reportadas por los usuarios</p>
 
     <table>
@@ -200,9 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_estado'])) {
       <tbody>
         <?php if (empty($reportes)): ?>
           <tr>
-            <td colspan="7" style="text-align: center; font-style: italic; color: #888;">
-              No hay reportes disponibles.
-            </td>
+            <td colspan="7">No hay reportes disponibles.</td>
           </tr>
         <?php else: ?>
           <?php foreach ($reportes as $reporte): ?>
@@ -224,7 +265,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_estado'])) {
                 </form>
               </td>
               <td>
-                <a href="ver_noticia.php?id=<?= $reporte['noticia_id'] ?>" class="btn-accion btn-ver">Ver Noticia</a>
+                <a href="ver_noticia.php?id=<?= $reporte['propuestas_noticias_id'] ?>" class="btn-accion btn-ver">Ver Noticia</a>
               </td>
             </tr>
           <?php endforeach; ?>

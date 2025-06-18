@@ -9,7 +9,7 @@ if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.php");
     exit();
 }
-
+ 
 if ($_SESSION['usuario_rol'] !== 'Administrador') {
     header("Location: noticias.php");
     exit();
@@ -18,48 +18,41 @@ if ($_SESSION['usuario_rol'] !== 'Administrador') {
 $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $ruta_imagen = '';
+    $categoria = $_POST['categoria'] ?? '';
+    $titulo = $_POST['titulo'] ?? '';
+    $descripcion = $_POST['descripcion'] ?? '';
+    $autor = $_POST['autor'] ?? '';
+    $fecha = date('Y-m-d H:i:s');
+    $usuario_id = $_SESSION['usuario_id'] ?? null;
 
+    $imagen_nombre = null;
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-        $nombre_imagen = uniqid() . '_' . basename($_FILES['imagen']['name']);
-        $ruta_destino = "imagenes/" . $nombre_imagen;
+        $extension = pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION);
+        $imagen_nombre = uniqid() . '.' . $extension;
+        $ruta_destino = 'imagenes/noticias/' . $imagen_nombre;
 
-        if (!file_exists('imagenes')) {
-            mkdir('imagenes', 0777, true);
+        // Crear la carpeta si no existe
+        if (!file_exists('imagenes/noticias')) {
+            mkdir('imagenes/noticias', 0777, true);
         }
 
-        if (move_uploaded_file($_FILES['imagen']['tmp_name'], $ruta_destino)) {
-            $ruta_imagen = $ruta_destino;
-        } else {
-            $error = "Error al subir la imagen";
+        // Mover la imagen al destino
+        if (!move_uploaded_file($_FILES['imagen']['tmp_name'], $ruta_destino)) {
+            $errorimagen = "Error al subir la imagen.";
+            $imagen_nombre = null;
         }
     }
 
-    $titulo = trim($_POST['titulo'] ?? '');
-    $categoria = trim($_POST['categoria'] ??'');
-    $descripcion = trim($_POST['descripcion'] ??'');
-    $autor = trim($_POST['autor'] ??'');
-    $fecha = trim($_POST['fecha'] ??'');
+    $stmt = $conexion->prepare("INSERT INTO propuestas_noticias ( categoria, titulo, descripcion, imagen, autor, fecha, usuario_id, estado, bloquear_comentarios)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, 'aprobada', ?)");
 
-    if ($titulo === '' || $categoria === '' || $descripcion === '' || $autor === '' || $fecha === '') {
-        $error = "Todos los campos marcados como obligatorios deben completarse correctamente.";
+    $bloquear_comentarios = isset($_POST['bloquear_comentarios']) ? 1 : 0;
+    $stmt->bind_param("sssssssi", $categoria, $titulo, $descripcion, $imagen_nombre, $autor, $fecha, $usuario_id, $bloquear_comentarios);
+
+    if ($stmt->execute()) {
+        $envioexitoso = "Denuncia enviada correctamente. Sera revisada por un administrador.";
     } else {
-        $stmt = $conexion->prepare("INSERT INTO noticias (titulo, categoria, descripcion, autor, fecha, imagen, bloquear_comentarios) VALUES (?, ?, ?, ?, ?, ?, ?)");
-
-        if ($stmt) {
-            $bloquear_comentarios = isset($_POST['bloquear_comentarios']) ? 1 : 0;
-            $stmt->bind_param("ssssssi", $titulo, $categoria, $descripcion, $autor, $fecha, $ruta_imagen, $bloquear_comentarios);
-
-            if ($stmt->execute()) {
-                header("Location: noticias.php?exito=1");
-                exit();
-            } else {
-                $error = "Error al guardar en la base de datos: " . $conexion->error;
-            }
-            $stmt->close();
-        } else {
-            $error = "Error al preparar la consulta: " . $conexion->error;
-        }
+        $errorenviar = "Error al enviar la denuncia: " . $conexion->error;
     }
 }
 ?>
@@ -101,25 +94,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #0d5c9b;
             margin-bottom: 20px;
         }
-        .campo {
+       .campo {
             margin-bottom: 20px;
         }
+
         .campo label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
         }
+
         .campo input[type="text"],
         .campo input[type="date"],
         .campo textarea,
-        .campo select {
+        .campo select,
+        .campo input[type="file"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            box-sizing: border-box;
         }
+
         .campo textarea {
             min-height: 150px;
+        }
+
+        /* Estilo para la vista previa de la imagen */
+        #preview-imagen {
+            display: none;
+            margin-top: 12px;
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+            border-radius: 6px;
         }
         .boton-publicar {
             background-color: #0d5c9b;
@@ -152,49 +160,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             content: " *";
             color: red;
         }
-        .menu-configuracion {
-      position: relative;
-      display: inline-block;
-      margin-left: 15px;
-    }
-    
-    .icono-configuracion {
-      width: 30px;
-      height: 30px;
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
-    
-    .icono-configuracion:hover {
-      transform: rotate(30deg);
-    }
-    
-    .menu-desplegable {
-      display: none;
-      position: absolute;
-      right: 0;
-      background-color: white;
-      min-width: 160px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      z-index: 1001;
-      border-radius: 4px;
-    }
-    
-    .menu-desplegable a {
-      color: #333;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-      transition: background-color 0.3s;
-    }
-    
-    .menu-desplegable a:hover {
-      background-color: #f1f1f1;
-    }
-    
-    .menu-configuracion:hover .menu-desplegable {
-      display: block;
-    }
+        .menu-configuracion { 
+            position: relative;
+            display: inline-block;
+            margin-left: 15px;
+        }
+            
+        .icono-configuracion {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+            
+        .icono-configuracion:hover {
+            transform: rotate(30deg);
+        }
+            
+        .menu-desplegable {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 1001;
+            border-radius: 4px;
+        }
+            
+        .menu-desplegable a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s;
+        }
+            
+        .menu-desplegable a:hover {
+            background-color: #f1f1f1;
+        }
+            
+        .menu-configuracion:hover .menu-desplegable {
+            display: block;
+        }
+        a {
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -254,7 +265,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div> 
 
             <div class="campo">
-                <label for="imagen">Imagen (opcional):</label>               
+                <label for="imagen">Imagen (opcional):</label>
                 <input type="file" id="imagen" name="imagen" accept="image/*">
                 <img id="preview-imagen" src="#" alt="Vista previa de la imagen">
             </div>
@@ -272,17 +283,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <script>
         document.getElementById('imagen').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const preview = document.getElementById('preview-imagen');
-                    preview.src = event.target.result;
-                    preview.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            }
-        });
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const preview = document.getElementById('preview-imagen');
+            preview.src = event.target.result;
+            preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
+});
     </script>  
 </body>
 </html>

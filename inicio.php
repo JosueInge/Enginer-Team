@@ -4,12 +4,12 @@
   include 'conexion.php';
   
   if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login.php");
+    header("Location: login.php"); 
     exit();
   }
   $nombreUsuario = isset($_SESSION['usuario_nombre']) ? htmlspecialchars($_SESSION['usuario_nombre']) : null;
 
-$termino_busqueda = '';
+$termino_busqueda = ''; 
 $where = '';
 $params = [];
 
@@ -20,7 +20,7 @@ if (isset($_GET['busqueda']) && !empty($_GET['busqueda'])) {
 }
 
 // Consulta base con posibilidad de búsqueda
-$query = "SELECT * FROM noticias $where ORDER BY fecha DESC";
+$query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' ORDER BY fecha DESC";
 
 $stmt = $conexion->prepare($query);
 
@@ -234,6 +234,40 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
       z-index: 1000; 
       text-decoration: none; 
     }
+    .dropdown-content { 
+      display: none; 
+      position: absolute; 
+      right: 0; 
+      background-color: #ffffff; 
+      min-width: 140px; 
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
+      border-radius: 8px; 
+      z-index: 1001; 
+      overflow: hidden; 
+      transition: all 0.2s ease-in-out;
+    }
+    .dropdown-content a { 
+      color: #333; 
+      padding: 10px 16px; 
+      text-decoration: none; 
+      display: block; 
+      font-size: 14px;
+      transition: background-color 0.2s ease;
+    }
+    .dropdown-content a:hover { 
+      background-color: #f0f0f0; 
+    }
+    .dropdown:hover .dropdown-content { 
+      display: block; 
+    }
+    .encabezado.oculto {
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+    }
+    .barra.oculto {
+      transform: translateY(-130px);
+      transition: transform 0.3s ease;
+    }
   </style>
 </head>
 <body>
@@ -254,20 +288,27 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
         </div>
       <?php else: ?>
         <?php foreach ($noticias as $noticia): ?>
-          <article class="noticia-card">
-            <h2 class="noticia-titulo">
-              <a href="ver_noticia.php?id=<?= $noticia['id'] ?>" style="text-decoration: none; color: inherit;">
-                <?= htmlspecialchars($noticia['titulo']) ?>
-              </a>
-            </h2>
+          <article class="noticia-card" style="position: relative;">
+            <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
+            <div class="menu-admin dropdown" style="position: absolute; top: 15px; right: 15px;">
+              <span style="cursor: pointer;">⋮</span>
+              <div class="dropdown-content">
+                <a href="editar_noticia.php?id=<?= $noticia['id'] ?>">Editar</a>
+                <a href="eliminar_noticia.php?id=<?= $noticia['id'] ?>" onclick="return confirm('¿Deseas eliminar esta noticia?')">Eliminar</a>
+              </div>
+            </div>
+          <?php endif; ?>
+            <a href="ver_noticia.php?id=<?= $noticia['id'] ?>" style="text-decoration: none; color: inherit;">
+              <h2 class="noticia-titulo"><?= htmlspecialchars($noticia['titulo']) ?></h2>
+            </a>
             <div class="noticia-meta">
               <span><?= htmlspecialchars($noticia['categoria']) ?></span>
               <span><?= htmlspecialchars($noticia['autor']) ?></span>
-              <span><?= htmlspecialchars($noticia['fecha']) ?></span>           
+              <span><?= htmlspecialchars($noticia['fecha']) ?></span>
             </div>
             <?php if ($noticia['imagen']): ?>
               <div class="imagen-contenedor">
-                <img src="<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
+                <img src="imagenes/noticias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
               </div>
             <?php endif; ?>
             <p class="noticia-resumen"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
@@ -282,5 +323,77 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
     <?php if ($_SESSION['usuario_rol'] === 'Poblador'): ?>
       <a href="enviar_noticia.php" class="boton-publicar">Enviar una noticia</a>
     <?php endif; ?>
+
+    <link rel="stylesheet" href="asistente_virtual.css">
+    <?php include 'chatbot.php'; ?>
+    <script src="chatbot.js"></script>
+
+    <script>
+  // Confirmación de cierre de sesión
+      document.getElementById('btnSesion')?.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const confirmBox = document.createElement('div');
+        confirmBox.style.position = 'fixed';
+        confirmBox.style.top = '0';
+        confirmBox.style.left = '0';
+        confirmBox.style.width = '100%';
+        confirmBox.style.height = '100%';
+        confirmBox.style.background = 'rgba(0,0,0,0.5)';
+        confirmBox.style.display = 'flex';
+        confirmBox.style.alignItems = 'center';
+        confirmBox.style.justifyContent = 'center';
+        confirmBox.style.zIndex = '9999';
+
+        confirmBox.innerHTML = `
+          <div style="background: white; padding: 20px 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 300px;">
+            <h3>¿Cerrar sesión?</h3>
+            <p>¿Estás seguro de cerrar sesión?</p>
+            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+              <button id="confirmLogout" style="background-color: #d9534f; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cerrar sesión</button>
+              <button id="cancelarLogout" style="background-color: #ccc; color: black; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(confirmBox);
+
+        document.getElementById('confirmLogout').onclick = () => {
+          window.location.href = "logout.php";
+        };
+
+        document.getElementById('cancelarLogout').onclick = () => {
+          document.body.removeChild(confirmBox);
+        };
+      });
+
+      // Ocultar encabezado y barra al hacer scroll hacia abajo
+      let lastScroll = 0;
+      const encabezado = document.querySelector('.encabezado');
+      const barra = document.querySelector('nav.barra');
+      let timer;
+
+      window.addEventListener('scroll', () => {
+        const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+        if (currentScroll > lastScroll && currentScroll > 80) {
+          barra?.classList.add('oculto');
+
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            encabezado?.classList.add('oculto');
+          }, 200);
+
+        } else {
+
+          clearTimeout(timer);
+          encabezado?.classList.remove('oculto');
+          barra?.classList.remove('oculto');
+        }
+
+        lastScroll = currentScroll <= 0 ? 0 : currentScroll;
+      });
+    </script>
+
 </body>
 </html>

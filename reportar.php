@@ -15,17 +15,12 @@ if (!isset($_GET['id'])) {
 
 $id_noticia = intval($_GET['id']);
 
-$stmt = $conexion->prepare("SELECT titulo, fecha FROM noticias WHERE id = ?");
+$stmt = $conexion->prepare("SELECT titulo, fecha FROM propuestas_noticias WHERE id = ?");
 $stmt->bind_param("i", $id_noticia);
 $stmt->execute();
 $resultado = $stmt->get_result();
 $noticia = $resultado->fetch_assoc();
 $stmt->close();
-
-if (!$noticia) {
-    header("Location: noticias.php");
-    exit();
-}
 
 $errores = [];
 
@@ -33,31 +28,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($_POST['motivo'])) {
         $errores[] = "Debes seleccionar un motivo";
     }
-    
+
     if (empty($_POST['comentario'])) {
         $errores[] = "Debes agregar un comentario";
     } elseif (strlen($_POST['comentario']) < 10) {
-        $errores[] = "El comentario debe tener al menos 10 caracteres";
+        $errores3 = "El comentario debe tener al menos 10 caracteres";
     }
-    
+
     if (empty($errores)) {
-        $stmt = $conexion->prepare("INSERT INTO reportes 
-                                   (noticia_id, usuario_id, motivo, comentario, fecha_reporte) 
-                                   VALUES (?, ?, ?, ?, NOW())");
-        $stmt->bind_param("iiss", 
-            $id_noticia,
-            $_SESSION['usuario_id'],
-            $_POST['motivo'],
-            $_POST['comentario']
-        );
-        
-        if ($stmt->execute()) {
-            header("Location: notificacion_reporte.php");
-            exit();
+        // Verificar si ya existe un reporte del mismo usuario para esta noticia
+        $verificar_stmt = $conexion->prepare("SELECT COUNT(*) AS total FROM reportes WHERE usuario_id = ? AND propuestas_noticias_id = ?");
+        $verificar_stmt->bind_param("ii", $_SESSION['usuario_id'], $id_noticia);
+        $verificar_stmt->execute();
+        $verificar_result = $verificar_stmt->get_result();
+        $verificar_dato = $verificar_result->fetch_assoc();
+        $verificar_stmt->close();
+
+        if ($verificar_dato['total'] > 0) {
+            $errores4 = "Ya has enviado un reporte para esta noticia.";
         } else {
-            $errores[] = "Error al guardar el reporte: " . $conexion->error;
+            // Proceder a insertar el reporte
+            $stmt = $conexion->prepare("INSERT INTO reportes 
+                                       (propuestas_noticias_id, usuario_id, motivo, comentario, fecha_reporte) 
+                                       VALUES (?, ?, ?, ?, NOW())");
+            $stmt->bind_param("iiss", 
+                $id_noticia,
+                $_SESSION['usuario_id'],
+                $_POST['motivo'],
+                $_POST['comentario']
+            );
+
+            if ($stmt->execute()) {
+                header("Location: reportar.php?id=" . $id_noticia);
+                exit();
+            } else {
+                $errores[] = "Error al guardar el reporte: " . $conexion->error;
+            }
+            $stmt->close();
         }
-        $stmt->close();
     }
 }
 ?>
@@ -65,6 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <meta charset="UTF-8">
   <title>Reportar Noticia</title>
   <style>
@@ -238,5 +248,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
   </div>
 
+  <?php if (isset($errores4)): ?>
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+            <div class="toast align-items-center text-bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <?= htmlspecialchars($errores4) ?>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+                </div>
+            </div>
+        </div>
+        <?php unset($errores4); ?>
+        <?php endif; ?>
+
+        <?php if (isset($errores3)): ?>
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+            <div class="toast align-items-center text-bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <?= htmlspecialchars($errores3) ?>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+                </div>
+            </div>
+        </div>
+        <?php unset($errores3); ?>
+        <?php endif; ?>
+        <script>
+          document.addEventListener('DOMContentLoaded', function () {
+            const toastEl = document.querySelector('.toast');
+                if (toastEl) {
+                    const bsToast = new bootstrap.Toast(toastEl, {
+                        autohide: true,
+                        delay: 7000
+                    });
+                    bsToast.show();
+                }
+            });
+        </script>
 </body>
 </html>

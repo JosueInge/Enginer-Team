@@ -224,12 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <button type="submit">Ingresar</button>
 
-        <label for="tipodeusuario" class="requerido">Tipo de usuario</label>
-        <select id="tipodeusuario" name="tipodeusuario" >
-            <option value="">-- Selecciona el tipo de usuario --</option>
-            <option value="Poblador">Poblador</option>
-            <option value="Administrador">Administrador</option>
-        </select>
+       
       </form>
 
       <div class="registro">

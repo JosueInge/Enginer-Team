@@ -17,7 +17,7 @@ $id_noticia = intval($_GET['id']);
 $error = null;
 $exito = null;
 
-$stmt_noticia = $conexion->prepare("SELECT titulo FROM noticias WHERE id = ?");
+$stmt_noticia = $conexion->prepare("SELECT titulo FROM propuestas_noticias WHERE id = ?");
 $stmt_noticia->bind_param("i", $id_noticia);
 $stmt_noticia->execute();
 $resultado_noticia = $stmt_noticia->get_result();
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($comentario)) {
             $error = "El comentario no puede estar vacío";
         } else {
-            $stmt = $conexion->prepare("INSERT INTO comentarios (noticia_id, usuario_id, texto, fecha) VALUES (?, ?, ?, NOW())");
+            $stmt = $conexion->prepare("INSERT INTO comentarios (propuestas_noticias_id, usuario_id, texto, fecha) VALUES (?, ?, ?, NOW())");
             $stmt->bind_param("iis", $id_noticia, $_SESSION['usuario_id'], $comentario);
             
             if ($stmt->execute()) {
@@ -81,7 +81,7 @@ $stmt_comentarios = $conexion->prepare("
            (u.id = ? OR ? = 1) as puede_editar
     FROM comentarios c
     JOIN usuarios u ON c.usuario_id = u.id
-    WHERE c.noticia_id = ?
+    WHERE c.propuestas_noticias_id = ?
     ORDER BY c.fecha DESC
 ");
 $es_admin = $_SESSION['es_admin'] ?? 0;
@@ -406,7 +406,7 @@ $stmt_comentarios->close();
                 <?php foreach ($comentarios as $comentario): ?>
                     <div class="comentario" id="comentario-<?= $comentario['id'] ?>">
                         <div class="comentario-header">
-                            <img src="<?= htmlspecialchars($comentario['avatar'] ?? 'imagenes/avatar-default.png') ?>" 
+                            <img src="<?= htmlspecialchars(!empty($comentario['avatar']) ? $comentario['avatar'] : 'imagenes/avatar-default.png') ?>"  
                                  class="comentario-avatar" 
                                  alt="<?= htmlspecialchars($comentario['usuario']) ?>">
                             <span class="comentario-usuario"><?= htmlspecialchars($comentario['usuario']) ?></span>

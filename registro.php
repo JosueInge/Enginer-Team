@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->get_result()->num_rows > 0) {
             $registroexistente = "Este correo ya está registrado, por favor ingresa un correo diferente";
         } else {
-            $token = bin2hex(random_bytes(16)); // genera el Token aleatorio.
+            $token = bin2hex(random_bytes(16)); 
             $email_verificado = 0;
             $rol = "Poblador";
             $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, contraseña, token_verificacion, email_verificacion, rol) VALUES (?, ?, ?, ?, ?, ?)");
@@ -61,22 +61,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         
             if ($stmt->execute()) {
-                // Envía al correo solo si el insert fue exitoso
                 $mail = new PHPMailer(true);
                 try {
                     $mail->isSMTP();
                     $mail->Host       = 'smtp.gmail.com';
                     $mail->SMTPAuth   = true;
-                    $mail->Username   = 'd4660140@gmail.com'; // tu correo
-                    $mail->Password   = 'emar lypn ivdw bcwn'; // tu contraseña de aplicación de Gmail
+                    $mail->Username   = 'd4660140@gmail.com'; 
+                    $mail->Password   = 'emar lypn ivdw bcwn';
                     $mail->SMTPSecure = 'tls';
                     $mail->Port       = 587;
         
                     $mail->setFrom('TUCORREO@gmail.com', 'Comunicado Digital');
                     $mail->addAddress($correo);
         
-                    $verificar_url = "http://192.168.1.10:8080/Engine-Team/verificar.php?token=" . $token;//link que permite validar el registro
-        
+                    $verificar_url = "http://192.168.48.211/Engine-Team/verificar.php?token=" . $token;
                     $mail->isHTML(true);
                     $mail->Subject = 'Verifica tu cuenta';
                     $mail->Body    = "Hola <b>$nombre</b>,<br><br>Gracias por registrarte. Por favor haz clic en el siguiente enlace para verificar tu cuenta:<br><br>
@@ -301,6 +299,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .requirement.valid {
             color: #00cc66;
         }
+        .link {
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -357,20 +358,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <div class="botones">
-                <button type="button"><img src="imagenes/google.png" alt="Google">Continuar con Google</button>
-                <button type="button"><img src="imagenes/outlook.png" alt="Outlook">Continuar con Outlook</button>
+                <a href="google-login.php" style="text-decoration: none;">
+                    <button type="button"><img src="imagenes/google.png" alt="Google">Continuar con Google</button>
+                </a>
+                <a href="outlook-login.php" style="text-decoration: none;">
+                    <button type="button"><img src="imagenes/outlook.png" alt="Outlook">Continuar con Outlook</button>
+                </a>
             </div>
 
             <div class="terminos">
-                <input type="checkbox" id="terminos" name="terminos" required 
-                    <?php if (isset($_POST['terminos'])) echo 'checked'; ?>
-                <label for="terminos">He leído y acepto los <a href="terminos.php">términos y condiciones</a></label>
+                <input type="checkbox" id="termino" name="terminos" required 
+                    <?php if (isset($_POST['terminos'])) echo 'checked'; ?>>
+                <label for="termino">He leído y acepto los</label><a class="link" href="terminos.php">términos y condiciones</a>
             </div>
 
             <button type="submit" class="continuar" id="btnContinuar" disabled>Continuar</button>
         </form>
 
-        <!-- Las contraseñas no coinciden -->
         <?php if (isset($contraseñasnocoinciden)): ?>
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
             <div class="toast align-items-center text-bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
@@ -385,7 +389,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php unset($contraseñasnocoinciden); ?>
         <?php endif; ?>
 
-        <!-- registro existente -->
         <?php if (isset($registroexistente)): ?>
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
             <div class="toast align-items-center text-bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
@@ -504,7 +507,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     return;
                 }
             });
-            // Codigo para mostrar y ocultar la contraseña
             function togglePasswordVisibility(inputId, iconId) {
                 const input = document.getElementById(inputId);
                 const icon = document.getElementById(iconId);

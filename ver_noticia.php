@@ -11,7 +11,7 @@ $id_noticia = intval($_GET['id']);
 $usuario_id = $_SESSION['usuario_id'] ?? null;
 $es_admin = ($_SESSION['usuario_rol'] ?? '') === 'Administrador';
 
-$stmt = $conexion->prepare("SELECT * FROM noticias WHERE id = ?");
+$stmt = $conexion->prepare("SELECT * FROM propuestas_noticias WHERE id = ?");
 $stmt->bind_param("i", $id_noticia);
 $stmt->execute();
 $noticia = $stmt->get_result()->fetch_assoc();
@@ -47,8 +47,8 @@ if (isset($_POST["editar_id"], $_POST['editar_texto'])) {
 if (isset($_POST['nuevo_comentario'])) {
     $texto = trim($_POST['nuevo_comentario']);
     if (!empty($texto)) {
-        $stmt = $conexion->prepare("INSERT INTO comentarios (noticia_id, usuario_id, texto, fecha) VALUES (?, ?, ?, NOW())");
-        $stmt->bind_param("iss", $id_noticia, $usuario_id, $texto);
+        $stmt = $conexion->prepare("INSERT INTO comentarios ( propuestas_noticias_id, usuario_id, texto, fecha) VALUES (?, ?, ?, NOW())");
+        $stmt->bind_param("iis", $id_noticia, $usuario_id, $texto);
         $stmt->execute();
         $stmt->close();
     }
@@ -56,7 +56,7 @@ if (isset($_POST['nuevo_comentario'])) {
     exit();
 }
 
-$stmt = $conexion->prepare("SELECT c.*, u.nombre FROM comentarios c JOIN usuarios u ON c.usuario_id = u.id WHERE c.noticia_id = ? ORDER BY c.fecha DESC");
+$stmt = $conexion->prepare("SELECT c.*, u.nombre, u.avatar FROM comentarios c JOIN usuarios u ON c.usuario_id = u.id WHERE c.propuestas_noticias_id = ? ORDER BY c.fecha DESC");
 $stmt->bind_param("i", $id_noticia);
 $stmt->execute();
 $comentarios = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -133,11 +133,15 @@ $stmt->close();
             cursor: pointer;
         }
         .comentario {
+            display: flex;
+            gap: 15px;
             margin-top: 20px;
             padding: 15px;
-            background: #f9f9f9;
-            border-radius: 6px;
-            border: 1px solid #eee;
+            background: #ffffff;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            align-items: flex-start;
         }
         .comentario strong {
             color: #0d5c9b;
@@ -154,16 +158,19 @@ $stmt->close();
         }
         .comentario-cuerpo {
             flex: 1;
+            font-size: 15px;
+            line-height: 1.5;
         }
         .comentario-cuerpo strong {
             color: #0d5c9b;
         }
         .comentario-cuerpo small {
-            display: block;
-            color: #777;
+            margin-top: 2px;
+            font-size: 12px;
+            color: #888;
         }
         .acciones {
-            margin-top: 5px;
+            margin-top: 8px;
         }
         .acciones button {
             font-size: 12px;
@@ -171,6 +178,9 @@ $stmt->close();
             border: none;
             color: #0d5c9b;
             cursor: pointer;
+        }
+        .acciones button:hover {
+            text-decoration: underline;
         }
         .formulario-comentario textarea {
             width: 100%;
@@ -187,6 +197,33 @@ $stmt->close();
             border-radius: 4px;
             margin-top: 10px;
             cursor: pointer;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 110px;
+            background-color: #555;
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 115%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
@@ -205,10 +242,17 @@ $stmt->close();
         <h1><?= htmlspecialchars($noticia['titulo']) ?></h1>
         <p><strong><?= htmlspecialchars($noticia['categoria']) ?></strong> - <?= htmlspecialchars($noticia['autor']) ?> | <?= $noticia['fecha'] ?></p>
         <?php if ($noticia['imagen']): ?>
-            <img src="<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="Imagen">
+            <img src="imagenes/noticias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="Imagen">
         <?php endif; ?>
         <p><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
-
+            <div style="text-align: right; margin-top: 10px; margin-right: 10px;">
+            <div class="tooltip">
+                <a href="reportar.php?id=<?= $noticia['id'] ?>">
+                <img src="imagenes/reportar.png" alt="Reportar" style="width: 30px; height: 30px; cursor: pointer;">
+                </a>
+                <div class="tooltip-text">Reportar Noticia</div>
+            </div>
+            </div>
         <h3>Comentarios</h3>
         <?php if ($noticia['bloquear_comentarios']): ?>
             <p style="color: #777; font-style: italic;">Los comentarios estan bloqueados para esta noticia.</p>
@@ -227,8 +271,8 @@ $stmt->close();
                     <p style="margin-top: 10px; color: #555;"> No hay comentarios aun.</p>
                 <?php else: ?>
                     <?php foreach ($comentarios as $comentario): ?>
-                        <div class="comentarios" id="comentario-<?= $comentario['id'] ?>">
-                            <img class="comentario-avatar" src="<?= htmlspecialchars($comentario['avatar'] ?? 'imagenes/avatars/avatar-default.png') ?>" alt="avatar">
+                        <div class="comentario" id="comentario-<?= $comentario['id'] ?>">
+                            <img class="comentario-avatar" src="<?= htmlspecialchars(!empty($comentario['avatar']) ? $comentario['avatar'] : 'imagenes/avatar-default.png') ?>" alt="avatar">
                             <div class="comentario-cuerpo">
                                 <strong><?= htmlspecialchars($comentario['nombre']) ?></strong>
                                 <small><?= date('d/m/Y H:i', strtotime($comentario['fecha'])) ?><?= $comentario['editado'] ? ' (editado)' : '' ?></small>
@@ -236,8 +280,12 @@ $stmt->close();
 
                                 <?php if ($comentario['usuario_id'] == $usuario_id || $es_admin): ?>
                                     <div class="acciones">
-                                        <button onclick="editarComentario(<?= $comentario['id'] ?>, '<?= htmlspecialchars($comentario['texto'], ENT_QUOTES) ?>')">Editar</button>
-                                        <button onclick="eliminarComentario(<?= $comentario['id'] ?>)">Eliminar</button>
+                                        <?php if ($comentario['usuario_id'] == $usuario_id): ?>
+                                            <button onclick="editarComentario(<?= $comentario['id'] ?>, '<?= htmlspecialchars($comentario['texto'], ENT_QUOTES) ?>')">Editar</button>
+                                            <button onclick="eliminarComentario(<?= $comentario['id'] ?>)">Eliminar</button>
+                                        <?php elseif ($es_admin): ?>
+                                            <button onclick="eliminarComentario(<?= $comentario['id'] ?>)">Eliminar</button>
+                                        <?php endif; ?>
                                     </div>
                                 <?php endif; ?>
                             </div>

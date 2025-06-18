@@ -56,8 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
     $nombre_archivo = uniqid() . '_' . basename($_FILES['avatar']['name']);
     $ruta_destino = "imagenes/avatars/" . $nombre_archivo;
     
-    if (!file_exists('imagenes/avatars')) {
-        mkdir('imagenes/avatars', 0777, true);
+    if (!file_exists('imagenes/avatars/')) {
+        mkdir('imagenes/avatars/', 0777, true);
     }
     
     if (move_uploaded_file($_FILES['avatar']['tmp_name'], $ruta_destino)) {
@@ -257,7 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
             <img src="imagenes/logo.png" alt="Logo">
         </div>
         <nav>
-            <a href="noticias.php">Volver a Noticias</a>
+            <a href="inicio.php">Volver a Noticias</a>
             <a href="logout.php">Cerrar Sesión</a>
         </nav>
     </header>

@@ -14,7 +14,7 @@ if (isset($_GET['busqueda']) && !empty($_GET['busqueda'])) {
 }
 
 // Consulta base con posibilidad de búsqueda
-$query = "SELECT * FROM noticias $where ORDER BY fecha DESC";
+$query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND categoria = 'Deportes' ORDER BY fecha DESC";
 
 $stmt = $conexion->prepare($query);
 
@@ -176,6 +176,14 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
     line-height: 1.6;
     margin-bottom: 15px;
   }
+  .encabezado1.oculto {
+    transform: translateY(-100%); /* Se esconde completamente el encabezado */
+    transition: transform 0.3s ease;
+  }
+  .barra1.oculto {
+    transform: translateY(-130px); /* Solo se esconde lo necesario la barra */
+    transition: transform 0.3s ease;
+  }
   </style>
 </head>
 <body>
@@ -209,7 +217,7 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
             </div>
             <?php if ($noticia['imagen']): ?>
               <div class="imagen-contenedor">
-                <img src="<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
+                <img src="imagenes/noticias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
               </div>
             <?php endif; ?>
             <p class="noticia-resumen"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
@@ -217,5 +225,35 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
         <?php endforeach; ?>
       <?php endif; ?>
     </div>
+
+    <script>
+      let lastScroll = 0;
+      const encabezado = document.querySelector('.encabezado1');
+      const barra = document.querySelector('nav.barra1');
+      let timer;
+
+      window.addEventListener('scroll', () => {
+        const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+        // Scroll hacia abajo
+        if (currentScroll > lastScroll && currentScroll > 80) {
+          barra?.classList.add('oculto');
+
+          // Oculta encabezado con retraso (200 ms)
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            encabezado?.classList.add('oculto');
+          }, 200);
+
+        } else {
+          // Scroll hacia arriba: muestra ambos de inmediato
+          clearTimeout(timer);
+          encabezado?.classList.remove('oculto');
+          barra?.classList.remove('oculto');
+        }
+
+        lastScroll = currentScroll <= 0 ? 0 : currentScroll;
+      });
+  </script>
 </body>
 </html>
