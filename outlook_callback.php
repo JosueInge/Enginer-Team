@@ -1,72 +1,66 @@
-<?php 
+<?php
+require 'vendor/autoload.php';
+include 'conexion.php';
 session_start();
 
-$client_id = '493826cc-aa37-4e71-81c2-456a1b369fca';
-$client_secret = '';
-$redirect_uri ='http://localhost/Engine-Team/outlook_callback.php';
+$clientId = "493826cc-aa37-4e71-81c2-456a1b369fca";
+$clientSecret = "ad9b6a4a-6687-4219-96b2-c7e021b219d1";
+$redirectUri = "http://localhost/Engine-Team/outlook_callback.php";
+$tenantId = "common";
+
+$provider = new TheNetworg\OAuth2\Client\Provider\Azure([
+    'clientId'          => $clientId,
+    'clientSecret'      => $clientSecret,
+    'redirectUri'       => $redirectUri,
+    'urlAuthorize'      => "http://login.microsoftonline.com/$tenantId/oauth2/v2.0/authorize",
+    'urlAccessToken'    => "http://login.microsoftonline.com/$tenantId/oauth2/v2.0/token",
+    'scopas'            => ['openid', 'profile', 'email']
+]);
 
 if (isset($_GET['code'])) {
-    $code = $_GET['code'];
+    $token = $provider->getAccessToken('authorization_code', [
+        'code' => $_GET['code']
+    ]);
 
-    $token_url = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
-    $data = [
-        'client_id' => $client_id,
-        'scope' => 'User.Read',
-        'code' => $code,
-        'redirect_uri' => $redirect_uri,
-        'grant_type' => 'authorization_code',
-        'client_secret' => $client_secret
-    ];
-
-    $option = ['http' => [
-        'header' => "COntent-type: application/x-www-form-urlencoded",
-        'method' => 'POST',
-        'content'=> http_build_query($data), 
-    ]];
-
-    $content = stream_content_create($options);
-    $response = file_get_contents($token_url, false, $content);
-    $tokens = json_decode($response, true);
-
-    $access_token = $tokens['access_token'];
-    $user_url = 'https://graph.microsoft.com/v1.0/me';
-    $opts = [
-        'https' => [
-            'header' => "Authorization: Bearer $access_token",
-        ]
-    ];
-
-    $ctx = stream_context_create($opts);
-    $uses_response = file_get_contents($user_url, false, $ctx);
-    $user = json_decode($user_response, true);
+    $user =  $provider->get("https://graph.microsoft.com/v1.0/me", $token);
 
     $correo = $user['mail'] ?? $user['userPrincipalName'];
     $nombre = $user['displayName'];
+    $avatar = "imagenes/avatar-defacult.png";
 
-    include 'conexion.php';
-
-    $stmt = $conexion->prepare("SELECT * FROM usuarios WHERE correo = ?");
+    $stmt = $conexion->prepare("SELECT id, nombre, correo, avatar, rol FROM usuarios WHERE correo = ?");
     $stmt->bind_param("s", $correo);
     $stmt->execute();
-    $result = $stmt->get_result();
+    $resultado = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        $usuario = $result->fetch_assoc();
+    if ($resultado->num_rows > 0) {
+        $usuario = $resultado->fetch_assoc();
+        $_SESSION['usuario_id'] = $usuario['id'];
+        $_SESSION['usuario_nombre'] = $usuario['nombre'];
+        $_SESSION['usuario_correo'] = $usuario['correo'];
+        $_SESSION['usuario_imagen'] = $usuario['avatar'];
+        $_SESSION['usuario_imagen'] = $usuario['avatar'];
+        $_SESSION['usuario_rol'] = $usuario['rol'];
+
+        header("Location: inicio.php");
+        exit();
     } else {
-        $rol = "Poblador";
-        $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, rol, email_verificacion) VALUES (?, ?, ?, 1)");
+        $rol = "usuario";
+        $email_verificacion = 1;
+
+        $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, avatar, rol, email_verificacion) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssi", $nombre, $correo, $rol, $email_verificacion);
         $stmt->execute();
-        $usuario_id = $stmt->insert_id;
-        $usuario = ['id' => $usuario_id, 'nombre' => $nombre, 'correo' => $correo, 'rol' => $rol];
+
+        $nuevoId = $stmt->insert_id;
+
+        $_SESSION['usuario_id'] = $nuevoId;
+        $_SESSION['usuario_nombre'] = $nombre;
+        $_SESSION['usuario_correo'] = $correo;
+        $_SESSION['usuario_imagen'] = $avatar;
+        $_SESSION['usuario_rol'] = $rol;
+
+        header("Location: inicio.php");
+        exit();
     }
-
-    $_SESSION['usuario_id'] = $usuario['id'];
-    $_SESSION['usuario_nombre'] = $usuario['nombre'];
-    $_SESSION['usuario_correo'] = $usuario['correo'];
-    $_SESSION['rol'] = $usuario['rol'];
-
-    header("Location: noticias.php");
-    exit;
-} else {
-    echo "Error: no se recibio el codigo de autorizacion.";
 }
