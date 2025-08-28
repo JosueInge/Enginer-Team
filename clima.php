@@ -1,4 +1,5 @@
 <?php
+  $categoria_actual = 'clima';
   session_start();
   include 'menu.php';
   include 'conexion.php';
@@ -33,7 +34,7 @@ $noticias = $resultado->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 $conexion->close();
 ?>
-
+<script src="buscador.js" defer></script>
 <?php
 echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
 ?>
@@ -100,27 +101,26 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
       color: white;
     }
     .Buscador {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      position: relative;
+      width: 200px;
     }
-    .Buscador img {
-      width: 20px; 
-      height: 20px;
-    }
+
     .Buscador input {
-      padding: 8px 12px;
+      width: 100%;
+      padding: 8px 8px 8px 35px;
       border: 1px solid #ccc;
       border-radius: 4px;
-      font-size: 14px;
+      box-sizing: border-box;
     }
-    .Buscador button {
-      padding: 8px 12px;
-      background-color: #0d5c9b; 
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+
+    .Buscador img {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
     }
     .menu-configuracion {
       position: relative;
@@ -276,14 +276,7 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
 </head>
 <body> 
   <div class="contenido-principal">
-      <?php if (!empty($termino_busqueda)): ?>
-        <div class="resultados-busqueda">
-          <p>Resultados de búsqueda para: <strong><?= htmlspecialchars($termino_busqueda) ?></strong></p>
-          <?php if (empty($noticias)): ?>
-            <p>No se encontraron noticias que coincidan con tu búsqueda.</p>
-          <?php endif; ?>
-        </div>
-      <?php endif; ?>
+    <div id="contenedor-noticias">
 
       <?php if (empty($noticias)): ?>
         <div class="sin-noticias">
@@ -320,6 +313,7 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
         <?php endforeach; ?>
       <?php endif; ?>
     </div>
+  </div>
     <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
       <a href="publicar_noticia.php" class="boton-publicar">Publicar Noticia</a>
     <?php endif; ?>

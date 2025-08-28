@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->get_result()->num_rows > 0) {
             $registroexistente = "Este correo ya está registrado, por favor ingresa un correo diferente";
         } else {
-            $token = bin2hex(random_bytes(16)); 
+            $token = bin2hex(random_bytes(16)); // genera el Token aleatorio.
             $email_verificado = 0;
             $rol = "Poblador";
             $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, contraseña, token_verificacion, email_verificacion, rol) VALUES (?, ?, ?, ?, ?, ?)");
@@ -61,20 +61,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         
             if ($stmt->execute()) {
+                // Envía al correo solo si el insert fue exitoso
                 $mail = new PHPMailer(true);
                 try {
                     $mail->isSMTP();
                     $mail->Host       = 'smtp.gmail.com';
                     $mail->SMTPAuth   = true;
-                    $mail->Username   = 'd4660140@gmail.com'; 
-                    $mail->Password   = 'emar lypn ivdw bcwn';
+                    $mail->Username   = 'd4660140@gmail.com'; // tu correo
+                    $mail->Password   = 'emar lypn ivdw bcwn'; // tu contraseña de aplicación de Gmail
                     $mail->SMTPSecure = 'tls';
                     $mail->Port       = 587;
         
                     $mail->setFrom('TUCORREO@gmail.com', 'Comunicado Digital');
                     $mail->addAddress($correo);
         
-                    $verificar_url = "http://192.168.48.211/Engine-Team/verificar.php?token=" . $token;
+                    $verificar_url = "http://192.168.48.211/Engine-Team/verificar.php?token=" . $token;//link que permite validar el registro
+        
                     $mail->isHTML(true);
                     $mail->Subject = 'Verifica tu cuenta';
                     $mail->Body    = "Hola <b>$nombre</b>,<br><br>Gracias por registrarte. Por favor haz clic en el siguiente enlace para verificar tu cuenta:<br><br>
@@ -375,6 +377,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" class="continuar" id="btnContinuar" disabled>Continuar</button>
         </form>
 
+        <!-- Las contraseñas no coinciden -->
         <?php if (isset($contraseñasnocoinciden)): ?>
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
             <div class="toast align-items-center text-bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
@@ -389,6 +392,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php unset($contraseñasnocoinciden); ?>
         <?php endif; ?>
 
+        <!-- registro existente -->
         <?php if (isset($registroexistente)): ?>
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
             <div class="toast align-items-center text-bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
@@ -507,6 +511,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     return;
                 }
             });
+            // Codigo para mostrar y ocultar la contraseña
             function togglePasswordVisibility(inputId, iconId) {
                 const input = document.getElementById(inputId);
                 const icon = document.getElementById(iconId);

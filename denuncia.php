@@ -1,4 +1,5 @@
 <?php
+$categoria_actual = 'denuncias';
 session_start();
 include 'menu.php';
 include 'conexion.php';
@@ -25,6 +26,8 @@ $propuestas_denuncias = $resultado->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 $conexion->close();
 ?>
+<script src="buscador.js" defer></script>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -87,27 +90,24 @@ $conexion->close();
       color: white;
     }
     .Buscador {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .Buscador img {
-      width: 20px; 
-      height: 20px;
+      position: relative;
+      width: 200px;
     }
     .Buscador input {
-      padding: 8px 12px;
+      width: 100%;
+      padding: 8px 8px 8px 35px;
       border: 1px solid #ccc;
       border-radius: 4px;
-      font-size: 14px;
+      box-sizing: border-box;
     }
-    .Buscador button {
-      padding: 8px 12px;
-      background-color: #0d5c9b; 
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+    .Buscador img {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
     }
     .menu-configuracion {
       position: relative;
@@ -270,46 +270,46 @@ $conexion->close();
 </head>
 <body>
   <div class="contenido-principal"> 
-
-    <?php if (empty($propuestas_denuncias)): ?>
-      <div class="sin-noticias">
-        <h2>No hay denuncias publicadas aún</h2>
-        <p>¡Sé el primero en compartir una denuncia!</p>
-      </div>
-    <?php else: ?>
-      <?php foreach ($propuestas_denuncias as $noticia): ?>
-        <article class="noticia-card" style="position: relative;">
-          <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
-            <div class="menu-admin dropdown" style="position: absolute; top: 15px; right: 15px;">
-              <span style="cursor: pointer;">⋮</span>
-              <div class="dropdown-content">
-                <a href="editar_denuncia.php?id=<?= $noticia['id'] ?>">Editar</a>
-                <a href="eliminar_denuncia.php?id=<?= $noticia['id'] ?>" onclick="return confirm('¿Deseas eliminar esta noticia?')">Eliminar</a>
+    <div id="contenedor-denuncias">
+      <?php if (empty($propuestas_denuncias)): ?>
+        <div class="sin-noticias">
+          <h2>No hay denuncias publicadas aún</h2>
+          <p>¡Sé el primero en compartir una denuncia!</p>
+        </div>
+      <?php else: ?>
+        <?php foreach ($propuestas_denuncias as $noticia): ?>
+          <article class="noticia-card" style="position: relative;">
+            <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
+              <div class="menu-admin dropdown" style="position: absolute; top: 15px; right: 15px;">
+                <span style="cursor: pointer;">⋮</span>
+                <div class="dropdown-content">
+                  <a href="editar_denuncia.php?id=<?= $noticia['id'] ?>">Editar</a>
+                  <a href="eliminar_denuncia.php?id=<?= $noticia['id'] ?>" onclick="return confirm('¿Deseas eliminar esta noticia?')">Eliminar</a>
+                </div>
               </div>
-            </div>
-          <?php endif; ?>
+            <?php endif; ?>
 
-          <a href="ver_denuncia.php?id=<?= $noticia['id'] ?>" style="text-decoration: none; color: inherit;">
-            <h2 class="noticia-titulo"><?= htmlspecialchars($noticia['titulo']) ?></h2>
-          </a>
-          <div class="noticia-meta">
-            <span><?= htmlspecialchars($noticia['fecha']) ?></span>
-          </div>
-          <?php if ($noticia['imagen']): ?>
-            <div class="imagen-contenedor">
-              <img src="imagenes/denuncias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
+            <a href="ver_denuncia.php?id=<?= $noticia['id'] ?>" style="text-decoration: none; color: inherit;">
+              <h2 class="noticia-titulo"><?= htmlspecialchars($noticia['titulo']) ?></h2>
+            </a>
+            <div class="noticia-meta">
+              <span><?= htmlspecialchars($noticia['fecha']) ?></span>
             </div>
-          <?php endif; ?>
-          <p class="noticia-resumen"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
-        </article>
-      <?php endforeach; ?>
-    <?php endif; ?>
-      </div>
-    
+            <?php if ($noticia['imagen']): ?>
+              <div class="imagen-contenedor">
+                <img src="imagenes/denuncias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
+              </div>
+            <?php endif; ?>
+            <p class="noticia-resumen"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
+          </article>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    </div>
+  </div>
 
-    <?php if ($_SESSION['usuario_rol'] === 'Poblador'): ?>
+  <?php if ($_SESSION['usuario_rol'] === 'Poblador'): ?>
     <a href="enviar_denuncia.php" class="boton-publicar">Enviar denuncia</a>
-    <?php endif; ?>
+  <?php endif; ?>
 
   <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
     <a href="publicar_denuncia.php" class="boton-publicar">Publicar denuncia</a>

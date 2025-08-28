@@ -1,4 +1,5 @@
 <?php
+  $categoria_actual = 'turismo';
   include 'menu.php';
   include 'conexion.php';
 
@@ -26,6 +27,7 @@ $query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND catego
   $stmt->close();
   $conexion->close();
 ?>
+<script src="buscador.js" defer></script>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -180,42 +182,36 @@ $query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND catego
 </head>
 <body>
     <div class="contenido-principal">
-      <?php if (!empty($termino_busqueda)): ?>
-        <div class="resultados-busqueda">
-          <p>Resultados de búsqueda para: <strong><?= htmlspecialchars($termino_busqueda) ?></strong></p>
-          <?php if (empty($noticias)): ?>
-            <p>No se encontraron noticias que coincidan con tu búsqueda.</p>
-          <?php endif; ?>
-        </div>
-      <?php endif; ?>
+      <div id="contenedor-noticias">
 
-      <?php if (empty($noticias)): ?>
-        <div class="sin-noticias">
-          <h2>No hay noticias publicadas aún</h2>
-          <p>¡Sé el primero en compartir una noticia!</p>
-        </div>
-      <?php else: ?>
-        <?php foreach ($noticias as $noticia): ?>
-          <article class="noticia-card">
-            <h2 class="noticia-titulo">
-              <a href="ver_noticia.php?id=<?= $noticia['id'] ?>" style="text-decoration: none; color: inherit;">
-                <?= htmlspecialchars($noticia['titulo']) ?>
-              </a>
-            </h2>
-            <div class="noticia-meta">
-              <span><?= htmlspecialchars($noticia['categoria']) ?></span>
-              <span><?= htmlspecialchars($noticia['autor']) ?></span>
-              <span><?= htmlspecialchars($noticia['fecha']) ?></span>
-            </div>
-            <?php if ($noticia['imagen']): ?>
-              <div class="imagen-contenedor">
-                <img src="imagenes/noticias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
+        <?php if (empty($noticias)): ?>
+          <div class="sin-noticias">
+            <h2>No hay noticias publicadas aún</h2>
+            <p>¡Sé el primero en compartir una noticia!</p>
+          </div>
+        <?php else: ?>
+          <?php foreach ($noticias as $noticia): ?>
+            <article class="noticia-card">
+              <h2 class="noticia-titulo">
+                <a href="ver_noticia.php?id=<?= $noticia['id'] ?>" style="text-decoration: none; color: inherit;">
+                  <?= htmlspecialchars($noticia['titulo']) ?>
+                </a>
+              </h2>
+              <div class="noticia-meta">
+                <span><?= htmlspecialchars($noticia['categoria']) ?></span>
+                <span><?= htmlspecialchars($noticia['autor']) ?></span>
+                <span><?= htmlspecialchars($noticia['fecha']) ?></span>
               </div>
-            <?php endif; ?>
-            <p class="noticia-resumen"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
-          </article>
-        <?php endforeach; ?>
-      <?php endif; ?>
+              <?php if ($noticia['imagen']): ?>
+                <div class="imagen-contenedor">
+                  <img src="imagenes/noticias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
+                </div>
+              <?php endif; ?>
+              <p class="noticia-resumen"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
+            </article>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </div>
     </div>
 
     <script>

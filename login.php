@@ -2,6 +2,13 @@
 session_start();
 include 'conexion.php';
 
+function guardarLog($mensaje) {
+    $rutaLog = __DIR__ . '/logs/errores.log'; // Ruta al archivo de log
+    $fecha = date('Y-m-d H:i:s');
+    $mensajeCompleto = "[$fecha] $mensaje" . PHP_EOL;
+    file_put_contents($rutaLog, $mensajeCompleto, FILE_APPEND);
+}
+
 $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -31,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       exit();
     } else {
       $DatosIncorrectos = "Correo o contraseña incorrectas.";
+      guardarLog("Correo o contraseña incorrectas.");
     }
   } else {
     $DatosIncorrectos = "Correo o contraseña incorrectas.";
@@ -42,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <meta charset="UTF-8" />
@@ -225,24 +232,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <button type="submit">Ingresar</button>
 
-        <div style="text-align: center; margin: 20px 0;">
-          <a href="google_login.php" style="display: inline-flex; align-items: center;
-              background-color: white; color:#444; border: 1px solid #ccc;
-              padding: 10px 15px; border-radius: 6px; text-decoration: none;
-              font-weight: bold; font-size: 14px; cursor: pointer;">
-              <img src="imagenes/google.png" alt="Google" style="width: 20px; margin-right: 10px;">
-              Iniciar sesión con Google  
-          </a>
-        </div>
-         <div style="margin-top: 20px; text-align:center;">
-    <a href="outlook_login.php" 
-       style="display:inline-block; background-color:#0078D4; color:white; padding:10px 20px; border-radius:5px; text-decoration:none; font-weight:bold;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" 
-             alt="Outlook" style="width:20px; vertical-align:middle; margin-right:8px;">
-        Iniciar sesión con Outlook
-    </a>
-</div>
-
        
       </form>
 
@@ -362,6 +351,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
     });
   </script>
-<?php include "footer.php"; ?>
 </body>
 </html>
