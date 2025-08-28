@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mail->setFrom('TUCORREO@gmail.com', 'Comunicado Digital');
                     $mail->addAddress($correo);
         
-                    $verificar_url = "http://192.168.1.10:8080/Engine-Team/verificar.php?token=" . $token;//link que permite validar el registro
+                    $verificar_url = "http://192.168.48.211/Engine-Team/verificar.php?token=" . $token;//link que permite validar el registro
         
                     $mail->isHTML(true);
                     $mail->Subject = 'Verifica tu cuenta';
@@ -301,6 +301,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .requirement.valid {
             color: #00cc66;
         }
+        .link {
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -357,14 +360,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <div class="botones">
-                <button type="button"><img src="imagenes/google.png" alt="Google">Continuar con Google</button>
-                <button type="button"><img src="imagenes/outlook.png" alt="Outlook">Continuar con Outlook</button>
+                <a href="google-login.php" style="text-decoration: none;">
+                    <button type="button"><img src="imagenes/google.png" alt="Google">Continuar con Google</button>
+                </a>
+                <a href="outlook-login.php" style="text-decoration: none;">
+                    <button type="button"><img src="imagenes/outlook.png" alt="Outlook">Continuar con Outlook</button>
+                </a>
             </div>
 
             <div class="terminos">
-                <input type="checkbox" id="terminos" name="terminos" required 
-                    <?php if (isset($_POST['terminos'])) echo 'checked'; ?>
-                <label for="terminos">He leído y acepto los <a href="terminos.php">términos y condiciones</a></label>
+                <input type="checkbox" id="termino" name="terminos" required 
+                    <?php if (isset($_POST['terminos'])) echo 'checked'; ?>>
+                <label for="termino">He leído y acepto los</label><a class="link" href="terminos.php">términos y condiciones</a>
             </div>
 
             <button type="submit" class="continuar" id="btnContinuar" disabled>Continuar</button>

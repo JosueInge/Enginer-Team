@@ -7,7 +7,7 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-$mensaje = null;
+$error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoria = $_POST['categoria'] ?? '';
@@ -30,19 +30,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Mover la imagen al destino
         if (!move_uploaded_file($_FILES['imagen']['tmp_name'], $ruta_destino)) {
-            $mensaje = "Error al subir la imagen.";
+            $errorimagen = "Error al subir la imagen.";
             $imagen_nombre = null;
         }
     }
 
-    $stmt = $conexion->prepare("INSERT INTO propuestas_noticias (categoria, titulo, descripcion, imagen, autor, fecha, usuario_id, estado)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente')");
-    $stmt->bind_param("ssssssi", $categoria, $titulo, $descripcion, $imagen_nombre, $autor, $fecha, $usuario_id);
+    $stmt = $conexion->prepare("INSERT INTO propuestas_noticias ( categoria, titulo, descripcion, imagen, autor, fecha, usuario_id, estado, bloquear_comentarios)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente', ?)");
+
+    $bloquear_comentarios = isset($_POST['bloquear_comentarios']) ? 1 : 0;
+    $stmt->bind_param("sssssssi", $categoria, $titulo, $descripcion, $imagen_nombre, $autor, $fecha, $usuario_id, $bloquear_comentarios);
 
     if ($stmt->execute()) {
-        $mensaje = "Noticia enviada correctamente. Sera revisada por un administrador.";
+        $envioexitoso = "Denuncia enviada correctamente. Sera revisada por un administrador.";
     } else {
-        $mensaje = "Error al enviar la noticia: " . $conexion->error;
+        $errorenviar = "Error al enviar la denuncia: " . $conexion->error;
     }
 }
 ?>
@@ -52,224 +54,248 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enviar Noticia - Periodico Digital Comunitario</title>
+    <title>Enviar Noticia - Comunicado Digital</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: Arial, sans-serif;
             background-color: #fff;
             margin: 0;
-            color: #333;
         }
         header {
             background-color: #0d5c9b;
             color: white;
-            padding: 15px 30px;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
-            align-items: center; 
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
+            align-items: center;
         }
         .logo img {
             height: 50px;
-            margin-right: 20px;
         }
-        .informacion a {
-            color: white;
-            margin-left: 20px;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .contenedor {
+        .contenedor-principal {
             max-width: 800px;
             margin: 30px auto;
             padding: 0 20px;
         }
-        .font-noticia {
-            background-color: #f9f9f9;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
-        .form-noticia h1 {
+        h1 {
             color: #0d5c9b;
-            margin-top: 0;
-            text-align: center;
+            margin-bottom: 20px;
         }
-        .form-noticia p.description {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #0d5c9b;
-        }
-        .form-group input[type="text"],
-        .form-group input[type="date"],
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        .form-group textarea {
-            min-height: 150px;
-            resize: vertical;
-        }
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            margin-top: 10px;
-        }
-        .radio-option {
-            display: flex;
-            align-items: center;
-        }
-        .radio-option input {
-            margin-right: 8px;
-        }
-        .file-upload {
-            border: 2px dashed #ddd;
-            padding: 20px;
-            text-align: center;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .file-upload:hover {
-            border-color: #0d5c9b;
-            background-color: #ddd;
-        }
-        .file-upload input {
-            display: none;
-        }
-        .file-upload-label {
-            display: block;
-            font-size: 16px;
-            color: #666;
-        }
-        .file-upload-icon {
-            font-size: 40px;
-            color: #0d5c9b;
-            margin-bottom: 10px;
-        }
-        .btn-enviar {
+       .campo {
+    margin-bottom: 20px;
+}
+
+.campo label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.campo input[type="text"],
+.campo input[type="date"],
+.campo textarea,
+.campo select,
+.campo input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.campo textarea {
+    min-height: 150px;
+}
+
+/* Estilo para la vista previa de la imagen */
+#preview-imagen {
+    display: none;
+    margin-top: 12px;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+        .boton-publicar {
             background-color: #0d5c9b;
             color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 16px;
-            border-radius: 5px;
+            padding: 12px 20px;
+            border-radius: 4px;
             cursor: pointer;
-            display: block;
+            font-size: 16px;
             width: 100%;
-            font-weight: bold;
-            transition: background-color 0.3s;
         }
-        .btn-enviar:hover {
-            background-color: #0d5c9b;
+        .boton-publicar:hover {
+            background-color: #0a4a7a;
         }
-        .mensaje {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            text-align: center;
+        #preview-imagen {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            display: none;
         }
-        .mensaje.exito {
-            background-color: #ddd;
-            color: #155724;
+        .error {
+            color: red;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #ffeeee;
+            border: 1px solid #ffcccc;
+            border-radius: 4px;
         }
-        .mensaje.error {
-            background-color: #ddd;
-            color: #721c24;
+        .requerido:after {
+            content: " *";
+            color: red;
         }
+        .menu-configuracion { 
+      position: relative;
+      display: inline-block;
+      margin-left: 15px;
+    }
+    
+    .icono-configuracion {
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    
+    .icono-configuracion:hover {
+      transform: rotate(30deg);
+    }
+    
+    .menu-desplegable {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: white;
+      min-width: 160px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      z-index: 1001;
+      border-radius: 4px;
+    }
+    
+    .menu-desplegable a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      transition: background-color 0.3s;
+    }
+    
+    .menu-desplegable a:hover {
+      background-color: #f1f1f1;
+    }
+    
+    .menu-configuracion:hover .menu-desplegable {
+      display: block;
+    }
+    a {
+      text-decoration: none;
+    }
+    .volver {
+      color: white;
+      position: relative;
+      top: -6px;
+    }
     </style>
 </head>
 <body>
-    <header>
+<header>
         <div class="logo">
             <img src="imagenes/logo.png" alt="logo">
         </div>
-        <div class="informacion">
-            <a href="noticias.php">Inicio</a>
-            <a href="enviar_noticia.php">Enviar Noticia</a>
-            <a href="perfil.php">Mi perfil</a>
-            <a href="logout.php">Cerrar Sesión</a>
-        </div>
+        <nav class="informacion">
+            <a href="inicio.php" class="volver" >Volver a Inicio</a>
+            <div class="menu-configuracion">
+                <img src="imagenes/configurar.png" class="icono-configuracion" alt="Configuración">
+                <div class="menu-desplegable">
+                    <a href="actualizar_perfil.php">Configurar Perfil</a>
+                    <a href="logout.php">Cerrar Sesión</a>
+                </div>
+            </div>
+        </nav>
     </header>
 
-    <div class="contenedor">
-        <form class="form-noticia" method="POST" action="enviar_noticia.php" enctype="multipart/form-data">
-            <h1>Enviar Noticia</h1>
-            <p class="descripcion">Los administradores revisarán la noticia que compartas. Si se aprueba será publicada.</p>
+    <div class="contenedor-principal">
+        <h1>Enviar Nueva Noticia</h1>
 
-            <?php if ($mensaje): ?>
-                <div class="mensaje <?php echo strpos($mensaje,'Error') !== false ? 'error' : 'exito'; ?>">
-                    <?php echo htmlspecialchars($mensaje); ?>
-                </div>
-            <?php endif; ?>
+        <?php if ($error): ?>
+            <div class="error"><?php echo htmlspecialchars($error); ?></div>
+        <?php endif; ?>
 
-            <div class="form-group">
-                <label>Selecciona la categoría</label>
-                <div class="radio-group">
-                    <label class="radio-option"><input type="radio" name="categoria" value="Deportes" required> Deportes</label>
-                    <label class="radio-option"><input type="radio" name="categoria" value="Clima" required> Clima</label>
-                    <label class="radio-option"><input type="radio" name="categoria" value="Educacion" required> Educación</label>
-                    <label class="radio-option"><input type="radio" name="categoria" value="Turismo" required> Turismo</label>
-                </div>
+        <form action="enviar_noticia.php" method="POST" enctype="multipart/form-data">
+            <div class="campo">
+                <label for="categoria" class="requerido">Categoria:</label>
+                <select id="categoria" name="categoria" required>
+                    <option value="">-- Selecciona una categoria --</option>
+                    <option value="Deportes">Deportes</option>
+                    <option value="Clima">Clima</option>
+                    <option value="Educacion">Educacion</option>
+                    <option value="Turismo">Turismo</option>
+                </select>
             </div>
 
-            <div class="form-group">
-                <label for="titulo">Título de la Noticia</label>
-                <input type="text" id="titulo" name="titulo" required>
+            <div class="campo">
+                <label for="titulo" class="requerido">Titulo:</label>
+                <input type="text" id="titulo" name="titulo" required placeholder="Escribe el titulo de la noticia">
+            </div> 
+
+            <div class="campo">
+                <label for="descripcion" class="requerido">Descripcion:</label>
+                <textarea id="descripcion" name="descripcion" required placeholder="Escribe la descripcion de la noticia"></textarea>
+            </div> 
+
+            <div class="campo">
+                <label for="autor" class="requerido">Autor:</label>
+                <input type="text" id="autor" name="autor" required placeholder="Nombre del autor">
+            </div> 
+
+            <div class="campo">
+                <label for="fecha" class="requerido">Fecha:</label>
+                <input type="date" id="fecha" name="fecha" required value="<?php echo date('Y-m-d'); ?>">
+            </div> 
+
+            <div class="campo">
+                <label for="imagen">Imagen (opcional):</label>
+                <input type="file" id="imagen" name="imagen" accept="image/*">
+                <img id="preview-imagen" src="#" alt="Vista previa de la imagen">
             </div>
 
-            <div class="form-group">
-                <label for="descripcion">Descripción de la noticia</label>
-                <textarea id="descripcion" name="descripcion" required></textarea>
+            <div class="campo">
+                <label>
+                    <input type="checkbox" name="bloquear_comentarios" id="bloquear_comentarios">
+                    Bloquear comentarios
+                </label>
             </div>
-
-            <div class="form-group">
-                <label>Cargar una imagen</label>
-                <div class="file-upload" onclick="document.getElementById('imagen').click()">
-                    <span class="file-upload-label">Selecciona una imagen</span>
-                    <input type="file" id="imagen" name="imagen" accept="image/*">
-                </div>
-                <div id="nombre-archivo" style="margin-top: 5px; font-size: 14px; color: #666;"></div>
-            </div>
-
-            <div class="form-group">
-                <label for="autor">Autor</label>
-                <input type="text" id="autor" name="autor" required>
-            </div>
-
-            <div class="form-group">
-                <label for="fecha">Fecha</label>
-                <input type="date" id="fecha" name="fecha" required>
-            </div>
-
-            <p style="text-align: center; color: #666; margin: 20px 0;">La noticia será revisada por un administrador</p>
-            <button type="submit" class="btn-enviar">Enviar</button>
+        
+            <button class="boton-publicar" type="submit">Enviar Noticia</button>
         </form>
     </div>
 
     <script>
-        document.getElementById('imagen').addEventListener('change', function(e) {
-            const fileName = e.target.files[0] ? e.target.files[0].name : 'No se seleccionó archivo';
-            document.getElementById('nombre-archivo').textContent = fileName;
-        });
+    document.getElementById('imagen').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const preview = document.getElementById('preview-imagen');
+            preview.src = event.target.result;
+            preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
+});
 
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('fecha').value = today;
         });
-    </script>
+    </script>  
 </body>
 </html>

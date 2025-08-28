@@ -161,7 +161,7 @@ $noticias = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             <img src="imagenes/logo.png" alt="logo">
         </div>
         <div class="informacion">
-            <a href="noticias.php">Inicio</a>
+            <a href="inicio.php">Inicio</a>
             <a href="revision_noticias.php">Revision</a>
             <a href="perfil.php">Mi perfil</a>
             <a href="logout.php">Cerrar Sesion</a>
@@ -211,7 +211,7 @@ $noticias = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                                         <input type="hidden" name="id" value="<?php echo htmlspecialchars($noticia['id']); ?>">
                                         <button type="submit" class="btn-accion btn-aprobar">Aprobar</button>
                                     </form>
-                                    <form method="POST" action="rechazar_noticia.php" style="flex: 1;">
+                                    <form method="POST" action="rechazar_noticias.php" style="flex: 1;">
                                         <input type="hidden" name="id" value="<?php echo htmlspecialchars($noticia['id']); ?>">
                                         <button type="submit" class="btn-accion btn-rechazar">Rechazar</button>
                                     </form>
