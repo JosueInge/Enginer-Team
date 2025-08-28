@@ -45,6 +45,7 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
   <meta charset="UTF-8" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Comunicado Digital</title>
@@ -390,6 +391,6 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
         lastScroll = currentScroll <= 0 ? 0 : currentScroll;
       });
     </script>
-
+    <?php include "footer.php"; ?>
 </body>
 </html>
