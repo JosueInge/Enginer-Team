@@ -74,19 +74,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enviar Denuncia - Comunicado Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: 'Poppins', sans-serif; 
             background-color: #fff; 
+            margin: 0;
         }
         header {
-            background-color: #0d5c9b; 
-            color: white; 
-            padding: 10px 20px; 
-            display: flex; 
-            justify-content: space-between; 
+            background-color: #1b314b;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
             align-items: center; 
         }
         .logo img { 
@@ -98,8 +100,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 0 20px; 
         }
         h1 { 
-            color: #0d5c9b; 
-            margin-bottom: 20px; 
+            color: #1661ac;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 32px 
+        }
+        h4 {
+            color: #74737C;
+            margin-bottom: 20px;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px
         }
         .campo { 
             margin-bottom: 20px; 
@@ -109,6 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 5px; 
             font-weight: bold; 
         }
+
         .campo input[type="text"], 
         .campo textarea {
              width: 100%; 
@@ -117,17 +130,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              border-radius: 4px; 
             }
         .campo textarea { 
-            min-height: 150px; 
+            min-height: 150px;
+            font-weight: 400;
+            color: #403F48;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px 
         }
         .boton-publicar { 
-            background-color: #0d5c9b; 
-            color: white; 
-            border: none; 
-            padding: 12px 20px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            width: 100%; 
+            background-color: #1661ac;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
         }
         .boton-publicar:hover { 
             background-color: #0a4a7a; 
@@ -146,10 +163,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-decoration: none; 
         }
         .volver { 
-            color: white; 
-            position: relative; 
-            top: -5px; 
+            color: #fff;
+            position: relative;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 18px;
+            top: -5px;
         }
+        .informacion {
+            margin-right: 10px;
+            font-size: 24px;
+        }
+        .informacion a:hover {
+        color: #73d5f5;
+        }
+        /* Hover y focus para campos de formulario */
+            .campo input[type="text"],
+            .campo input[type="date"],
+            .campo textarea,
+            .campo select,
+            .campo input[type="file"] {
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .campo input[type="text"]:hover,
+            .campo input[type="date"]:hover,
+            .campo textarea:hover,
+            .campo select:hover,
+            .campo input[type="file"]:hover,
+            .campo input[type="text"]:focus,
+            .campo input[type="date"]:focus,
+            .campo textarea:focus,
+            .campo select:focus,
+            .campo input[type="file"]:focus {
+            border-color: #1661AC; /* borde celeste */
+            box-shadow: 0 0 0 3px rgba(22, 97, 172, 0.2); /* efecto sutil de resplandor */
+            outline: none;
+            }
+
     </style>
 </head>
 <body>
@@ -159,7 +210,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </header>
 
 <div class="contenedor-principal">
-    <h1>Denuncia Anónima</h1>
+        <h1>Publicar denuncia anónima</h1>
+        <h4>Tu denuncia será revisada por los administradores</h4>
 
     <form action="enviar_denuncia_anonima.php" method="POST" enctype="multipart/form-data">
         <div class="campo">
