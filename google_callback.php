@@ -38,7 +38,7 @@ if (isset($_GET['code'])) {
     $usuario = $result->fetch_assoc();
 
     if (!$usuario) {
-        $rol = "usuario";
+        $rol = "Poblador";
         $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, avatar, rol) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $nombre, $email, $foto, $rol);
         $stmt->execute();

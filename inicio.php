@@ -285,7 +285,7 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
       <?php else: ?>
         <?php foreach ($noticias as $noticia): ?>
           <article class="noticia-card" style="position: relative;">
-            <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
+            <?php if (isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'Administrador'): ?>
             <div class="menu-admin dropdown" style="position: absolute; top: 15px; right: 15px;">
               <span style="cursor: pointer;">⋮</span>
               <div class="dropdown-content">
@@ -313,11 +313,11 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
       <?php endif; ?>
     </div>
   </div>
-    <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
+    <?php if (isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'Administrador'): ?>
       <a href="publicar_noticia.php" class="boton-publicar">Publicar Noticia</a>
     <?php endif; ?>
 
-    <?php if ($_SESSION['usuario_rol'] === 'Poblador'): ?>
+    <?php if (isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'Poblador'): ?>
       <a href="enviar_noticia.php" class="boton-publicar">Enviar una noticia</a>
     <?php endif; ?>
 

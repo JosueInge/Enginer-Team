@@ -10,7 +10,7 @@ $redirectUri = "http://localhost/Enginer-Team/google_callback.php";
 $client = new Google_Client();
 $client->setClientId($clientID);
 $client->setClientSecret($clientSecret);
-$client->setRedirectUri($redirectUri); //comentario 
+$client->setRedirectUri($redirectUri);
 $client->addScope("email");
 $client->addScope("profile");
 
