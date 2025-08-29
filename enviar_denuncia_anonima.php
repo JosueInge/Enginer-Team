@@ -234,11 +234,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="descripcion" class="requerido">Descripcion:</label>
                 <textarea id="descripcion" name="descripcion" required placeholder="Escribe la descripcion de la noticia"></textarea>
             </div>
-
-            <div class="campo">
-                <label for="fecha" class="requerido">Fecha:</label>
-                <input type="date" id="fecha" name="fecha" required value="<?php echo date('Y-m-d'); ?>">
-            </div> 
+            
+                <input type="hidden" name="fecha" value="<?php echo date('Y-m-d'); ?>">
 
             <div class="campo">
                 <label for="imagen">Imagen (opcional):</label>               

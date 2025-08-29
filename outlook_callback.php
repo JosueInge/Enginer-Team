@@ -5,7 +5,7 @@ session_start();
 
 $clientId = "493826cc-aa37-4e71-81c2-456a1b369fca";
 $clientSecret = "ad9b6a4a-6687-4219-96b2-c7e021b219d1";
-$redirectUri = "http://localhost/Engine-Team/outlook_callback.php";
+$redirectUri = "http://localhost/Enginer-Team/outlook_callback.php";
 $tenantId = "common";
 
 $provider = new TheNetworg\OAuth2\Client\Provider\Azure([
