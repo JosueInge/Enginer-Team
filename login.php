@@ -233,6 +233,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <button type="submit">Ingresar</button>
 
+        <div style="text-align: center; margin: 20px 0;">
+          <a href="google_login.php" style="display: inline-flex; align-items: center;
+              background-color: white; color:#444; border: 1px solid #ccc;
+              padding: 10px 15px; border-radius: 6px; text-decoration: none;
+              font-weight: bold; font-size: 14px; cursor: pointer;">
+              <img src="imagenes/google.png" alt="Google" style="width: 20px; margin-right: 10px;">
+              Iniciar sesión con Google  
+          </a>
+        </div>
+         <div style="margin-top: 20px; text-align:center;">
+    <a href="outlook_login.php" 
+       style="display:inline-block; background-color:#0078D4; color:white; padding:10px 20px; border-radius:5px; text-decoration:none; font-weight:bold;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" 
+             alt="Outlook" style="width:20px; vertical-align:middle; margin-right:8px;">
+        Iniciar sesión con Outlook
+    </a>
+</div>
        
       </form>
 

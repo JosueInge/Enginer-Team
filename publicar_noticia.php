@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoria = $_POST['categoria'] ?? '';
     $titulo = $_POST['titulo'] ?? '';
     $descripcion = $_POST['descripcion'] ?? '';
-    $autor = $_POST['autor'] ?? '';
+    $autor = $_SESSION['usuario_nombre'];
     $fecha = date('Y-m-d H:i:s');
     $usuario_id = $_SESSION['usuario_id'] ?? null;
 
@@ -216,10 +216,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <nav class="informacion">
             <a href="noticias.php" style="color: white;">Volver a Noticias</a>
             <div class="menu-configuracion">
-                <img src="imagenes/configurar.png" class="icono-configuracion" alt="Configuración">
+                <img src="imagenes/configurar.png" class="icono-configuracion" alt="ConfiguraciÃ³n">
                 <div class="menu-desplegable">
                     <a href="actualizar_perfil.php">Configurar Perfil</a>
-                    <a href="logout.php">Cerrar Sesión</a>
+                    <a href="logout.php">Cerrar SesiÃ³n</a>
                 </div>
             </div>
         </nav>
@@ -252,16 +252,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="campo">
                 <label for="descripcion" class="requerido">Descripcion:</label>
                 <textarea id="descripcion" name="descripcion" required placeholder="Escribe la descripcion de la noticia"></textarea>
-            </div> 
-
-            <div class="campo">
-                <label for="autor" class="requerido">Autor:</label>
-                <input type="text" id="autor" name="autor" required placeholder="Nombre del autor">
-            </div> 
-
-            <div class="campo">
-                <label for="fecha" class="requerido">Fecha:</label>
-                <input type="date" id="fecha" name="fecha" required value="<?php echo date('Y-m-d'); ?>">
             </div> 
 
             <div class="campo">
