@@ -3,7 +3,7 @@ session_start();
 include 'conexion.php';
 
 function guardarLog($mensaje) {
-    $rutaLog = _DIR_ . '/logs/errores.log'; // Ruta al archivo de log
+    $rutaLog = __DIR__ . '/logs/errores.log'; 
     $fecha = date('Y-m-d H:i:s');
     $mensajeCompleto = "[$fecha] $mensaje" . PHP_EOL;
     file_put_contents($rutaLog, $mensajeCompleto, FILE_APPEND);
