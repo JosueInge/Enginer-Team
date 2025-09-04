@@ -63,12 +63,18 @@ $total_notificaciones = $noticias_pendientes + $denuncias_pendientes + $reportes
   <a href="deporte1.php" class="nav-link <?= ($currentPage == 'deporte1.php') ? 'active' : '' ?>">Deportes</a>
   <a href="educacion1.php" class="nav-link <?= ($currentPage == 'educacion1.php') ? 'active' : '' ?>">Educación</a>
   <a href="turismo1.php" class="nav-link <?= ($currentPage == 'turismo1.php') ? 'active' : '' ?>">Turismo</a>
-  <form action="/transporte/search" method="post">
-    <div class="Buscador">
-      <img src="imagenes/lupa.png" alt="Buscar">
-      <input type="text" name="keyword" placeholder="Buscar" required>
-    </div>
-  </form>
+  <a href="denuncia_anonima.php" class="nav-link <?= ($currentPage == 'denuncia_anonima.php') ? 'active' : '' ?>">Denuncias</a>
+  <form id="formBuscador" action="javascript:void(0);">
+  <div class="Buscador">
+    <img src="imagenes/lupa.png" alt="Buscar">
+    <input  id="inputBusqueda"
+            type="text"
+            name="term"
+            autocomplete="off"
+            placeholder="Buscar título..."
+            data-categoria="<?= $categoria_actual ?? 'inicio' ?>">
+  </div>
+</form>
 </nav>
 
 <?php else: ?>
@@ -196,11 +202,16 @@ $total_notificaciones = $noticias_pendientes + $denuncias_pendientes + $reportes
   <a href="turismo.php" class="nav-link <?= ($currentPage == 'turismo.php') ? 'active' : '' ?>">Turismo</a>
   <a href="denuncia.php" class="nav-link <?= ($currentPage == 'denuncia.php') ? 'active' : '' ?>">Denuncias</a>
     </a> 
-  <form action="noticias.php" method="post">
-    <div class="Buscador">
-      <img src="imagenes/lupa.png" alt="Buscar">
-      <input type="text" name="busqueda" placeholder="Buscar" required>
-    </div>
-  </form>
+  <form id="formBuscador" action="javascript:void(0);">
+  <div class="Buscador">
+    <img src="imagenes/lupa.png" alt="Buscar">
+    <input  id="inputBusqueda"
+            type="text"
+            name="term"
+            autocomplete="off"
+            placeholder="Buscar título..."
+            data-categoria="<?= $categoria_actual ?? 'inicio' ?>">
+  </div>
+</form>
 </nav>
 <?php endif; ?>
