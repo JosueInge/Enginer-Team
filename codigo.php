@@ -1,27 +1,36 @@
-<?php
-session_start();
-include 'conexion.php';
+<div class="chatbot-container" id="asistente">
+    <!-- Encabezado -->
+    <div class="chatbot-header">
+        <span>Asistente Virtual</span>
+        <button class="cerrar" onclick="toggleAsistente()">✕</button>
+    </div>
 
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] !== 'Administrador') {
-    header("Location: noticias.php");
-    exit();
-}
+    <!-- Cuerpo -->
+    <div class="chatbot-body" id="chat-cuerpo">
+        <div class="chatbot-avatar">
+            <img src="imagenes/chatbot.png" alt="ChatBot">
+        </div>
 
-if (isset($_GET['id'])) {
-    $id_noticia = intval($_GET['id']);
+        <!-- Mensaje de bienvenida -->
+        <div class="mensaje-bot">
+            <strong>Asistente Virtual</strong><br>
+            Hola <?= htmlspecialchars($nombre_usuario) ?>, ¿en qué puedo ayudarte?
+        </div>
 
-    // Eliminar comentarios relacionados
-    $stmt = $conexion->prepare("DELETE FROM comentarios WHERE noticia_id = ?");
-    $stmt->bind_param("i", $id_noticia);
-    $stmt->execute();
-    $stmt->close();
+        <!-- Opciones rápidas -->
+        <div class="chatbot-opciones">
+            <button onclick="enviarPregunta('¿Como se envia una noticia?')">¿Cómo se envía una noticia?</button>
+            <button onclick="enviarPregunta('¿Como se reporta una noticia?')">¿Cómo se reporta una noticia?</button>
+            <button onclick="enviarPregunta('¿Cuales son las politicas del periodico digital?')">¿Cuáles son las políticas?</button>
+        </div>
+    </div>
 
-    // Luego eliminar la noticia
-    $stmt = $conexion->prepare("DELETE FROM noticias WHERE id = ?");
-    $stmt->bind_param("i", $id_noticia);
-    $stmt->execute();
-    $stmt->close();
-}
+    <!-- Entrada usuario -->
+    <div class="chatbot-input">
+        <input type="text" id="entradaUsuario" placeholder="Escribe un mensaje...">
+        <button onclick="procesarEntrada()">Enviar</button>
+    </div>
+</div>
 
-header("Location: noticias.php");
-exit();
+<!-- BOTÓN flotante -->
+<button class="boton-ayuda" onclick="toggleAsistente()">¿Necesita ayuda?</button>
