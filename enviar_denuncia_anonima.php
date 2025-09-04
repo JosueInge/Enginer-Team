@@ -210,18 +210,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </header>
 
 <div class="contenedor-principal">
-        <h1>Publicar denuncia anónima</h1>
+        <h1>Enviar denuncia anónima</h1>
         <h4>Tu denuncia será revisada por los administradores</h4>
 
     <form action="enviar_denuncia_anonima.php" method="POST" enctype="multipart/form-data">
         <div class="campo">
             <label for="titulo" class="requerido">Título:</label>
-            <input type="text" id="titulo" name="titulo" required placeholder="Escribe el título de la noticia">
+            <input type="text" id="titulo" name="titulo" required placeholder="Escribe el título de la denuncia">
         </div> 
 
         <div class="campo">
             <label for="descripcion" class="requerido">Descripción:</label>
-            <textarea id="descripcion" name="descripcion" required placeholder="Escribe la descripción de la noticia"></textarea>
+            <textarea id="descripcion" name="descripcion" required placeholder="Escribe la descripción de la denuncia"></textarea>
         </div>
 
         <input type="hidden" name="fecha" value="<?php echo date('Y-m-d'); ?>">

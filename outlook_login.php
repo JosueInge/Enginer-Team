@@ -1,22 +1,21 @@
 <?php
-
+require 'vendor/autoload.php';
 session_start();
 
-$clientID = "493826cc-aa37-4e71-81c2-456a1b369fca";
-$tenantID = "common";
-$redirectUri = "http://localhost/Engine-Team/outlook_callback.php";
-// 554ad9e4-78b2-494d-bc83-9759b2c39ea8 (inquilino)
-$scope = "User.Read ofline_access openid email profile"; 
+use TheNetworg\OAuth2\Client\Provider\Azure;
 
-$authUrl = "https://login.microsoftonline.com/$tenantID/oauth2/v2.0/authorize?" . http_build_query([
-    'client_id' => $clientID,
-    'client_type' => 'code',
-    'redirectUri' => $redirectUri,
-    'response_mode' => 'query',
-    'scope' => $scope,
-    'state' => bin2hex(random_bytes(16))
+$provider = new Azure([
+    'clientId'                => 'aca24afd-ef2b-49b0-ac5d-bc393710575b',
+    'clientSecret'            => '.Pn8Q~E3K4mAhy-J1dmr05rMyvDdazAbrmtICa1K',
+    'redirectUri'             => 'http://localhost/Enginer-Team/outlook_callback.php',
+    'urlAuthorize'            => 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+    'urlAccessToken'          => 'https://login.microsoftonline.com/common.oauth2/v2.0/token',
+    'scopes'                  => ['openid', 'profile', 'offline_access', 'User.Read'],
 ]);
 
-header("Location: $authUrl");
+$authUrl = $provider->getAuthorizationUrl();
+$_SESSION['oauth2state'] = $provider->getState();
+
+header('Location: ' . $authUrl);
 exit;
     

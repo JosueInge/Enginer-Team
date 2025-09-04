@@ -47,12 +47,14 @@ if (isset($_GET['code'])) {
     } else {
         $usuario_id = $usuario['id'];
         $nombre = $usuario['nombre'];
+        $rol = $usuario['rol'];
     }
 
     $_SESSION['usuario_id'] = $usuario_id;
     $_SESSION['usuario_nombre'] = $nombre;
     $_SESSION['usuario_correo'] = $email;
     $_SESSION['usuario_imagen'] = $foto;
+    $_SESSION['usuario_rol'] = $rol;
 
     header("Location: inicio.php");
     exit();
