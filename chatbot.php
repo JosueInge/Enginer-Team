@@ -70,80 +70,172 @@ Contexto del sitio:
 }
 ?>
 
-<button class="boton-ayuda" onclick="toggleAsistente()">¿Necesita ayuda?</button>
-
-<div class="asistente-container" id="asistente">
-    <div class="asistente-header">
-        Asistente virtual
-        <button class="cerrar" onclick="toggleAsistente()">X</button>
-    </div>
-
-    <div class="asistente-body" id="chat-cuerpo">
-        <?php if(!$usuario_logueado): ?>
-            <p style="text-align: center;">¡Hola! Para acceder al chat, primero debes registrarte o iniciar sesión</p>
-            <div style="text-align: center; margin-top: 10px; font-weight: bold;">
-                <img src="imagenes/chatbot.png" alt="ChatBot" style="width: 120px; height: auto;" />
-            </div>
-            <div style="text-align: center; margin-top: 20px;">
-                <a href="login.php"
-                    style="display: inline-block;
-                        background-color: #0d5c9b;
-                        color: white;
-                        padding: 10px 20px;
-                        text-decoration: none;
-                        border-radius: 4px;
-                        font-weight: bold;">
-                    Iniciar Sesión
-                </a>
-            </div>
-        <?php else: ?>
-            <div style="text-align: center; margin-top: 10px;">
-                <img src="imagenes/chatbot.png" alt="ChatBot" style="width: 100px; height: auto; margin-bottom: 10px;">
-            </div>
-            <div class="mensaje">
-                <strong>ChatBot</strong><br>
-                Hola, <strong><?= htmlspecialchars($nombre_usuario) ?></strong> ¿En qué puedo ayudarte?
-            </div>
-
-            <!-- MENÚ DE PREGUNTAS -->
-            <div class="asistente-opciones">
-                <button onclick="enviarPregunta('¿Como se envia una noticia?')">¿Como se envia una noticia?</button>
-                <button onclick="enviarPregunta('¿Como se reporta una noticia?')">¿Como se reporta una noticia?</button>
-                <button onclick="enviarPregunta('¿Cuales son las politicas del periodico digital?')">¿Cuales son las politicas del periodico digital?</button>
-            </div>
-        <?php endif; ?>
-    </div>
-
-    <?php if ($usuario_logueado): ?>
-        <div class="asistente-input">
-            <input type="text" id="entradaUsuario" placeholder="Escribe un mensaje..." />
-            <button onclick="procesarEntrada()">Enviar</button>
-        </div>
-    <?php endif; ?>
-</div>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Asistente Virtual</title>
 <style>
-    body { font-family: Arial, sans-serif; }
-    .boton-ayuda { position: fixed; bottom: 1px; left: 20px; background-color: #0d5c9b; color: white; border: none; border-radius: 10px 10px 0 0; padding: 12px 20px; cursor: pointer; z-index: 1000; font-weight: bold; }
-    .asistente-container { display: none; position: fixed; bottom: 60px; left: 20px; width: 300px; max-height: 400px; background: white; border: 1px solid #ccc; border-radius: 8px 8px 0 0; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1001; overflow: hidden; }
-    .asistente-header { background: #0d5c9b; color: white; padding: 10px; text-align: center; position: relative; }
-    .asistente-header .cerrar { position: absolute; top: 5px; right: 10px; background: none; border: none; color: white; font-size: 18px; cursor: pointer; }
-    .asistente-body { padding: 10px; background: #f0f0f0; overflow-y: auto; max-height: 300px; }
-    .mensaje-bot { background: #e0e0e0; border-radius: 10px 10px 10px 0; padding: 10px; margin-top: 10px; width: fit-content; max-width: 80%; }
-    .mensaje-usuario { background-color: #cce5ff; text-align: right; margin-left: auto; margin-right: 0; border-radius: 10px 10px 0 10px; padding: 10px; margin-top: 10px; width: fit-content; max-width: 80%; }
-    .asistente-input { display: flex; border-top: 1px solid #ccc; }
-    .asistente-input input { flex: 1; padding: 8px; border: none; }
-    .asistente-input button { background: #0d5c9b; color: white; border: none; padding: 8px 12px; cursor: pointer; }
-    .asistente-opciones { margin-top: 10px; }
-    .asistente-opciones button { display: block; width: 100%; background: #0d5c9b; color: white; border: none; padding: 8px; margin-bottom: 5px; border-radius: 4px; cursor: pointer; }
+/* Contenedor general */
+.chatbot-container {
+    display: none;
+    position: fixed;
+    bottom: 60px;
+    left: 20px;
+    width: 320px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    z-index: 1001;
+}
+
+/* Header */
+.chatbot-header {
+    background: #0d3d8c;
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+    padding: 12px;
+    position: relative;
+}
+
+.chatbot-header .cerrar {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* Cuerpo */
+.chatbot-body {
+    padding: 15px;
+    background: #f9f9f9;
+    max-height: 320px;
+    overflow-y: auto;
+    text-align: center;
+}
+
+/* Avatar */
+.chatbot-avatar img {
+    width: 120px;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+/* Mensajes */
+.mensaje-bot {
+    background: #e6e6e6;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px auto;
+    text-align: left;
+    max-width: 90%;
+}
+
+.mensaje-usuario {
+    background: #0d5c9b;
+    color: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px auto;
+    text-align: right;
+    max-width: 90%;
+}
+
+/* Opciones rápidas */
+.chatbot-opciones {
+    margin-top: 15px;
+}
+.chatbot-opciones button {
+    display: block;
+    width: 100%;
+    background: #0d5c9b;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin: 6px 0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Input usuario */
+.chatbot-input {
+    display: flex;
+    border-top: 1px solid #ddd;
+}
+.chatbot-input input {
+    flex: 1;
+    border: none;
+    padding: 10px;
+}
+.chatbot-input button {
+    background: #0d5c9b;
+    border: none;
+    color: white;
+    padding: 10px 16px;
+    cursor: pointer;
+}
+
+/* Botón flotante */
+.boton-ayuda {
+    position: fixed;
+    bottom: 1px;
+    left: 20px;
+    background-color: #0d5c9b;
+    color: white;
+    border: none;
+    border-radius: 10px 10px 0 0;
+    padding: 12px 20px;
+    cursor: pointer;
+    z-index: 1000;
+    font-weight: bold;
+}
 </style>
 </head>
+<body>
+
+<!-- Ventana del chatbot -->
+<div class="chatbot-container" id="asistente">
+    <div class="chatbot-header">
+        <span>Asistente Virtual</span>
+        <button class="cerrar" onclick="toggleAsistente()">✕</button>
+    </div>
+
+    <div class="chatbot-body" id="chat-cuerpo">
+        <div class="chatbot-avatar">
+            <img src="imagenes/chatbot.png" alt="ChatBot">
+        </div>
+
+        <div class="mensaje-bot">
+            <strong>Asistente Virtual</strong><br>
+            Hola <?= htmlspecialchars($nombre_usuario) ?>, ¿en qué puedo ayudarte?
+        </div>
+
+        <div class="chatbot-opciones">
+            <button onclick="enviarPregunta('¿Como se envia una noticia?')">¿Cómo se envía una noticia?</button>
+            <button onclick="enviarPregunta('¿Como se reporta una noticia?')">¿Cómo se reporta una noticia?</button>
+            <button onclick="enviarPregunta('¿Cuales son las politicas del periodico digital?')">¿Cuáles son las políticas?</button>
+        </div>
+    </div>
+
+    <?php if ($usuario_logueado): ?>
+    <div class="chatbot-input">
+        <input type="text" id="entradaUsuario" placeholder="Escribe un mensaje...">
+        <button onclick="procesarEntrada()">Enviar</button>
+    </div>
+    <?php endif; ?>
+</div>
+
+<!-- Botón flotante -->
+<button class="boton-ayuda" onclick="toggleAsistente()">¿Necesita ayuda?</button>
 
 <script>
     function toggleAsistente() {

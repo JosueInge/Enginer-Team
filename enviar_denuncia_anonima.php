@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $usuario_id = $_SESSION['usuario_id'] ?? null;
 
     if ($titulo === '' || $descripcion === '') {
-        guardarLog("Error: campos vacíos al enviar los datos.");
+        guardarLog("Error Denuncia Anonima: campos vacíos al enviar los datos.");
         $mensajeToast = "Debes completar todos los campos requeridos.";
         $tipoToast = "danger";
     } else {
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($mime !== 'image/jpeg' || ($extension !== 'jpg' && $extension !== 'jpeg') || $info === false || $info['mime'] !== 'image/jpeg') {
                 $mensajeToast = "Solo se permiten imágenes en formato JPEG.";
                 $tipoToast = "danger";
-                guardarLog("Error de validación de imagen: formato no permitido.");
+                guardarLog("Error Denuncia Anonima: formato no permitido.");
                 $imagen_nombre = null;
             } else {
                 $imagen_nombre = uniqid() . '.jpg';
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!move_uploaded_file($_FILES['imagen']['tmp_name'], $ruta_destino)) {
                     $mensajeToast = "Error al subir la imagen.";
                     $tipoToast = "danger";
-                    guardarLog("Error al mover la imagen a la carpeta destino: $ruta_destino");
+                    guardarLog("Error Denuncia Anonima: al mover la imagen a la carpeta destino: $ruta_destino");
                     $imagen_nombre = null;
                 }
             }
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $mensajeToast = "Error al enviar la denuncia: " . $conexion->error;
                 $tipoToast = "danger";
-                guardarLog("Error en BD al insertar denuncia: " . $conexion->error);
+                guardarLog("Error Denuncia Anonima: En BD al insertar denuncia: " . $conexion->error);
             }
         }
     }
@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              padding: 10px; 
              border: 1px solid #ccc; 
              border-radius: 4px; 
-            }
+        }
         .campo textarea { 
             min-height: 150px;
             font-weight: 400;
@@ -175,31 +175,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 24px;
         }
         .informacion a:hover {
-        color: #73d5f5;
+            color: #73d5f5;
         }
-        /* Hover y focus para campos de formulario */
-            .campo input[type="text"],
-            .campo input[type="date"],
-            .campo textarea,
-            .campo select,
-            .campo input[type="file"] {
+        .campo input[type="text"],
+        .campo input[type="date"],
+        .campo textarea,
+        .campo select,
+        .campo input[type="file"] {
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            }
+        }
 
-            .campo input[type="text"]:hover,
-            .campo input[type="date"]:hover,
-            .campo textarea:hover,
-            .campo select:hover,
-            .campo input[type="file"]:hover,
-            .campo input[type="text"]:focus,
-            .campo input[type="date"]:focus,
-            .campo textarea:focus,
-            .campo select:focus,
-            .campo input[type="file"]:focus {
-            border-color: #1661AC; /* borde celeste */
-            box-shadow: 0 0 0 3px rgba(22, 97, 172, 0.2); /* efecto sutil de resplandor */
+        .campo input[type="text"]:hover,
+        .campo input[type="date"]:hover,
+        .campo textarea:hover,
+        .campo select:hover,
+        .campo input[type="file"]:hover,
+        .campo input[type="text"]:focus,
+        .campo input[type="date"]:focus,
+        .campo textarea:focus,
+        .campo select:focus,
+        .campo input[type="file"]:focus {
+            border-color: #1661AC;
+            box-shadow: 0 0 0 3px rgba(22, 97, 172, 0.2);
             outline: none;
-            }
+        }
 
     </style>
 </head>

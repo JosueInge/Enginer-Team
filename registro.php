@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Registro</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Popins;
             background-color: #fff;
             margin: 0;
         }
@@ -132,15 +132,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .informacion a {
             color: white;
             margin-left: 20px;
+            padding: 15px;
             text-decoration: none;
             font-size: 14px;
-            font-family: 'Open Sans Regular';
+            font-family: 'Poppins';
         }
         .contenedor {
             display: flex;
             justify-content: center;
             align-items: start;
             gap: 40px;
+            font-size: 20px;
             padding: 40px;
             margin-top: 20px;
         }
@@ -153,15 +155,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .formulario h2 {
             text-align: center;
             margin-bottom: 10px;
-            font-family: 'Open Sans Bold';
+            font-family: 'Poppins';
+           
         }
         .formulario p{
             text-align: center;
             margin-bottom: 20px;
-            font-family: 'Open Sans Regular';
+            font-family: 'Poppins';
+          
         }
         .formulario label{
-            font-family: 'Open Sans Bold';
+            font-family: 'Poppins';
+           
         }
         input[type="text"],
         input[type="email"],
@@ -188,7 +193,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background-color: #f0f0f0;
             border-radius: 5px;
             font-weight: hold;
-            font-family: 'Open Sans Regular';
+            font-family: 'Poppins';
+           
         }
         .botones img {
             height: 20px;
@@ -223,7 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-right: 8px;
         }
         .terminos label {
-            font-family: 'Open Sans Regular';
+            font-family: 'Poppins';
+           
         }
         .formulario .continuar {
             width: 100%;
@@ -235,7 +242,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-top: 20px;
             font-weight: bold;
             cursor: pointer;
-            font-family: 'Open Sans Regular';
+            font-family: 'Poppins';
+            
         }
         .formulario .continuar:disabled {
             background-color: #cccccc;
@@ -276,7 +284,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 12px;
             margin-top: 3px;
             text-align: right;
-            font-family: 'Open Sans Regular';
+            font-family: 'Poppins';
+            
         }
         
         .password-requirements {
