@@ -1,8 +1,21 @@
 <?php
-require 'vendor/autoload.php';
 session_start();
+require __DIR__ . '/vendor/autoload.php';
 
 use TheNetworg\OAuth2\Client\Provider\Azure;
+
+if (isset($_GET['error'])) {
+    exit('error de Microsoft: ' .htmlspecialchars($_GET['error_description'] ?? $_GET['error']));
+}
+
+if (
+    !isset($_GET['state']) ||
+    !isset($_SESSION['oauth2state']) ||
+    $_GET['state'] !== $_SESSION['oauth2state']
+) {
+    unset($_SESSION['oauth2state']);
+    exit('Estado invalido, intenta de nuevo');
+}
 
 $provider = new Azure([
     'clientId'                => 'aca24afd-ef2b-49b0-ac5d-bc393710575b',
@@ -10,12 +23,15 @@ $provider = new Azure([
     'redirectUri'             => 'http://localhost/Enginer-Team/outlook_callback.php',
     'urlAuthorize'            => 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
     'urlAccessToken'          => 'https://login.microsoftonline.com/common.oauth2/v2.0/token',
-    'scopes'                  => ['openid', 'profile', 'offline_access', 'User.Read'],
 ]);
 
-$authUrl = $provider->getAuthorizationUrl();
-$_SESSION['oauth2state'] = $provider->getState();
+if (!isset($_GET['code'])) {
+    exit("No se recibio el codido de autenticacion.");
+}
 
-header('Location: ' . $authUrl);
-exit;
-    
+
+$token = $provider->getAccessToken('authorization_code', [
+    'code' => $_GET['code']
+]);
+
+$user = json_decode($me->getBody()->getContents(), true);
