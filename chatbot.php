@@ -1,23 +1,50 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
+if (session_status() === PHP_SESSION_NONE ){
     session_start();
 }
 
 $usuario_logueado = isset($_SESSION['usuario_id']);
 $nombre_usuario = $_SESSION['usuario_nombre'] ?? 'Invitado';
+$imagen_usuario = $_SESSION['usuario_imagen'] ?? 'imagenes/avatar-default.png';
+$pagina_actual = basename($_SERVER['PHP_SELF']);
+$mostrar_login = !$usuario_logueado && $pagina_actual === 'home.php';
 
 // PROCESAR SOLICITUD AJAX PARA LA IA
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
     $mensaje = trim($_POST['mensaje']);
 
     // Configuración de la API de OpenAI
-    $apiKey = "AQUI_TU_API_KEY"; // Reemplaza con tu API Key
+    $apiKey = "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"; // <-- Coloca tu API Key aquí
     $endpoint = "https://api.openai.com/v1/chat/completions";
 
     $data = [
         "model" => "gpt-4o-mini",
         "messages" => [
-            ["role" => "system", "content" => "Eres un asistente virtual del periódico digital 'Comunicado Digital'..."],
+            ["role" => "system", "content" => "Eres un asistente virtual del periódico digital “Comunicado Digital”. 
+Tu función es ayudar a los usuarios únicamente con temas relacionados con el sitio: noticias, políticas, servicios y funciones disponibles. 
+Los usuarios pueden referirse al sitio como: “esta app”, “esta aplicación”, “este periódico”, “este periódico digital”; entiende que son equivalentes.
+
+Comportamiento:
+1. Saludos: responde de forma natural y amistosa, siempre ofreciendo ayuda.
+2. Responde preguntas sobre:
+   - Políticas de privacidad (sección Sobre nosotros en el encabezado superior).
+   - Cómo cambiar contraseña y foto de perfil (ícono tuerca → Configurar perfil).
+   - Cómo enviar una noticia (botón inferior derecho).
+   - Cómo enviar una denuncia (categoría Denuncias → botón inferior derecho).
+   - Cómo comentar una noticia (clic en título → sección comentarios).
+   - Cómo reportar una noticia (ícono entre contenido y comentarios).
+3. Si la pregunta está fuera del contexto, responde: “Lo siento, no entendí tu mensaje. ¿Podrías reformularlo o preguntar de otra manera ?”
+4. Mantén un tono cordial y profesional.
+
+Contexto del sitio:
+- Administradores revisan noticias, denuncias y reportes antes de publicarlas.
+- Categorías: Inicio (mixto), Clima, Deportes, Educación, Turismo, Denuncias.
+- Buscador en la barra derecha: las búsquedas deben hacerse en Inicio o en la categoría correcta.
+- Más de 3 reportes en una noticia = prioridad para administradores, posible eliminación.
+- Noticias pueden bloquear comentarios (marcando opción en formulario).
+- Comentarios: usuarios pueden editar/borrar los suyos; administradores solo pueden eliminar.
+- Imagen por defecto para nuevos usuarios.
+- Para ver detalles de una noticia: clic en el título."],
             ["role" => "user", "content" => $mensaje]
         ],
         "temperature" => 0.7
@@ -42,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
     exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -210,72 +238,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
 <button class="boton-ayuda" onclick="toggleAsistente()">¿Necesita ayuda?</button>
 
 <script>
-function toggleAsistente() {
-    const asistente = document.getElementById('asistente');
-    asistente.style.display = (asistente.style.display === 'block') ? 'none' : 'block';
-    if(asistente.style.display === 'block'){
-        document.getElementById('chat-cuerpo').scrollTop = document.getElementById('chat-cuerpo').scrollHeight;
-    }
-}
-
-const nombreUsuario = "<?= htmlspecialchars($nombre_usuario) ?>";
-
-// Procesar mensaje
-async function procesarEntrada() {
-    const input = document.getElementById("entradaUsuario");
-    const texto = input.value.trim();
-    if (!texto) return;
-    await enviarMensajeAlBackend(texto);
-    input.value = "";
-}
-
-// Enviar mensaje al backend
-async function enviarMensajeAlBackend(mensaje) {
-    const chat = document.getElementById("chat-cuerpo");
-
-    const msgUser = document.createElement("div");
-    msgUser.className = "mensaje-usuario";
-    msgUser.innerHTML = `<strong>${nombreUsuario}</strong><br>${mensaje}`;
-    chat.appendChild(msgUser);
-    chat.scrollTop = chat.scrollHeight;
-
-    const msgBot = document.createElement("div");
-    msgBot.className = "mensaje-bot";
-    msgBot.innerHTML = `<strong>Asistente Virtual</strong><br>Escribiendo...`;
-    chat.appendChild(msgBot);
-    chat.scrollTop = chat.scrollHeight;
-
-    const formData = new FormData();
-    formData.append("mensaje", mensaje);
-
-    try {
-        const response = await fetch("chatbot.php", { method: "POST", body: formData });
-        const data = await response.json();
-        msgBot.innerHTML = `<strong>Asistente Virtual</strong><br>${data.respuesta}`;
-    } catch (error) {
-        msgBot.innerHTML = `<strong>Asistente Virtual</strong><br>Hubo un error al procesar tu mensaje.`;
+    function toggleAsistente() {
+        const asistente = document.getElementById('asistente');
+        asistente.style.display = (asistente.style.display === 'block') ? 'none' : 'block';
     }
 
-    chat.scrollTop = chat.scrollHeight;
-}
+    const nombreUsuario = "<?= htmlspecialchars($nombre_usuario) ?>";
 
-// Enviar pregunta rápida
-async function enviarPregunta(pregunta){
-    await enviarMensajeAlBackend(pregunta);
-}
-
-// Enter para enviar mensaje
-document.addEventListener("DOMContentLoaded", function () {
-    const input = document.getElementById("entradaUsuario");
-    if (input) {
-        input.addEventListener("keydown", function (event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                procesarEntrada();
-            }
-        });
+    // Procesar mensaje escrito por el usuario
+    async function procesarEntrada() {
+        const input = document.getElementById("entradaUsuario");
+        const texto = input.value.trim();
+        if (!texto) return;
+        await enviarMensajeAlBackend(texto);
+        input.value = "";
     }
-});
+
+    // Función para enviar mensaje al backend (IA) y mostrar respuesta
+    async function enviarMensajeAlBackend(mensaje) {
+        const chat = document.getElementById("chat-cuerpo");
+
+        const msgUser = document.createElement("div");
+        msgUser.className = "mensaje-usuario";
+        msgUser.innerHTML = `<strong>${nombreUsuario}</strong><br>${mensaje}`;
+        chat.appendChild(msgUser);
+        chat.scrollTop = chat.scrollHeight;
+
+        const msgBot = document.createElement("div");
+        msgBot.className = "mensaje-bot";
+        msgBot.innerHTML = `<strong>ChatBot</strong><br>Escribiendo...`;
+        chat.appendChild(msgBot);
+        chat.scrollTop = chat.scrollHeight;
+
+        const formData = new FormData();
+        formData.append("mensaje", mensaje);
+
+        try {
+            const response = await fetch("chatbot.php", { method: "POST", body: formData });
+            const data = await response.json();
+            msgBot.innerHTML = `<strong>ChatBot</strong><br>${data.respuesta}`;
+        } catch (error) {
+            msgBot.innerHTML = `<strong>ChatBot</strong><br>Hubo un error al procesar tu mensaje.`;
+        }
+
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    // Función para el menú de preguntas
+    async function enviarPregunta(pregunta){
+        await enviarMensajeAlBackend(pregunta);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.getElementById("entradaUsuario");
+        if (input) {
+            input.addEventListener("keydown", function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    procesarEntrada();
+                }
+            });
+        }
+    });
 </script>
 </body>
 </html>
