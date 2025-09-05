@@ -13,38 +13,13 @@ $mostrar_login = !$usuario_logueado && $pagina_actual === 'home.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
     $mensaje = trim($_POST['mensaje']);
 
-    // Configuración de la API de OpenAI
-    $apiKey = "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"; // <-- Coloca tu API Key aquí
+    $apiKey = "TU_API_KEY_AQUI"; // Coloca tu API Key
     $endpoint = "https://api.openai.com/v1/chat/completions";
 
     $data = [
         "model" => "gpt-4o-mini",
         "messages" => [
-            ["role" => "system", "content" => "Eres un asistente virtual del periódico digital “Comunicado Digital”. 
-Tu función es ayudar a los usuarios únicamente con temas relacionados con el sitio: noticias, políticas, servicios y funciones disponibles. 
-Los usuarios pueden referirse al sitio como: “esta app”, “esta aplicación”, “este periódico”, “este periódico digital”; entiende que son equivalentes.
-
-Comportamiento:
-1. Saludos: responde de forma natural y amistosa, siempre ofreciendo ayuda.
-2. Responde preguntas sobre:
-   - Políticas de privacidad (sección Sobre nosotros en el encabezado superior).
-   - Cómo cambiar contraseña y foto de perfil (ícono tuerca → Configurar perfil).
-   - Cómo enviar una noticia (botón inferior derecho).
-   - Cómo enviar una denuncia (categoría Denuncias → botón inferior derecho).
-   - Cómo comentar una noticia (clic en título → sección comentarios).
-   - Cómo reportar una noticia (ícono entre contenido y comentarios).
-3. Si la pregunta está fuera del contexto, responde: “Lo siento, no entendí tu mensaje. ¿Podrías reformularlo o preguntar de otra manera ?”
-4. Mantén un tono cordial y profesional.
-
-Contexto del sitio:
-- Administradores revisan noticias, denuncias y reportes antes de publicarlas.
-- Categorías: Inicio (mixto), Clima, Deportes, Educación, Turismo, Denuncias.
-- Buscador en la barra derecha: las búsquedas deben hacerse en Inicio o en la categoría correcta.
-- Más de 3 reportes en una noticia = prioridad para administradores, posible eliminación.
-- Noticias pueden bloquear comentarios (marcando opción en formulario).
-- Comentarios: usuarios pueden editar/borrar los suyos; administradores solo pueden eliminar.
-- Imagen por defecto para nuevos usuarios.
-- Para ver detalles de una noticia: clic en el título."],
+            ["role" => "system", "content" => "Eres un asistente virtual del periódico digital..."],
             ["role" => "user", "content" => $mensaje]
         ],
         "temperature" => 0.7
@@ -85,27 +60,27 @@ Contexto del sitio:
     left: 20px;
     width: 320px;
     background: #fff;
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-family: 'Arial', sans-serif;
     overflow: hidden;
-    font-family: Arial, sans-serif;
     z-index: 1001;
 }
 
 /* Header */
 .chatbot-header {
-    background: #0d3d8c;
+    background: #1B314B;
     color: #fff;
     text-align: center;
     font-weight: bold;
     padding: 12px;
     position: relative;
+    font-size: 16px;
 }
-
 .chatbot-header .cerrar {
     position: absolute;
-    top: 8px;
-    right: 12px;
+    top: 10px;
+    right: 14px;
     background: none;
     border: none;
     color: white;
@@ -116,7 +91,7 @@ Contexto del sitio:
 /* Cuerpo */
 .chatbot-body {
     padding: 15px;
-    background: #f9f9f9;
+    background: #fff;
     max-height: 320px;
     overflow-y: auto;
     text-align: center;
@@ -126,68 +101,98 @@ Contexto del sitio:
 .chatbot-avatar img {
     width: 120px;
     height: auto;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 /* Mensajes */
 .mensaje-bot {
-    background: #e6e6e6;
+    background: #c6c9c8ff;
     border-radius: 8px;
     padding: 10px;
     margin: 10px auto;
     text-align: left;
-    max-width: 90%;
+    max-width: 85%;
+    font-size: 14px;
 }
-
+.mensaje-bot strong {
+    color: #0d5c9b;
+}
 .mensaje-usuario {
-    background: #0d5c9b;
-    color: #fff;
+    background: #d1ecff;
+    color: #000;
     border-radius: 8px;
     padding: 10px;
     margin: 10px auto;
     text-align: right;
-    max-width: 90%;
+    max-width: 85%;
+    font-size: 14px;
+    font-weight: bold;
 }
 
 /* Opciones rápidas */
 .chatbot-opciones {
-    margin-top: 15px;
+    margin-top: 10px;
 }
 .chatbot-opciones button {
     display: block;
     width: 100%;
-    background: #0d5c9b;
+    background: #1661AC;
     color: white;
     border: none;
-    padding: 10px;
+    padding: 12px;
     margin: 6px 0;
-    border-radius: 4px;
-    cursor: pointer;
+    border-radius: 6px;
     font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.chatbot-opciones button:hover {
+    background: #094477;
 }
 
-/* Input usuario */
+/* Input en línea con botón */
 .chatbot-input {
     display: flex;
-    border-top: 1px solid #ddd;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 5px;
 }
+
 .chatbot-input input {
     flex: 1;
-    border: none;
-    padding: 10px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
 }
+
 .chatbot-input button {
-    background: #0d5c9b;
-    border: none;
+    padding: 8px 15px;
+    background-color: #0d5c9b;
     color: white;
-    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
+}
+
+.chatbot-input button:hover {
+    background-color: #094477;
+}
+
+/* Mensajes de error */
+#chat-error-msg {
+    color: #ff0000;
+    font-size: 14px;
+    margin-top: 5px;
+    font-weight: bold;
 }
 
 /* Botón flotante */
 .boton-ayuda {
     position: fixed;
-    bottom: 1px;
+    bottom: 0;
     left: 20px;
     background-color: #0d5c9b;
     color: white;
@@ -197,6 +202,7 @@ Contexto del sitio:
     cursor: pointer;
     z-index: 1000;
     font-weight: bold;
+    font-size: 14px;
 }
 </style>
 </head>
@@ -210,96 +216,138 @@ Contexto del sitio:
     </div>
 
     <div class="chatbot-body" id="chat-cuerpo">
-        <div class="chatbot-avatar">
-            <img src="imagenes/chatbot.png" alt="ChatBot">
-        </div>
+      <?php if(!$usuario_logueado): ?>
+          <!-- VISTA PARA USUARIOS NO LOGUEADOS -->
+          <div class="mensaje-bot">
+              ¡Hola! Para acceder al chat, primero debes registrarte o iniciar sesión.
+          </div>
+          <div class="chatbot-avatar">
+              <img src="imagenes/chatbot.png" alt="ChatBot">
+          </div>
+          <div style="margin-top: 15px;">
+              <a href="login.php"
+                  style="display: inline-block;
+                        background-color: #0d5c9b;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 4px;
+                        font-weight: bold;">
+                  Iniciar Sesión
+              </a>
+          </div>
 
-        <div class="mensaje-bot">
-            <strong>Asistente Virtual</strong><br>
-            Hola <?= htmlspecialchars($nombre_usuario) ?>, ¿en qué puedo ayudarte?
-        </div>
+      <?php else: ?>
+          <!-- VISTA PARA USUARIOS LOGUEADOS -->
+          <div class="chatbot-avatar">
+              <img src="imagenes/chatbot.png" alt="ChatBot">
+          </div>
+          <div class="mensaje-bot">
+              <strong>Asistente Virtual</strong><br>
+              Hola, <?= htmlspecialchars($nombre_usuario) ?>, ¿en qué puedo ayudarte?
+          </div>
 
-        <div class="chatbot-opciones">
-            <button onclick="enviarPregunta('¿Como se envia una noticia?')">¿Cómo se envía una noticia?</button>
-            <button onclick="enviarPregunta('¿Como se reporta una noticia?')">¿Cómo se reporta una noticia?</button>
-            <button onclick="enviarPregunta('¿Cuales son las politicas del periodico digital?')">¿Cuáles son las políticas?</button>
-        </div>
-    </div>
+          <div class="chatbot-opciones">
+              <button onclick="enviarPregunta('¿Como se envia una noticia?')">¿Cómo se envía una noticia?</button>
+              <button onclick="enviarPregunta('¿Como se reporta una noticia?')">¿Cómo se reporta una noticia?</button>
+              <button onclick="enviarPregunta('¿Cuales son las politicas del periodico digital?')">¿Cuáles son las políticas?</button>
+          </div>
+      <?php endif; ?>
+  </div>
 
-    <?php if ($usuario_logueado): ?>
-    <div class="chatbot-input">
-        <input type="text" id="entradaUsuario" placeholder="Escribe un mensaje...">
-        <button onclick="procesarEntrada()">Enviar</button>
-    </div>
-    <?php endif; ?>
+  <?php if ($usuario_logueado): ?>
+  <div class="chatbot-input">
+      <input type="text" id="entradaUsuario" placeholder="Escribe un mensaje...">
+      <button onclick="procesarEntrada()">Enviar</button>
+  </div>
+  <div id="chat-error-msg"></div>
+  <?php endif; ?>
 </div>
 
 <!-- Botón flotante -->
 <button class="boton-ayuda" onclick="toggleAsistente()">¿Necesita ayuda?</button>
 
 <script>
-    function toggleAsistente() {
-        const asistente = document.getElementById('asistente');
-        asistente.style.display = (asistente.style.display === 'block') ? 'none' : 'block';
+function toggleAsistente() {
+    const asistente = document.getElementById('asistente');
+    asistente.style.display = (asistente.style.display === 'block') ? 'none' : 'block';
+}
+
+const nombreUsuario = "<?= htmlspecialchars($nombre_usuario) ?>";
+
+function mostrarError(mensaje) {
+    const errorDiv = document.getElementById("chat-error-msg");
+    errorDiv.textContent = mensaje;
+    setTimeout(() => { errorDiv.textContent = ""; }, 3000);
+}
+
+// Procesar entrada con validación
+async function procesarEntrada() {
+    const input = document.getElementById("entradaUsuario");
+    if (!input) return;
+
+    const textoOriginal = input.value;
+    const texto = textoOriginal.trim();
+
+    if (textoOriginal === "") {
+        mostrarError("Escribe un mensaje antes de enviar");
+        return;
+    }
+    if (texto === "") {
+        mostrarError("El mensaje no puede estar vacío");
+        return;
     }
 
-    const nombreUsuario = "<?= htmlspecialchars($nombre_usuario) ?>";
+    input.value = "";
+    await enviarMensajeAlBackend(texto);
+}
 
-    // Procesar mensaje escrito por el usuario
-    async function procesarEntrada() {
-        const input = document.getElementById("entradaUsuario");
-        const texto = input.value.trim();
-        if (!texto) return;
-        await enviarMensajeAlBackend(texto);
-        input.value = "";
+// Enviar mensaje al backend
+async function enviarMensajeAlBackend(mensaje) {
+    const chat = document.getElementById("chat-cuerpo");
+
+    const msgUser = document.createElement("div");
+    msgUser.className = "mensaje-usuario";
+    msgUser.innerHTML = `<strong>${nombreUsuario}</strong><br>${mensaje}`;
+    chat.appendChild(msgUser);
+    chat.scrollTop = chat.scrollHeight;
+
+    const msgBot = document.createElement("div");
+    msgBot.className = "mensaje-bot";
+    msgBot.innerHTML = `<strong>ChatBot</strong><br>Escribiendo...`;
+    chat.appendChild(msgBot);
+    chat.scrollTop = chat.scrollHeight;
+
+    const formData = new FormData();
+    formData.append("mensaje", mensaje);
+
+    try {
+        const response = await fetch("chatbot.php", { method: "POST", body: formData });
+        const data = await response.json();
+        msgBot.innerHTML = `<strong>ChatBot</strong><br>${data.respuesta}`;
+    } catch (error) {
+        msgBot.innerHTML = `<strong>ChatBot</strong><br>Hubo un error al procesar tu mensaje.`;
     }
 
-    // Función para enviar mensaje al backend (IA) y mostrar respuesta
-    async function enviarMensajeAlBackend(mensaje) {
-        const chat = document.getElementById("chat-cuerpo");
+    chat.scrollTop = chat.scrollHeight;
+}
 
-        const msgUser = document.createElement("div");
-        msgUser.className = "mensaje-usuario";
-        msgUser.innerHTML = `<strong>${nombreUsuario}</strong><br>${mensaje}`;
-        chat.appendChild(msgUser);
-        chat.scrollTop = chat.scrollHeight;
+// Preguntas rápidas
+async function enviarPregunta(pregunta) {
+    await enviarMensajeAlBackend(pregunta);
+}
 
-        const msgBot = document.createElement("div");
-        msgBot.className = "mensaje-bot";
-        msgBot.innerHTML = `<strong>ChatBot</strong><br>Escribiendo...`;
-        chat.appendChild(msgBot);
-        chat.scrollTop = chat.scrollHeight;
-
-        const formData = new FormData();
-        formData.append("mensaje", mensaje);
-
-        try {
-            const response = await fetch("chatbot.php", { method: "POST", body: formData });
-            const data = await response.json();
-            msgBot.innerHTML = `<strong>ChatBot</strong><br>${data.respuesta}`;
-        } catch (error) {
-            msgBot.innerHTML = `<strong>ChatBot</strong><br>Hubo un error al procesar tu mensaje.`;
-        }
-
-        chat.scrollTop = chat.scrollHeight;
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("entradaUsuario");
+    if (input) {
+        input.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                procesarEntrada();
+            }
+        });
     }
-
-    // Función para el menú de preguntas
-    async function enviarPregunta(pregunta){
-        await enviarMensajeAlBackend(pregunta);
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const input = document.getElementById("entradaUsuario");
-        if (input) {
-            input.addEventListener("keydown", function (event) {
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    procesarEntrada();
-                }
-            });
-        }
-    });
+});
 </script>
 </body>
 </html>
