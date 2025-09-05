@@ -6,7 +6,7 @@ session_start();
 $client = new Google_Client();
 $client->setClientId('512235154991-hgfl77nhp3qffmqf1schu1smgea7k8q3.apps.googleusercontent.com');
 $client->setClientSecret('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');
-$client->setRedirectUri('http://localhost/Engine-Team/registro.php');
+$client->setRedirectUri('http://localhost/Enginer-Team/registro.php');
 
 if (isset($_GET['code'])) {
     $client->authenticate($_GET['code']);
