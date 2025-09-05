@@ -1,18 +1,19 @@
 <?php
-require 'vendor/autoload.php';
 session_start();
+require __DIR__ . '/vendor/autoload.php';
 require 'conexion.php';
 
 use TheNetworg\OAuth2\Client\Provider\Azure;
 
 $provider = new Azure([
     'clientId'                => 'aca24afd-ef2b-49b0-ac5d-bc393710575b',
-    'clientSecret'            => '.Pn8Q~E3K4mAhy-J1dmr05rMyvDdazAbrmtICa1K',
+    'clientSecret'            => '2d37aaf7-3e9a-4872-b749-ba852ccc00ad',
     'redirectUri'             => 'http://localhost/Enginer-Team/outlook_callback.php',
-    'urlAuthorize'            => 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-    'urlAccessToken'          => 'https://login.microsoftonline.com/common.oauth2/v2.0/token',
-    'scopes'                  => ['openid','profile','offline_access','User.Read'],
+    'utlAuthorize'            => 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+    'urlAccessToken'          => 'https://login.microsoftonline.com/common/oauth2/v3.0/token',
+    'urlResourceOwnerDetails' => 'https://graph.microsoft.com/v1.0/me',             
 ]);
+
 
 if (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
     unset($_SESSION['oauth2state']);
@@ -27,56 +28,40 @@ try {
     $user = $provider->getResourceOwner($token);
     $userData = $user->toArray();
 
-    $nombre = $userData['displayName'] ?? '';
-    $correo = null;
-
-    if (!empty($userData['mail'])) {
-        $correo = $userData['mail'];
-    }
-
-    elseif (!empty($userData['userPrincipalName'])) {
-        $correo = $userData['usertPrincipalName'];
-    }
-
-    elseif (!empty($userData['preferred_sername'])) {
-        $correo = $userData['preferred_username'];
-    }
+    $nombre = $userData['displayName'] ?? 'Usuario Outlook';
+    $correo = $userData['mail'] ?? ($userData['userPrincipalName'] ?? null);
 
     if (!$correo) {
-        exit("No se pudo obtener el correo electronico desde Microsoft. Intenta con otra cuenta.")
+        exit("No se pudo obtener el correo electrónico desde Microsoft.");
     }
-    $avatar = "default.png";
-    $rol    = "Poblador";
 
-    $stmt = $conexion->prepare("SELECT id, nombre, correo, rol, avatar FROM usuarios WHERE correo = ? ");
+    $stmt = $conexion->prepare("SELECT * FROM usuarios WHERE correo = ?");
     $stmt->bind_param("s", $correo);
     $stmt->execute();
     $resultado = $stmt->get_result();
+    $usuario = $resultado->fetch_assoc();
 
-    if ($resultado->num_rows > 0) {
-        $usuario = $resultado->fetch_assoc();
-        $_SESSION['usuario_id']     = $usuario['id'];
-        $_SESSION['usuario_nombre'] = $usuario['nombre'];
-        $_SESSION['usuario_email']  = $usuario['correo'];
-        $_SESSION['usuario_rol']    = $usuario['rol'];
-        $_SESSION['usuario_avatar'] = $usuario['avatar'];
+    if ($usuario) {
+        $_SESSION['usuario_id'] = $usuario['id'];
+        $_SESSION['usuario_nombre'] = $usuario['usuario'];
+        $_SESSION['usuario_rol'] = $usuario['rol'];
     } else {
+        $rol = 'Poblador';
+        $avatar = "imagenes/avatar.png";
+
         $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, avatar, rol) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $nombre, $correo, $avatar, $rol);
         $stmt->execute();
-
-        $nuevoId = $stmt->insert_id;
-
-        $_SESSION['usuario_id']     = $nuevoId;
+        
+        $_SESSION['usuario_id'] = $stmt->insert_id;
         $_SESSION['usuario_nombre'] = $nombre;
-        $_SESSION['usuario_email']  = $correo;
-        $_SESSION['usuario_rol']    = $rol;
-        $_SESSION['usuario_avatar'] = $avatar;
+        $_SESSION['usuario_rol'] = $rol;
     }
 
     header("Location: inicio.php");
-    exit();
+    exit;
 
-} catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+
+} catch (Exception $e) {
     exit($e->getMessage());
 }
