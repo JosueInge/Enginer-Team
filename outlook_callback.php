@@ -1,17 +1,21 @@
 <?php
 session_start();
-require __DIR__ . '/vendor/autoload.php';
+require_once 'vendor/autoload.php';
 require 'conexion.php';
 
 use TheNetworg\OAuth2\Client\Provider\Azure;
 
+$clientId = "aca24afd-ef2b-49b0-ac5d-bc393710575b";
+$clientSecret = "2d37aaf7-3e9a-4872-b749-ba852ccc00ad";
+$tenantId = "common";
+$redirectUri = "http://localhost/Enginer-Team/outlook_callback.php";
+
+
 $provider = new Azure([
-    'clientId'                => 'aca24afd-ef2b-49b0-ac5d-bc393710575b',
-    'clientSecret'            => '2d37aaf7-3e9a-4872-b749-ba852ccc00ad',
-    'redirectUri'             => 'http://localhost/Enginer-Team/outlook_callback.php',
-    'utlAuthorize'            => 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-    'urlAccessToken'          => 'https://login.microsoftonline.com/common/oauth2/v3.0/token',
-    'urlResourceOwnerDetails' => 'https://graph.microsoft.com/v1.0/me',             
+    'clientId'                => $clientId,
+    'clientSecret'            => $clientSecret,
+    'redirectUri'             => $redirectUri,
+    'utlAuthorize'            => $tenantId,           
 ]);
 
 
@@ -20,48 +24,25 @@ if (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
     exit('Estado invalido, intenta de nuevo');
 }
 
-try {
-    $token = $provider->getAccessToken('authorization_code', [
-        'code' => $_GET['code']
-    ]);
+$token = $provider->getAccessToken('authorization_code', [
+    'code' => $_GET['code']
+]);
 
-    $user = $provider->getResourceOwner($token);
-    $userData = $user->toArray();
+$user = $provider->get('me');
 
-    $nombre = $userData['displayName'] ?? 'Usuario Outlook';
-    $correo = $userData['mail'] ?? ($userData['userPrincipalName'] ?? null);
+$correo = $user['mail'] ?? $user['userPrincipalName'];
+$nombre = $user['displayName'] ?? 'Usuario';
 
-    if (!$correo) {
-        exit("No se pudo obtener el correo electrónico desde Microsoft.");
-    }
+$stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, rol) VALUES (?, ?, 'Poblador')
+                            ON DUPLICATE KEY UPDATE nombre=VALUES(nombre)");
+$stmt->bind_param("ss", $nombre, $correo);
+$stmt->execute();
 
-    $stmt = $conexion->prepare("SELECT * FROM usuarios WHERE correo = ?");
-    $stmt->bind_param("s", $correo);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-    $usuario = $resultado->fetch_assoc();
+$_SESSION['usuario_id'] = $conexion->insert_id ?: $conexion->query("SELECT id FROM cusuarios WHERE correo='$correo'")->fetch_assoc()['id'];
+$_SESSION['usuario_nombre'] = $nombre;
+$_SESSION['usuario_correo'] =  $correo;
+$_SESSION['usuario_rol'] = 'Poblador';
 
-    if ($usuario) {
-        $_SESSION['usuario_id'] = $usuario['id'];
-        $_SESSION['usuario_nombre'] = $usuario['usuario'];
-        $_SESSION['usuario_rol'] = $usuario['rol'];
-    } else {
-        $rol = 'Poblador';
-        $avatar = "imagenes/avatar.png";
+header("Location: inicio.php");
+exit;
 
-        $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, avatar, rol) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $nombre, $correo, $avatar, $rol);
-        $stmt->execute();
-        
-        $_SESSION['usuario_id'] = $stmt->insert_id;
-        $_SESSION['usuario_nombre'] = $nombre;
-        $_SESSION['usuario_rol'] = $rol;
-    }
-
-    header("Location: inicio.php");
-    exit;
-
-
-} catch (Exception $e) {
-    exit($e->getMessage());
-}
