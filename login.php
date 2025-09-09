@@ -62,7 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     body { margin:0; background:#fff; font-family:'Inter', sans-serif; }
-    /* HEADER */
     header {
       background:#1B314B;
       padding:15px 30px;
@@ -83,7 +82,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       nav.show { display:flex; }
       .menu-toggle { display:block; }
     }
-    /* FORM */
     .formulario {
       max-width:550px; margin:40px auto; padding:30px;
       border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.1);
@@ -138,11 +136,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       text-align:center; font-family:'Inter',sans-serif; 
       font-size:18px; font-weight:600; color:#403F48; margin:20px 0; 
     }
-    /* Texto registro */
     .registro-text {
-      font-size:18px;
-      font-weight:600;
-      font-family:'Poppins',sans-serif;
+      font-size:18px; font-weight:600; font-family:'Poppins',sans-serif;
+    }
+    /* BOTONES SOCIALES */
+    .btn-social {
+      font-family:'Inter', sans-serif;
+      font-size:20px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      justify-content:flex-start;
+      width:100%;
+      padding:12px 16px;
+      border-radius:8px;
+      border:1px solid #1661AC;
+      background:#fff;
+      color:#403F48;
+      text-decoration:none;
+      transition:.3s;
+      margin-bottom:10px;
+      position:relative;
+      overflow:hidden;
+    }
+    .btn-social img {
+      width:24px; height:24px;
+    }
+    .btn-social:hover {
+      box-shadow:0 4px 10px rgba(0,0,0,0.1);
+      transform:translateY(-1px);
+    }
+    .btn-social:active::after {
+      content:"";
+      position:absolute;
+      width:100%; height:100%;
+      background:rgba(22,97,172,0.15);
+      top:0; left:0;
+      animation:ripple .4s linear;
+    }
+    @keyframes ripple {
+      from { opacity:1; transform:scale(0); }
+      to { opacity:0; transform:scale(2.5); }
     }
   </style>
 </head>
@@ -158,19 +192,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </nav>
   </header>
 
-  <!-- FORMULARIO -->
   <form method="POST" action="login.php" class="formulario">
     <h2>Inicia Sesión</h2>
     <p class="sub">Ingresa tus credenciales para acceder</p>
 
-    <!-- Correo -->
     <div class="campo">
       <i class="bi bi-envelope icon"></i>
       <input type="email" name="correo" placeholder="Correo electrónico" value="<?= htmlspecialchars($_POST['correo'] ?? '') ?>">
     </div>
     <?php if ($errorCorreo): ?><div class="error-msg"><?= $errorCorreo ?></div><?php endif; ?>
 
-    <!-- Contraseña -->
     <div class="campo">
       <i class="bi bi-lock icon"></i>
       <input type="password" id="contraseña" name="contraseña" placeholder="Contraseña">
@@ -178,25 +209,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <?php if ($errorContraseña): ?><div class="error-msg"><?= $errorContraseña ?></div><?php endif; ?>
 
-    <!-- Olvidé -->
     <div style="text-align:right; margin-bottom:15px;">
       <a href="recuperar.php" style="font-size:13px; color:#1661AC; text-decoration:none;">Olvidé mi contraseña</a>
     </div>
 
-    <!-- Botón -->
     <button type="submit" class="btn-ingresar">Ingresar</button>
 
-    <div class="divider">O iniciar sesión con</div>
+    <div class="divider">O</div>
 
-    <!-- Social logins -->
-    <div style="display:flex; gap:10px;">
-      <a href="google_login.php" class="btn w-50 border d-flex align-items-center justify-content-center gap-2">
-        <img src="imagenes/google.png" width="20"> Google
-      </a>
-      <a href="outlook_login.php" class="btn w-50 border d-flex align-items-center justify-content-center gap-2" style="background:#0078D4; color:#fff;">
-        <img src="imagenes/outlook.png" width="20"> Outlook
-      </a>
-    </div>
+    <!-- Botón Google -->
+    <a href="google_login.php" class="btn-social">
+      <img src="imagenes/google.png" alt="Google"> Ingresar con Google
+    </a>
+
+    <!-- Botón Outlook -->
+    <a href="outlook_login.php" class="btn-social">
+      <img src="imagenes/outlook.png" alt="Outlook"> Ingresar con Outlook
+    </a>
 
     <div style="text-align:center; margin-top:20px;" class="registro-text">
       ¿No tienes una cuenta? <a href="registro.php" style="color:#1661AC; font-weight:700;">Regístrate</a>
@@ -204,7 +233,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </form>
 
   <script>
-    // Toggle contraseña
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('contraseña');
     togglePassword.addEventListener('click', () => {
