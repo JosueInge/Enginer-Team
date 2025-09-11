@@ -388,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Validación de imagen
-    const fileInput = document.getElementById('imagen');
+    const fileInput = document.getElementById('imagenes');
     const preview = document.getElementById('preview-imagen');
 
     fileInput.addEventListener('change', function () {
