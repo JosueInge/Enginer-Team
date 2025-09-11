@@ -25,7 +25,12 @@
 [2025-09-02 04:24:12] Error: campos vacíos al enviar los datos.
 [2025-09-03 05:17:16] Error Denuncia Anonima: campos vacíos al enviar los datos.
 [2025-09-04 01:46:53] Error Denuncia Anonima: campos vacíos al enviar los datos.
+<<<<<<< HEAD
 >>>>>>> 0635e45e325e93a6c37c5875f48a24ebd3589b74
 [2025-09-04 17:54:03] Error Denuncia Anonima: campos vacíos al enviar los datos.
 [2025-09-05 01:57:14] Correo o contraseña incorrectas.
 [2025-09-07 03:59:47] Correo o contraseña incorrectas.
+=======
+[2025-09-10 22:03:55] Error Denuncia: formato de fecha_evento inválido.
+[2025-09-10 22:03:55] Error Denuncia: formato de fecha_evento inválido.
+>>>>>>> d3edc11eca651500e095f0d24c13012cdf1ebfad
