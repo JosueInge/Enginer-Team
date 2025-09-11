@@ -529,7 +529,7 @@ function actualizarPreview() {
 
     estado.textContent = archivosSeleccionados.map(f => f.name).join(', ');
 
-    // Actualizamos el input.files para enviar solo los seleccionados
+    // Actualizamos el input.files para enviar solo los seleccionados.
     const dataTransfer = new DataTransfer();
     archivosSeleccionados.forEach(f => dataTransfer.items.add(f));
     input.files = dataTransfer.files;
