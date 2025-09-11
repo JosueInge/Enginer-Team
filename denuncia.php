@@ -44,6 +44,8 @@ $conexion->close();
       font-family: Arial, sans-serif;
       background-color: #f5f5f5;
     }
+
+    /* ===== Encabezado ===== */
     .encabezado {
       background-color: #0d5c9b;
       color: white;
@@ -56,16 +58,20 @@ $conexion->close();
       left: 0;
       right: 0;
       z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
     
     .logo img {
-      height: 50px;
+      max-height: 40px; /* ajuste de tamaño */
+      width: auto;
     }
     .informacion {
       margin-right: 10px;
       display: flex;
       align-items: center;
     }
+
+    /* ===== Barra de navegación ===== */
     nav.barra {
       background-color: #bebaba;
       display: flex;
@@ -77,18 +83,21 @@ $conexion->close();
       left: 0;
       right: 0;
       z-index: 999;
+      transition: 0.3s ease;
     }
     nav.barra a {
       color: #000000;
       text-decoration: none;
       padding: 8px 15px;
       border-radius: 5px;
-      transition: 0.3s;
+      transition: all 0.3s;
     }
     nav.barra a.active {
       background-color: #0d5c9b;
       color: white;
     }
+
+    /* ===== Buscador ===== */
     .Buscador {
       position: relative;
       width: 200px;
@@ -97,8 +106,8 @@ $conexion->close();
       width: 100%;
       padding: 8px 8px 8px 35px;
       border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
+      border-radius: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     .Buscador img {
       position: absolute;
@@ -109,23 +118,22 @@ $conexion->close();
       height: 16px;
       pointer-events: none;
     }
+
+    /* ===== Menú Configuración ===== */
     .menu-configuracion {
       position: relative;
       display: inline-block;
       margin-left: 15px;
     }
-    
     .icono-configuracion {
       width: 30px;
       height: 30px;
       cursor: pointer;
       transition: transform 0.3s;
     }
-    
     .icono-configuracion:hover {
       transform: rotate(30deg);
     }
-    
     .menu-desplegable {
       display: none;
       position: absolute;
@@ -136,7 +144,6 @@ $conexion->close();
       z-index: 1001;
       border-radius: 4px;
     }
-    
     .menu-desplegable a {
       color: #333;
       padding: 12px 16px;
@@ -144,13 +151,17 @@ $conexion->close();
       display: block;
       transition: background-color 0.3s;
     }
-    
     .menu-desplegable a:hover {
       background-color: #f1f1f1;
     }
-    
     .menu-configuracion:hover .menu-desplegable {
       display: block;
+    }
+
+    /* ===== Contenido ===== */
+    .contenido-principal { 
+      margin-top: 130px;
+      padding: 20px; 
     }
     .resultados-busqueda {
       margin-bottom: 20px;
@@ -158,78 +169,25 @@ $conexion->close();
       background-color: #f0f0f0;
       border-radius: 4px;
     }
-    .contenedor {
-      display: flex;
-      padding: 150px;
-      gap: 40px;
-    }
-    .denuncia {
-      width: 45%;
-    }
-    a {
-      text-decoration: none;
-    }
-    .boton-publicar { 
-      position: fixed; 
-      bottom: 30px; right: 
-      30px; background-color: #0d5c9b; 
-      color: white; 
-      border: none; 
-      padding: 15px 25px; 
-      border-radius: 50px; 
-      font-weight: bold; 
-      cursor: pointer; 
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
-      z-index: 1000; 
-      text-decoration: none; 
-    }
-    .contenido-principal { 
-      margin-top: 130px;
-      padding: 20px; 
-    }
     .sin-noticias { 
       text-align: center; 
       padding: 50px; 
       color: #666; 
     }
+
+    /* ===== Denuncias ===== */
     .noticia-card { 
       background: white; 
       border-radius: 8px; 
       padding: 20px; 
       margin-bottom: 20px; 
       box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-      position: relative; 
+      transition: all 0.3s ease;
     }
-    .dropdown-content { 
-      display: none; 
-      position: absolute; 
-      right: 0; 
-      background-color: #ffffff; 
-      min-width: 140px; 
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
-      border-radius: 8px; 
-      z-index: 1001; 
-      overflow: hidden; 
-      transition: all 0.2s ease-in-out;
+    .noticia-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-
-    .dropdown-content a { 
-      color: #333; 
-      padding: 10px 16px; 
-      text-decoration: none; 
-      display: block; 
-      font-size: 14px;
-      transition: background-color 0.2s ease;
-    }
-
-    .dropdown-content a:hover { 
-      background-color: #f0f0f0; 
-    }
-
-    .dropdown:hover .dropdown-content { 
-      display: block; 
-    }
-
     .noticia-titulo { 
       color: #0d5c9b; 
       margin-bottom: 10px; 
@@ -244,9 +202,9 @@ $conexion->close();
     .imagen-contenedor { 
       max-width: 100%; 
       overflow: hidden;
-       text-align: center; 
-       margin-bottom: 15px; 
-      }
+      text-align: center; 
+      margin-bottom: 15px; 
+    }
     .noticia-imagen { 
       max-width: 100%; 
       height: auto; 
@@ -258,6 +216,30 @@ $conexion->close();
       line-height: 1.6; 
       margin-bottom: 15px;
     }
+
+    /* ===== Botón flotante ===== */
+    .boton-publicar { 
+      position: fixed; 
+      bottom: 30px; 
+      right: 30px; 
+      background-color: #0d5c9b; 
+      color: white; 
+      border: none; 
+      padding: 15px 25px; 
+      border-radius: 50px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+      z-index: 1000; 
+      text-decoration: none; 
+      transition: all 0.3s ease;
+    }
+    .boton-publicar:hover {
+      background-color: #0b4a7a;
+      transform: scale(1.05);
+    }
+
+    /* ===== Scroll ocultar ===== */
     .encabezado.oculto {
       transform: translateY(-100%);
       transition: transform 0.3s ease;
@@ -265,6 +247,34 @@ $conexion->close();
     .barra.oculto {
       transform: translateY(-130px);
       transition: transform 0.3s ease;
+    }
+
+    /* ===== Menú Admin ===== */
+    .dropdown-content { 
+      display: none; 
+      position: absolute; 
+      right: 0; 
+      background-color: #ffffff; 
+      min-width: 140px; 
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
+      border-radius: 8px; 
+      z-index: 1001; 
+      overflow: hidden; 
+      transition: all 0.2s ease-in-out;
+    }
+    .dropdown-content a { 
+      color: #333; 
+      padding: 10px 16px; 
+      text-decoration: none; 
+      display: block; 
+      font-size: 14px;
+      transition: background-color 0.2s ease;
+    }
+    .dropdown-content a:hover { 
+      background-color: #f0f0f0; 
+    }
+    .dropdown:hover .dropdown-content { 
+      display: block; 
     }
   </style>
 </head>
@@ -315,71 +325,70 @@ $conexion->close();
     <a href="publicar_denuncia.php" class="boton-publicar">Publicar denuncia</a>
   <?php endif; ?>
   
-    <script>
+  <script>
   // Confirmación de cierre de sesión
-      document.getElementById('btnSesion')?.addEventListener('click', function(e) {
-        e.preventDefault();
+  document.getElementById('btnSesion')?.addEventListener('click', function(e) {
+    e.preventDefault();
 
-        const confirmBox = document.createElement('div');
-        confirmBox.style.position = 'fixed';
-        confirmBox.style.top = '0';
-        confirmBox.style.left = '0';
-        confirmBox.style.width = '100%';
-        confirmBox.style.height = '100%';
-        confirmBox.style.background = 'rgba(0,0,0,0.5)';
-        confirmBox.style.display = 'flex';
-        confirmBox.style.alignItems = 'center';
-        confirmBox.style.justifyContent = 'center';
-        confirmBox.style.zIndex = '9999';
+    const confirmBox = document.createElement('div');
+    confirmBox.style.position = 'fixed';
+    confirmBox.style.top = '0';
+    confirmBox.style.left = '0';
+    confirmBox.style.width = '100%';
+    confirmBox.style.height = '100%';
+    confirmBox.style.background = 'rgba(0,0,0,0.5)';
+    confirmBox.style.display = 'flex';
+    confirmBox.style.alignItems = 'center';
+    confirmBox.style.justifyContent = 'center';
+    confirmBox.style.zIndex = '9999';
 
-        confirmBox.innerHTML = `
-          <div style="background: white; padding: 20px 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 300px;">
-            <h3>¿Cerrar sesión?</h3>
-            <p>¿Estás seguro de cerrar sesión?</p>
-            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
-              <button id="confirmLogout" style="background-color: #d9534f; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cerrar sesión</button>
-              <button id="cancelarLogout" style="background-color: #ccc; color: black; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
-            </div>
-          </div>
-        `;
+    confirmBox.innerHTML = `
+      <div style="background: white; padding: 20px 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 300px;">
+        <h3>¿Cerrar sesión?</h3>
+        <p>¿Estás seguro de cerrar sesión?</p>
+        <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+          <button id="confirmLogout" style="background-color: #d9534f; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cerrar sesión</button>
+          <button id="cancelarLogout" style="background-color: #ccc; color: black; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+        </div>
+      </div>
+    `;
 
-        document.body.appendChild(confirmBox);
+    document.body.appendChild(confirmBox);
 
-        document.getElementById('confirmLogout').onclick = () => {
-          window.location.href = "logout.php";
-        };
+    document.getElementById('confirmLogout').onclick = () => {
+      window.location.href = "logout.php";
+    };
 
-        document.getElementById('cancelarLogout').onclick = () => {
-          document.body.removeChild(confirmBox);
-        };
-      });
+    document.getElementById('cancelarLogout').onclick = () => {
+      document.body.removeChild(confirmBox);
+    };
+  });
 
-      // Ocultar encabezado y barra al hacer scroll hacia abajo
-      let lastScroll = 0;
-      const encabezado = document.querySelector('.encabezado');
-      const barra = document.querySelector('nav.barra');
-      let timer;
+  // Ocultar encabezado y barra al hacer scroll
+  let lastScroll = 0;
+  const encabezado = document.querySelector('.encabezado');
+  const barra = document.querySelector('nav.barra');
+  let timer;
 
-      window.addEventListener('scroll', () => {
-        const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
 
-        if (currentScroll > lastScroll && currentScroll > 80) {
-          barra?.classList.add('oculto');
+    if (currentScroll > lastScroll && currentScroll > 80) {
+      barra?.classList.add('oculto');
 
-          clearTimeout(timer);
-          timer = setTimeout(() => {
-            encabezado?.classList.add('oculto');
-          }, 200);
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        encabezado?.classList.add('oculto');
+      }, 200);
 
-        } else {
+    } else {
+      clearTimeout(timer);
+      encabezado?.classList.remove('oculto');
+      barra?.classList.remove('oculto');
+    }
 
-          clearTimeout(timer);
-          encabezado?.classList.remove('oculto');
-          barra?.classList.remove('oculto');
-        }
-
-        lastScroll = currentScroll <= 0 ? 0 : currentScroll;
-      });
-    </script>
+    lastScroll = currentScroll <= 0 ? 0 : currentScroll;
+  });
+  </script>
 </body>
 </html>

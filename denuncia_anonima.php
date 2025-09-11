@@ -1,365 +1,429 @@
 <?php
 $categoria_actual = 'denuncias';
 include 'menu.php';
-include 'conexion.php';
-
-$termino_busqueda = '';
-$where = '';
-$params = [];
-
-$query = "SELECT * FROM propuestas_denuncias WHERE estado = 'aprobada' ORDER BY fecha DESC";
-$stmt = $conexion->prepare($query);
-
-if (!empty($params)) {
-    $types = str_repeat('s', count($params));
-    $stmt->bind_param($types, ...$params);
-}
-
-$stmt->execute();
-$resultado = $stmt->get_result();
-$propuestas_denuncias = $resultado->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-$conexion->close();
 ?>
-<script src="buscador.js" defer></script>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Denuncias Ciudadanas</title>
+  <title>Publicar Nueva Noticia</title>
   <style>
-    * {
-      box-sizing: border-box;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@400;600;700&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f5f5f5;
       margin: 0;
       padding: 0;
     }
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-    }
-    .encabezado1 {
-      background-color: #0d5c9b;
+
+    header {
+      background-color: #061F3E;
       color: white;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
+      padding: 20px;
+      text-align: right;
     }
-    .logo1 img {
-      height: 50px;
-      margin-right: 10px;
-    }
-    nav.barra1 {
-      background-color: #bebaba;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px;
-      font-weight: bold;
-      position: fixed;
-      top: 70px;
-      left: 0;
-      right: 0;
-      z-index: 999;
-    }
-    nav.barra1 a {
-      color: #000000;
+
+    header a {
+      font-family: 'Poppins', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: #fff;
       text-decoration: none;
-      padding: 8px 15px;
-      border-radius: 5px;
       transition: 0.3s;
     }
-    nav.barra1 a.active {
-      background-color: #0d5c9b;
-      color: white;
+    header a:hover {
+      text-decoration: underline;
+      color: #1661AC;
     }
-    .redes1 {
-      margin-left: 500px;
+
+    .form-container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    .informacion1 {
-      margin-right: 15px;
-    }
-    .Buscador {
-      position: relative;
-      width: 200px;
-    }
-    .Buscador input {
-      width: 100%;
-      padding: 8px 8px 8px 35px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    .Buscador img {
-      position: absolute;
-      top: 50%;
-      left: 10px;
-      transform: translateY(-50%);
-      width: 16px;
-      height: 16px;
-      pointer-events: none;
-    }
-    .menu-configuracion {
-      position: relative;
-      display: inline-block;
-      margin-left: 15px;
-    }
-    
-    .icono-configuracion {
-      width: 30px;
-      height: 30px;
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
-    
-    .icono-configuracion:hover {
-      transform: rotate(30deg);
-    }
-    
-    .menu-desplegable {
-      display: none;
-      position: absolute;
-      right: 0;
-      background-color: white;
-      min-width: 160px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      z-index: 1001;
-      border-radius: 4px;
-    }
-    .menu-desplegable a {
-      color: #333;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-      transition: background-color 0.3s;
-    }
-    
-    .menu-desplegable a:hover {
-      background-color: #f1f1f1;
-    }
-    
-    .menu-configuracion:hover .menu-desplegable {
-      display: block;
-    }
-    .resultados-busqueda {
+
+    h1 {
+      text-align: center;
+      font-family: 'Poppins', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #1661AC;
       margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-family: 'Poppins', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #403F48;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    select, input[type="text"], textarea, input[type="date"] {
+      width: 100%;
       padding: 10px;
-      background-color: #f0f0f0;
-      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      border: 1px solid #B1B1B1;
+      border-radius: 12px;
+      outline: none;
+      transition: all 0.3s;
     }
-    .contenedor {
-      display: flex;
-      padding: 150px;
-      gap: 40px;
+    select {
+      background-color: #ADEBFF;
+      color: #061F3E;
     }
-    .denuncia {
-      width: 45%;
+    input[type="text"]::placeholder,
+    textarea::placeholder,
+    input[type="date"]::placeholder {
+      color: #B1B1B1;
     }
-    a {
-      text-decoration: none;
-    }
-    .boton-publicar { 
-      position: fixed; 
-      bottom: 30px; right: 
-      30px; background-color: #0d5c9b; 
-      color: white; 
-      border: none; 
-      padding: 15px 25px; 
-      border-radius: 50px; 
-      font-weight: bold; 
-      cursor: pointer; 
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
-      z-index: 1000; 
-      text-decoration: none; 
-    }
-    .contenido-principal { 
-      margin-top: 130px;
-      padding: 20px; 
-    }
-    .sin-noticias { 
-      text-align: center; 
-      padding: 50px; 
-      color: #666; 
-    }
-    .noticia-card { 
-      background: white; 
-      border-radius: 8px; 
-      padding: 20px; 
-      margin-bottom: 20px; 
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-      position: relative; 
-    }
-    .dropdown-content { 
-      display: none; 
-      position: absolute; 
-      right: 0; 
-      background-color: #ffffff; 
-      min-width: 140px; 
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
-      border-radius: 8px; 
-      z-index: 1001; 
-      overflow: hidden; 
-      transition: all 0.2s ease-in-out;
+    input:focus, textarea:focus, select:focus {
+      border-color: #2D8EFF;
+      box-shadow: 0 0 5px rgba(45,142,255,0.3);
+      transform: scale(1.01);
     }
 
-    .dropdown-content a { 
-      color: #333; 
-      padding: 10px 16px; 
-      text-decoration: none; 
-      display: block; 
+    textarea {
+      border-radius: 6px;
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .contador {
+      text-align: right;
       font-size: 14px;
-      transition: background-color 0.2s ease;
+      font-family: 'Inter', sans-serif;
+      color: #B1B1B1;
+      display: none;
+    }
+    .contador.error {
+      color: #E33639;
     }
 
-    .dropdown-content a:hover { 
-      background-color: #f0f0f0; 
+    .error-msg {
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: #E33629;
+      margin-top: 5px;
+      display: none;
     }
 
-    .dropdown:hover .dropdown-content { 
-      display: block; 
+    .file-upload {
+      border: 1px solid #B1B1B1;
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.3s;
+    }
+    .file-upload:hover {
+      border-color: #2D8EFF;
+    }
+    .file-upload button {
+      background-color: #ADEBFF;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 16px;
+      color: #061F3E;
+      cursor: pointer;
+    }
+    .file-name {
+      font-size: 14px;
+      color: #74737C;
+    }
+    .preview {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .preview img {
+      width: 350px;
+      height: 200px;
+      border-radius: 12px;
+      border: 1px solid #B1B1B1;
+      object-fit: cover;
+      position: relative;
     }
 
-    .noticia-titulo { 
-      color: #0d5c9b; 
-      margin-bottom: 10px; 
+    .checkbox {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      color: #403F48;
     }
-    .noticia-meta { 
-      color: #666; 
-      font-size: 14px; 
-      margin-bottom: 15px; 
-      display: flex; 
-      gap: 15px; 
+
+    .btn-submit {
+      display: block;
+      width: 200px;
+      height: 50px;
+      margin: 30px auto 0;
+      background: #61C9A8;
+      color: #1B314B;
+      font-family: 'Poppins', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
     }
-    .imagen-contenedor { 
-      max-width: 100%; 
-      overflow: hidden;
-       text-align: center; 
-       margin-bottom: 15px; 
-      }
-    .noticia-imagen { 
-      max-width: 100%; 
-      height: auto; 
-      max-height: 400px; 
-      object-fit: contain; 
-      border-radius: 4px; 
+    .btn-submit:hover {
+      background: #4CA88C;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-    .noticia-resumen { 
-      line-height: 1.6; 
-      margin-bottom: 15px;
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
     }
-    .encabezado1.oculto {
-      transform: translateY(-100%);
-      transition: transform 0.3s ease;
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
-    .barra1.oculto {
-      transform: translateY(-130px);
-      transition: transform 0.3s ease;
+    .modal h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 16px;
+      color: #403F48;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .modal p {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: #403F48;
+      margin-bottom: 20px;
+    }
+    .modal button {
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      padding: 8px 16px;
+      margin: 0 10px;
+      cursor: pointer;
+    }
+    .btn-cancel {
+      background: #EB7373;
+      color: #061F3E;
+    }
+    .btn-confirm {
+      background: #61C9A8;
+      color: #fff;
+    }
+    .alert {
+      background: #d4edda;
+      color: #155724;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 20px auto;
+      text-align: center;
+      display: none;
+      max-width: 500px;
     }
   </style>
 </head>
 <body>
-  <div class="contenido-principal"> 
-    <div id="contenedor-denuncias">
-      <?php if (empty($propuestas_denuncias)): ?>
-        <div class="sin-noticias">
-          <h2>No hay denuncias publicadas aún</h2>
-          <p>¡Sé el primero en compartir una denuncia!</p>
-        </div>
-      <?php else: ?>
-        <?php foreach ($propuestas_denuncias as $noticia): ?>
-          <article class="noticia-card" style="position: relative;">
 
-            <a href="ver_denuncia.php?id=<?= $noticia['id'] ?>" style="text-decoration: none; color: inherit;">
-              <h2 class="noticia-titulo"><?= htmlspecialchars($noticia['titulo']) ?></h2>
-            </a>
-            <div class="noticia-meta">
-              <span><?= htmlspecialchars($noticia['fecha']) ?></span>
-            </div>
-            <?php if ($noticia['imagen']): ?>
-              <div class="imagen-contenedor">
-                <img src="imagenes/denuncias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
-              </div>
-            <?php endif; ?>
-            <p class="noticia-resumen"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
-          </article>
-        <?php endforeach; ?>
-      <?php endif; ?>
+<header>
+  <a href="#" id="volverNoticias">Volver a noticias</a>
+</header>
+
+<div class="form-container">
+  <h1>Publicar Nueva Noticia</h1>
+  <form id="noticiaForm">
+    <label for="categoria">Categoría:</label>
+    <select id="categoria" required>
+      <option value="">Seleccione una categoría</option>
+      <option value="politica">Política</option>
+      <option value="sociedad">Sociedad</option>
+      <option value="economia">Economía</option>
+    </select>
+
+    <label for="titulo">Título:</label>
+    <input type="text" id="titulo" placeholder="Escribe el título de la noticia" maxlength="150"/>
+    <div id="contadorTitulo" class="contador"></div>
+    <div id="errorTitulo" class="error-msg"></div>
+
+    <label for="descripcion">Descripción:</label>
+    <textarea id="descripcion" placeholder="Escribe la descripción de tu noticia" maxlength="3000"></textarea>
+    <div id="contadorDescripcion" class="contador"></div>
+    <div id="errorDescripcion" class="error-msg"></div>
+
+    <label for="fecha">Fecha del hecho:</label>
+    <input type="date" id="fecha" placeholder="Selecciona la fecha"/>
+    <div id="errorFecha" class="error-msg"></div>
+
+    <label>Carga una imagen (opcional)</label>
+    <span style="font-family: Inter; font-size:16px; color:#403F48;">Puedes cargar hasta 3 imágenes en formato (.jpeg).</span>
+    <div class="file-upload">
+      <button type="button" id="btnUpload">Seleccionar</button>
+      <span class="file-name">No se ha seleccionado ningún archivo</span>
+      <input type="file" id="imagen" accept="image/jpeg" multiple style="display:none"/>
     </div>
+    <div class="preview" id="preview"></div>
+
+    <div class="checkbox">
+      <input type="checkbox" id="bloquearComentarios"/> Bloquear comentarios
+    </div>
+
+    <button type="submit" class="btn-submit">Publicar noticia</button>
+  </form>
+</div>
+
+<div class="alert" id="alertaExito">¡Tu denuncia fue enviada a los administradores!</div>
+
+<!-- Modal Volver -->
+<div class="modal" id="modalVolver">
+  <div class="modal-content">
+    <h3>¿Estás seguro de volver a la vista de noticias?</h3>
+    <p><b>Esta acción cancelará los cambios hechos en el formulario</b></p>
+    <button class="btn-cancel" id="cancelVolver">Cancelar</button>
+    <button class="btn-confirm" onclick="window.location.href='denuncias.php'">Confirmar</button>
   </div>
+</div>
 
-  <a href="enviar_denuncia_anonima.php" class="boton-publicar">Enviar denuncia</a>
-  
-    <script>
-  // Confirmación de cierre de sesión
-      document.getElementById('btnSesion')?.addEventListener('click', function(e) {
-        e.preventDefault();
+<!-- Modal Confirmar Publicación -->
+<div class="modal" id="modalPublicar">
+  <div class="modal-content">
+    <h3>¿Estás seguro de publicar tu noticia?</h3>
+    <p>Estás a punto de publicar tu noticia. Una vez publicada, estará disponible para todos los lectores.</p>
+    <button class="btn-cancel" id="cancelPublicar">Cancelar</button>
+    <button class="btn-confirm" id="confirmPublicar">Confirmar</button>
+  </div>
+</div>
 
-        const confirmBox = document.createElement('div');
-        confirmBox.style.position = 'fixed';
-        confirmBox.style.top = '0';
-        confirmBox.style.left = '0';
-        confirmBox.style.width = '100%';
-        confirmBox.style.height = '100%';
-        confirmBox.style.background = 'rgba(0,0,0,0.5)';
-        confirmBox.style.display = 'flex';
-        confirmBox.style.alignItems = 'center';
-        confirmBox.style.justifyContent = 'center';
-        confirmBox.style.zIndex = '9999';
+<script>
+  const titulo = document.getElementById('titulo');
+  const descripcion = document.getElementById('descripcion');
+  const contadorTitulo = document.getElementById('contadorTitulo');
+  const contadorDescripcion = document.getElementById('contadorDescripcion');
+  const errorTitulo = document.getElementById('errorTitulo');
+  const errorDescripcion = document.getElementById('errorDescripcion');
+  const errorFecha = document.getElementById('errorFecha');
+  const form = document.getElementById('noticiaForm');
+  const fecha = document.getElementById('fecha');
 
-        confirmBox.innerHTML = `
-          <div style="background: white; padding: 20px 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 300px;">
-            <h3>¿Cerrar sesión?</h3>
-            <p>¿Estás seguro de cerrar sesión?</p>
-            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
-              <button id="confirmLogout" style="background-color: #d9534f; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cerrar sesión</button>
-              <button id="cancelarLogout" style="background-color: #ccc; color: black; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
-            </div>
-          </div>
-        `;
+  titulo.addEventListener('input', () => {
+    contadorTitulo.style.display = 'block';
+    const length = titulo.value.length;
+    contadorTitulo.textContent = `${length}/150`;
+    if (length < 10) {
+      contadorTitulo.classList.add('error');
+      errorTitulo.textContent = "El título debe tener al menos 10 caracteres.";
+      errorTitulo.style.display = 'block';
+    } else if (length >= 150) {
+      errorTitulo.textContent = "Has alcanzado el límite de 150 caracteres.";
+      errorTitulo.style.display = 'block';
+    } else {
+      contadorTitulo.classList.remove('error');
+      errorTitulo.style.display = 'none';
+    }
+  });
 
-        document.body.appendChild(confirmBox);
+  descripcion.addEventListener('input', () => {
+    contadorDescripcion.style.display = 'block';
+    const length = descripcion.value.length;
+    contadorDescripcion.textContent = `${length}/3000`;
+    if (length < 300) {
+      contadorDescripcion.classList.add('error');
+      errorDescripcion.textContent = "La descripción debe tener al menos 300 caracteres.";
+      errorDescripcion.style.display = 'block';
+    } else if (length >= 3000) {
+      errorDescripcion.textContent = "Has alcanzado el límite de 3000 caracteres.";
+      errorDescripcion.style.display = 'block';
+    } else {
+      contadorDescripcion.classList.remove('error');
+      errorDescripcion.style.display = 'none';
+    }
+  });
 
-        document.getElementById('confirmLogout').onclick = () => {
-          window.location.href = "logout.php";
-        };
+  document.getElementById('btnUpload').onclick = () => {
+    document.getElementById('imagen').click();
+  };
 
-        document.getElementById('cancelarLogout').onclick = () => {
-          document.body.removeChild(confirmBox);
-        };
-      });
+  document.getElementById('imagen').addEventListener('change', (e) => {
+    const preview = document.getElementById('preview');
+    preview.innerHTML = '';
+    const files = Array.from(e.target.files).slice(0, 3);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = document.createElement('img');
+        img.src = reader.result;
+        preview.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+    document.querySelector('.file-name').textContent = files.length > 0 ? files.map(f => f.name).join(', ') : "No se ha seleccionado ningún archivo";
+  });
 
-      // Ocultar encabezado y barra al hacer scroll hacia abajo
-      let lastScroll = 0;
-      const encabezado = document.querySelector('.encabezado1');
-      const barra = document.querySelector('nav.barra1');
-      let timer;
+  // Modal volver
+  const modalVolver = document.getElementById('modalVolver');
+  document.getElementById('volverNoticias').onclick = (e) => {
+    e.preventDefault();
+    modalVolver.style.display = 'flex';
+  };
+  document.getElementById('cancelVolver').onclick = () => {
+    modalVolver.style.display = 'none';
+  };
 
-      window.addEventListener('scroll', () => {
-        const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+  // Modal publicar
+  const modalPublicar = document.getElementById('modalPublicar');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (titulo.value.trim() === "") {
+      errorTitulo.textContent = "El título es obligatorio.";
+      errorTitulo.style.display = 'block';
+      return;
+    }
+    if (descripcion.value.trim() === "") {
+      errorDescripcion.textContent = "La descripción es obligatoria.";
+      errorDescripcion.style.display = 'block';
+      return;
+    }
+    if (fecha.value === "") {
+      errorFecha.textContent = "La fecha es obligatoria.";
+      errorFecha.style.display = 'block';
+      return;
+    }
+    modalPublicar.style.display = 'flex';
+  });
+  document.getElementById('cancelPublicar').onclick = () => {
+    modalPublicar.style.display = 'none';
+  };
+  document.getElementById('confirmPublicar').onclick = () => {
+    modalPublicar.style.display = 'none';
+    document.getElementById('alertaExito').style.display = 'block';
+    setTimeout(() => {
+      window.location.href = 'denuncias.php';
+    }, 2000);
+  };
+</script>
 
-        if (currentScroll > lastScroll && currentScroll > 80) {
-          barra?.classList.add('oculto');
-
-          clearTimeout(timer);
-          timer = setTimeout(() => {
-            encabezado?.classList.add('oculto');
-          }, 200);
-
-        } else {
-
-          clearTimeout(timer);
-          encabezado?.classList.remove('oculto');
-          barra?.classList.remove('oculto');
-        }
-
-        lastScroll = currentScroll <= 0 ? 0 : currentScroll;
-      });
-    </script>
 </body>
 </html>
