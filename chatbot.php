@@ -260,13 +260,13 @@ Contexto del sitio:
 
         const msgUser = document.createElement("div");
         msgUser.className = "mensaje-usuario";
-        msgUser.innerHTML = `<strong>${nombreUsuario}</strong><br>${mensaje}`;
+        msgUser.innerHTML = <strong>${nombreUsuario}</strong><br>${mensaje};
         chat.appendChild(msgUser);
         chat.scrollTop = chat.scrollHeight;
 
         const msgBot = document.createElement("div");
         msgBot.className = "mensaje-bot";
-        msgBot.innerHTML = `<strong>ChatBot</strong><br>Escribiendo...`;
+        msgBot.innerHTML = <strong>ChatBot</strong><br>Escribiendo...;
         chat.appendChild(msgBot);
         chat.scrollTop = chat.scrollHeight;
 
@@ -276,9 +276,9 @@ Contexto del sitio:
         try {
             const response = await fetch("chatbot.php", { method: "POST", body: formData });
             const data = await response.json();
-            msgBot.innerHTML = `<strong>ChatBot</strong><br>${data.respuesta}`;
+            msgBot.innerHTML = <strong>ChatBot</strong><br>${data.respuesta};
         } catch (error) {
-            msgBot.innerHTML = `<strong>ChatBot</strong><br>Hubo un error al procesar tu mensaje.`;
+            msgBot.innerHTML = <strong>ChatBot</strong><br>Hubo un error al procesar tu mensaje.;
         }
 
         chat.scrollTop = chat.scrollHeight;
