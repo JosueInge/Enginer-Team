@@ -5,7 +5,7 @@ require_once "vendor/autoload.php";
 
 $client_id = "512235154991-hgfl77nhp3qffmqf1schu1smgea7k8q3.apps.googleusercontent.com";
 $client_secret = "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";
-$redirect_uri = "http://localhost:8080/Enginer-Team/google_callback.php";
+$redirect_uri = "http://localhost/Enginer-Team/google_callback.php";
 
 
 $client = new Google_Client();

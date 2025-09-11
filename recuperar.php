@@ -21,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($resultado->num_rows > 0) {
         $fila = $resultado->fetch_assoc();
         $id_usuario = $fila['id'];
-        $token = bin2hex(random_bytes(32)); // Token seguro
+        $token = bin2hex(random_bytes(32)); 
         $expiracion = date("Y-m-d H:i:s", strtotime("+1 hour"));
 
         // Guardar token en tabla tokens_recuperacion
@@ -36,15 +36,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'd4660140@gmail.com'; // Tu correo
-            $mail->Password   = 'emar lypn ivdw bcwn';   // Contraseña de aplicación de Gmail
+            $mail->Username   = 'd4660140@gmail.com'; 
+            $mail->Password   = 'emar lypn ivdw bcwn'; 
             $mail->SMTPSecure = 'tls';
             $mail->Port       = 587;
 
             $mail->setFrom('TUCORREO@gmail.com', 'Comunicado Digital');
             $mail->addAddress($correo);
 
-            $link = "http://192.168.1.9:8080/Engine-Team/restablecer.php?token=$token"; // Ajusta tu URL
+            $link = "http://192.168.1.9:8080/Engine-Team/restablecer.php?token=$token"; 
 
             $mail->isHTML(true);
             $mail->Subject = 'Recuperación de contraseña';
@@ -69,9 +69,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Poppins', sans-serif;
       background-color: #fff;
     }
 
@@ -93,31 +95,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       margin-right: 10px;
     }
 
-    .redes {
-      margin-right: 250px;
+    .redes img {
+      margin-left: 12px;
     }
-    a {
-        text-decoration: none;
-    }
+
     .contenedor {
-      height: 75vh;
+      min-height: 75vh;
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 15px;
     }
+
     .formulario-recuperar {
-      border: 3px solid black;
+      border: 2px solid #ddd;
       padding: 40px;
-      border-radius: 10px;
+      border-radius: 12px;
       text-align: center;
       max-width: 500px;
       width: 100%;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      background: #fff;
     }
 
     .formulario-recuperar h2 {
       color: #0056a1;
       margin-bottom: 10px;
-      font-family: 'Open Sans Bold';
+      font-weight: 600;
     }
 
     .formulario-recuperar p {
@@ -132,108 +136,114 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       font-weight: bold;
       text-align: left;
       margin-bottom: 5px;
-      font-family: 'Open Sans Bold';
+      font-size: 15px;
     }
 
     .formulario-recuperar input[type="email"] {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
+      padding: 12px;
+      margin-bottom: 15px;
       border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 14px;
-      font-family: 'Open Sans Regular';
+      border-radius: 6px;
+      font-size: 15px;
     }
 
     .formulario-recuperar button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       background-color: #0056a1;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       font-size: 16px;
       cursor: pointer;
-      font-family: 'Open Sans Regular';
+      position: relative;
+      overflow: hidden;
     }
 
     .formulario-recuperar button:hover {
       background-color: #004080;
     }
 
+    /* Enlace login */
     .formulario-recuperar .enlace-login {
       display: block;
       margin-top: 15px;
       font-size: 14px;
       color: #0056a1;
       text-decoration: none;
-      font-family: 'Open Sans Regular';
+    }
+
+    /* Responsivo */
+    @media (max-width: 600px) {
+      .formulario-recuperar {
+        padding: 25px;
+      }
+      .formulario-recuperar h2 {
+        font-size: 20px;
+      }
     }
   </style>
 </head>
 <body>
 <header>
-<div class="logo">
-        <img src="imagenes/logo.png" alt="logo">
-      </div>
-      <div class="redes">
-        <a target="_blank" href="https://www.instagram.com/"><img src="imagenes/instagram.png" height="35"/></a>
-        <a target="_blank" href="https://www.facebook.com/"><img src="imagenes/facebook.png" height="35" style="margin-left: 12px;"/></a>
-        <a target="_blank" href="https://x.com/?lang=es"><img src="imagenes/X.png" height="35" style="margin-left: 10px;"/></a>
-     </div>
+  <div class="logo">
+    <img src="imagenes/logo.png" alt="logo">
+  </div>
+  <div class="redes">
+    <a target="_blank" href="https://www.instagram.com/"><img src="imagenes/instagram.png" height="35"/></a>
+    <a target="_blank" href="https://www.facebook.com/"><img src="imagenes/facebook.png" height="35"/></a>
+    <a target="_blank" href="https://x.com/?lang=es"><img src="imagenes/X.png" height="35"/></a>
+  </div>
 </header>
 
 <div class="contenedor">
-    <div class="formulario-recuperar">
-        <h2>Recupera tu contraseña</h2>
-        <p>Ingresa el correo del usuario registrado para recuperar la contraseña</p>
-        <form method="POST" action="">
-            <label for="correo">Correo Electrónico</label>
-            <input type="email" name="correo" placeholder="tu@correo.com" required>
-            <button type="submit">Enviar</button>
-            <a class="enlace-login" href="login.php">¿Recordaste tu contraseña? Inicia Sesión</a>
-        </form>
-    </div>
+  <div class="formulario-recuperar">
+      <h2>Recupera tu contraseña</h2>
+      <p>Ingresa el correo del usuario registrado para recuperar la contraseña</p>
+      <form method="POST" action="">
+          <label for="correo">Correo Electrónico</label>
+          <input type="email" name="correo" placeholder="tu@correo.com" required>
+
+          <button type="submit">Enviar</button>
+          <a class="enlace-login" href="login.php">¿Recordaste tu contraseña? Inicia Sesión</a>
+      </form>
+  </div>
 </div>
-    <?php if (isset($recuperar)): ?>
-  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
-    <div class="toast align-items-center text-bg-primary border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body">
-                <?= htmlspecialchars($recuperar) ?>
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-        </div>
-    </div>
-  </div>
-  <?php unset($recuperar); ?>
-  <?php endif; ?>
 
-  <?php if (isset($correonoencontrado)): ?>
-  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
-    <div class="toast align-items-center text-bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body">
-                <?= htmlspecialchars($correonoencontrado) ?>
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-        </div>
-    </div>
+<?php if (isset($recuperar)): ?>
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+  <div class="toast align-items-center text-bg-primary border-0 show" role="alert">
+      <div class="d-flex">
+          <div class="toast-body"><?= htmlspecialchars($recuperar) ?></div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
   </div>
-  <?php unset($correonoencontrado); ?>
-  <?php endif; ?>
+</div>
+<?php unset($recuperar); endif; ?>
 
-   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const toastEl = document.querySelector('.toast');
-        if (toastEl) {
-            const bsToast = new bootstrap.Toast(toastEl, {
-                autohide: true,
-                delay: 7000
-            });
-            bsToast.show();
-        }
-    });
-  </script>
+<?php if (isset($correonoencontrado)): ?>
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+  <div class="toast align-items-center text-bg-danger border-0 show" role="alert">
+      <div class="d-flex">
+          <div class="toast-body"><?= htmlspecialchars($correonoencontrado) ?></div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+  </div>
+</div>
+<?php unset($correonoencontrado); endif; ?>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      const toastEl = document.querySelector('.toast');
+      if (toastEl) {
+          const bsToast = new bootstrap.Toast(toastEl, {
+              autohide: true,
+              delay: 7000
+          });
+          bsToast.show();
+      }
+  });
+</script>
 </body>
 </html>
