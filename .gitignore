@@ -26,3 +26,6 @@ Thumbs.db
 
 # Specific frameworks/CMS if used (e.g., Laravel)
 /bootstrap/cache/
+
+# Vendor
+vendor/

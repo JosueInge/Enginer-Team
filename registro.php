@@ -470,10 +470,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
 
                 <!-- Social buttons -->
                 <div class="socials">
-                    <button type="button" class="social" onclick="location.href='https://accounts.google.com'">
+                    <button type="button" class="social" onclick="location.href='google_login.php'">
                         <img src="imagenes/google.png" alt="Google">Continuar con Google
                     </button>
-                    <button type="button" class="social" onclick="location.href='https://login.live.com'">
+                    <button type="button" class="social" onclick="location.href='outlook/login.php'">
                         <img src="imagenes/outlook.png" alt="Outlook">Continuar con Outlook
                     </button>
                 </div>
