@@ -38,7 +38,7 @@ if (isset($_GET['code'])) {
     $usuario = $result->fetch_assoc();
 
     if (!$usuario) {
-        $rol = "usuario";
+        $rol = "Poblador";
         $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, avatar, rol) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $nombre, $email, $foto, $rol);
         $stmt->execute();
@@ -47,12 +47,14 @@ if (isset($_GET['code'])) {
     } else {
         $usuario_id = $usuario['id'];
         $nombre = $usuario['nombre'];
+        $rol = $usuario['rol'];
     }
 
     $_SESSION['usuario_id'] = $usuario_id;
     $_SESSION['usuario_nombre'] = $nombre;
     $_SESSION['usuario_correo'] = $email;
     $_SESSION['usuario_imagen'] = $foto;
+    $_SESSION['usuario_rol'] = $rol;
 
     header("Location: inicio.php");
     exit();
