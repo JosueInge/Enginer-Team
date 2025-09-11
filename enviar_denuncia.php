@@ -20,8 +20,10 @@ $tipoToast = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $titulo = trim($_POST['titulo'] ?? '');
     $descripcion = trim($_POST['descripcion'] ?? '');
+    $fecha_evento = trim($_POST['fecha_evento'] ?? '');
 
-    if ($titulo === '' || $descripcion === '') {
+    // Validaciones de campos
+    if ($titulo === '' || $descripcion === '' || $fecha_evento === '') {
         guardarLog("Error Denuncia: campos vacíos al enviar los datos.");
         $mensajeToast = "Debes completar todos los campos requeridos.";
         $tipoToast = "danger";
@@ -33,40 +35,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         guardarLog("Error Denuncia: campos exceden longitud permitida.");
         $mensajeToast = "Título y descripción no deben exceder 255 caracteres.";
         $tipoToast = "danger";
+    } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_evento)) {
+        guardarLog("Error Denuncia: fecha inválida.");
+        $mensajeToast = "La fecha del evento es inválida.";
+        $tipoToast = "danger";
     } else {
-        $imagen_nombre = null;
-        if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-            $mime = mime_content_type($_FILES['imagen']['tmp_name']);
-            $extension = strtolower(pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION));
-            $info = getimagesize($_FILES['imagen']['tmp_name']);
+        $imagenes_nombres = [null, null, null];
 
-            if ($mime !== 'image/jpeg' || ($extension !== 'jpg' && $extension !== 'jpeg') || $info === false || $info['mime'] !== 'image/jpeg') {
-                $mensajeToast = "Solo se permiten imágenes en formato JPEG.";
-                $tipoToast = "danger";
-                guardarLog("Error Denuncia: de validación de imagen: formato no permitido.");
-                $imagen_nombre = null;
-            } else {
-                $imagen_nombre = uniqid() . '.jpg';
-                $ruta_destino = 'imagenes/denuncias/' . $imagen_nombre;
+if (isset($_FILES['imagenes'])) {
+    $archivos = $_FILES['imagenes'];
+    for ($i = 0; $i < count($archivos['name']); $i++) {
+        if ($archivos['error'][$i] === UPLOAD_ERR_OK) {
+            $mime = mime_content_type($archivos['tmp_name'][$i]);
+            $extension = strtolower(pathinfo($archivos['name'][$i], PATHINFO_EXTENSION));
+            $info = getimagesize($archivos['tmp_name'][$i]);
+
+            if ($mime === 'image/jpeg' && ($extension === 'jpg' || $extension === 'jpeg') && $info && $info['mime'] === 'image/jpeg') {
+                $nombreUnico = uniqid() . '.jpg';
+                $ruta_destino = 'imagenes/denuncias/' . $nombreUnico;
 
                 if (!file_exists('imagenes/denuncias')) {
                     mkdir('imagenes/denuncias', 0777, true);
                 }
 
-                if (!move_uploaded_file($_FILES['imagen']['tmp_name'], $ruta_destino)) {
-                    $mensajeToast = "Error al subir la imagen.";
-                    $tipoToast = "danger";
-                    guardarLog("Error Denuncia: al mover la imagen a la carpeta destino: $ruta_destino");
-                    $imagen_nombre = null;
+                if (move_uploaded_file($archivos['tmp_name'][$i], $ruta_destino)) {
+                    $imagenes_nombres[$i] = $nombreUnico;
+                } else {
+                    guardarLog("Error al mover la imagen $i");
                 }
+            } else {
+                guardarLog("Imagen $i no cumple formato JPEG");
             }
         }
+    }
+}
 
-        if (!$mensajeToast) {
-            $stmt = $conexion->prepare("INSERT INTO propuestas_denuncias (titulo, descripcion, imagen, estado)
-                                        VALUES ( ?, ?, ?, 'pendiente')");
-            $stmt->bind_param("sss", $titulo, $descripcion, $imagen_nombre);
-
+// INSERT en BD
+$stmt = $conexion->prepare("INSERT INTO propuestas_denuncias (titulo, descripcion, imagen, imagen2, imagen3, fecha_evento, estado)
+                            VALUES (?, ?, ?, ?, ?, ?, 'pendiente')");
+$stmt->bind_param("ssssss", $titulo, $descripcion, $imagenes_nombres[0], $imagenes_nombres[1], $imagenes_nombres[2], $fecha_evento);
             if ($stmt->execute()) {
                 $mensajeToast = "Denuncia enviada correctamente.";
                 $tipoToast = "primary";
@@ -77,7 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
-}
 ?>
 
 <!DOCTYPE html>
@@ -322,14 +328,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <textarea id="descripcion" name="descripcion" required placeholder="Escribe la descripcion de la denuncia"></textarea>
             </div>
 
+            <div class="campo">
+              <label for="fecha_evento" class="requerido">Fecha del Evento:</label>
+              <input type="date" id="fecha_evento" name="fecha_evento" required>
+          </div>
+
                 <input type="hidden" name="fecha" value="<?php echo date('Y-m-d'); ?>">
 
             <div class="campo">
-                <label for="imagen">Imagen (opcional, maximo 1 imagen, formato jpg):</label>
-                <input type="file" id="imagen" name="imagen" accept="image/jpeg" hidden>
-                <button type="button" id="btn-imagen" class="btn-seleccionar">Seleccionar archivo</button>
+                <label for="imagenes">Imagenes: (opcional, máximo 3 archivos en formato JPEG).</label>
+                <input type="file" id="imagenes" name="imagenes[]" accept="image/jpeg" multiple hidden>
+                <button type="button" id="btn-imagenes" class="btn-seleccionar">Seleccionar archivo(s)</button>
                 <span id="estado-archivo" class="ms-2 text-muted">Ningún archivo seleccionado</span>
-                <img id="preview-imagen" src="#" alt="Vista previa de la imagen" style="display:none; max-width:200px; margin-top:10px;">
+                <div id="preview-imagenes" style="display:flex; gap:10px; margin-top:10px;"></div>
             </div>
         
             <button class="boton-publicar" type="submit">Enviar Denuncia</button>
@@ -452,47 +463,80 @@ function mostrarToast(mensaje, tipo = 'danger') {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    const input = document.getElementById('imagen');
-    const boton = document.getElementById('btn-imagen');
-    const estado = document.getElementById('estado-archivo');
-    const preview = document.getElementById('preview-imagen');
+ const input = document.getElementById('imagenes');
+const boton = document.getElementById('btn-imagenes');
+const estado = document.getElementById('estado-archivo');
+const previewContainer = document.getElementById('preview-imagenes');
 
-    // Acción del botón
-    boton.addEventListener('click', function () {
-        if (boton.dataset.modo === "descartar") {
-            input.value = "";
-            estado.textContent = "Ningún archivo seleccionado";
-            preview.style.display = "none";
+let archivosSeleccionados = []; // Mantener la lista de archivos seleccionados
 
-            boton.textContent = "Seleccionar archivo";
-            boton.classList.remove("btn-descartar");
-            boton.classList.add("btn-seleccionar");
-            boton.dataset.modo = "seleccionar";
-        } else {
-            input.click();
-        }
-    });
+boton.addEventListener('click', () => input.click());
 
-    input.addEventListener('change', function () {
-        const archivo = this.files[0];
-        if (archivo) {
-            // Cambiar a modo descartar
-            estado.textContent = archivo.name;
-            boton.textContent = "Descartar archivo";
-            boton.classList.remove("btn-seleccionar");
-            boton.classList.add("btn-descartar");
-            boton.dataset.modo = "descartar";
-
-            // Mostrar vista previa
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                preview.src = e.target.result;
-                preview.style.display = "block";
-            };
-            reader.readAsDataURL(archivo);
-        }
-    });
+input.addEventListener('change', function () {
+    archivosSeleccionados = Array.from(this.files); // Guardamos los archivos seleccionados
+    actualizarPreview();
 });
+
+function actualizarPreview() {
+    previewContainer.innerHTML = '';
+
+    if (archivosSeleccionados.length > 3) {
+        mostrarToast('Solo puedes seleccionar hasta 3 imágenes.', 'danger');
+        archivosSeleccionados = [];
+        input.value = '';
+        estado.textContent = "Ningún archivo seleccionado";
+        return;
+    }
+
+    archivosSeleccionados.forEach((archivo, index) => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const divImg = document.createElement('div');
+            divImg.style.position = 'relative';
+            divImg.style.display = 'inline-block';
+
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = "100px";
+            img.style.height = "100px";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "4px";
+
+            // Botón "X"
+            const btnX = document.createElement('button');
+            btnX.innerHTML = '×';
+            btnX.style.position = 'absolute';
+            btnX.style.top = '2px';
+            btnX.style.right = '2px';
+            btnX.style.background = 'rgba(255,0,0,0.8)';
+            btnX.style.color = 'white';
+            btnX.style.border = 'none';
+            btnX.style.borderRadius = '50%';
+            btnX.style.width = '20px';
+            btnX.style.height = '20px';
+            btnX.style.cursor = 'pointer';
+            btnX.addEventListener('click', () => {
+                archivosSeleccionados.splice(index, 1); // Eliminar del array
+                actualizarPreview();
+            });
+
+            divImg.appendChild(img);
+            divImg.appendChild(btnX);
+            previewContainer.appendChild(divImg);
+        }
+        reader.readAsDataURL(archivo);
+    });
+
+    estado.textContent = archivosSeleccionados.map(f => f.name).join(', ');
+
+    // Actualizamos el input.files para enviar solo los seleccionados
+    const dataTransfer = new DataTransfer();
+    archivosSeleccionados.forEach(f => dataTransfer.items.add(f));
+    input.files = dataTransfer.files;
+}
+   
+});
+
 function mostrarToast(mensaje, tipo = 'danger') {
     const toastContainer = document.createElement('div');
     toastContainer.className = 'toast-personalizado text-bg-' + tipo;
@@ -513,4 +557,4 @@ function mostrarToast(mensaje, tipo = 'danger') {
 }
 </script>
 </body>
-</html>
+</html> 
