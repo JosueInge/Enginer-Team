@@ -223,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </a>
 
     <!-- Botón Outlook -->
-    <a href="outlook_login.php" class="btn-social">
+    <a href="outlook/login.php" class="btn-social">
       <img src="imagenes/outlook.png" alt="Outlook"> Ingresar con Outlook
     </a>
 
