@@ -523,28 +523,28 @@ async function procesarEntrada() {
 async function enviarMensajeAlBackend(mensaje) {
     const chat = document.getElementById("chat-cuerpo");
 
-    const msgUser = document.createElement("div");
-    msgUser.className = "mensaje-usuario";
-    msgUser.innerHTML = `<strong>${nombreUsuario}</strong><br>${mensaje}`;
-    chat.appendChild(msgUser);
-    chat.scrollTop = chat.scrollHeight;
+        const msgUser = document.createElement("div");
+        msgUser.className = "mensaje-usuario";
+        msgUser.innerHTML = `<strong>${nombreUsuario}</strong><br>${mensaje}`;
+        chat.appendChild(msgUser);
+        chat.scrollTop = chat.scrollHeight;
 
-    const msgBot = document.createElement("div");
-    msgBot.className = "mensaje-bot";
-    msgBot.innerHTML = `<strong>ChatBot</strong><br>Escribiendo...`;
-    chat.appendChild(msgBot);
-    chat.scrollTop = chat.scrollHeight;
+        const msgBot = document.createElement("div");
+        msgBot.className = "mensaje-bot";
+        msgBot.innerHTML = `<strong>ChatBot</strong><br>Escribiendo...`;
+        chat.appendChild(msgBot);
+        chat.scrollTop = chat.scrollHeight;
 
     const formData = new FormData();
     formData.append("mensaje", mensaje);
 
-    try {
-        const response = await fetch("chatbot.php", { method: "POST", body: formData });
-        const data = await response.json();
-        msgBot.innerHTML = `<strong>ChatBot</strong><br>${data.respuesta}`;
-    } catch (error) {
-        msgBot.innerHTML = `<strong>ChatBot</strong><br>Hubo un error al procesar tu mensaje.`;
-    }
+        try {
+            const response = await fetch("chatbot.php", { method: "POST", body: formData });
+            const data = await response.json();
+            msgBot.innerHTML = `<strong>ChatBot</strong><br>${data.respuesta}`;
+        } catch (error) {
+            msgBot.innerHTML = `<strong>ChatBot</strong><br>Hubo un error al procesar tu mensaje.`;
+        }
 
     chat.scrollTop = chat.scrollHeight;
 }

@@ -9,7 +9,7 @@ if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.php");
     exit();
 }
- 
+
 if ($_SESSION['usuario_rol'] !== 'Administrador') {
     header("Location: noticias.php");
     exit();
@@ -31,259 +31,383 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $imagen_nombre = uniqid() . '.' . $extension;
         $ruta_destino = 'imagenes/noticias/' . $imagen_nombre;
 
-        // Crear la carpeta si no existe
         if (!file_exists('imagenes/noticias')) {
             mkdir('imagenes/noticias', 0777, true);
         }
 
-        // Mover la imagen al destino
         if (!move_uploaded_file($_FILES['imagen']['tmp_name'], $ruta_destino)) {
             $errorimagen = "Error al subir la imagen.";
             $imagen_nombre = null;
         }
     }
 
-    $stmt = $conexion->prepare("INSERT INTO propuestas_noticias ( categoria, titulo, descripcion, imagen, autor, fecha, usuario_id, estado, bloquear_comentarios)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, 'aprobada', ?)");
+    $stmt = $conexion->prepare("INSERT INTO propuestas_noticias 
+        (categoria, titulo, descripcion, imagen, autor, fecha, usuario_id, estado, bloquear_comentarios)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'aprobada', ?)");
 
     $bloquear_comentarios = isset($_POST['bloquear_comentarios']) ? 1 : 0;
     $stmt->bind_param("sssssssi", $categoria, $titulo, $descripcion, $imagen_nombre, $autor, $fecha, $usuario_id, $bloquear_comentarios);
 
     if ($stmt->execute()) {
-        $envioexitoso = "Denuncia enviada correctamente. Sera revisada por un administrador.";
+        $envioexitoso = "Denuncia enviada correctamente. Será revisada por un administrador.";
     } else {
         $errorenviar = "Error al enviar la denuncia: " . $conexion->error;
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Publicar Noticia - Comunicado Digital</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #fff;
-            margin: 0;
-        }
-        header {
-            background-color: #0d5c9b;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo img {
-            height: 50px;
-        }
-        .contenedor-principal {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        h1 {
-            color: #0d5c9b;
-            margin-bottom: 20px;
-        }
-       .campo {
-            margin-bottom: 20px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Publicar Noticia - Comunicado Digital</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #fff; }
 
-        .campo label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
+    header {
+      background-color: #061F3E;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo img { height: 50px; }
+    nav a {
+      font-family: 'Poppins', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: #fff;
+      text-decoration: none;
+      margin-left: 20px;
+    }
+    nav a:hover {
+      color: #1661AC;
+      text-decoration: underline;
+    }
 
-        .campo input[type="text"],
-        .campo input[type="date"],
-        .campo textarea,
-        .campo select,
-        .campo input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
+    .contenedor-principal {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+    h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #1661AC;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .campo { margin-bottom: 20px; }
+    .campo label {
+      font-family: 'Poppins', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #403F48;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .campo select,
+    .campo input[type="text"],
+    .campo input[type="date"],
+    .campo textarea {
+      width: 100%;
+      padding: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      border: 1px solid #B1B1B1;
+      border-radius: 12px;
+      color: #061F3E;
+      outline: none;
+      transition: 0.3s;
+    }
+    .campo textarea { min-height: 120px; border-radius: 6px; }
 
-        .campo textarea {
-            min-height: 150px;
-        }
+    .campo input::placeholder,
+    .campo textarea::placeholder { color: #B1B1B1; }
 
-        /* Estilo para la vista previa de la imagen */
-        #preview-imagen {
-            display: none;
-            margin-top: 12px;
-            max-width: 100%;
-            height: auto;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-        .boton-publicar {
-            background-color: #0d5c9b;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-        }
-        .boton-publicar:hover {
-            background-color: #0a4a7a;
-        }
-        #preview-imagen {
-            max-width: 100%;
-            max-height: 200px;
-            margin-top: 10px;
-            display: none;
-        }
-        .error {
-            color: red;
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #ffeeee;
-            border: 1px solid #ffcccc;
-            border-radius: 4px;
-        }
-        .requerido:after {
-            content: " *";
-            color: red;
-        }
-        .menu-configuracion { 
-            position: relative;
-            display: inline-block;
-            margin-left: 15px;
-        }
-            
-        .icono-configuracion {
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-            
-        .icono-configuracion:hover {
-            transform: rotate(30deg);
-        }
-            
-        .menu-desplegable {
-            display: none;
-            position: absolute;
-            right: 0;
-            background-color: white;
-            min-width: 160px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-            z-index: 1001;
-            border-radius: 4px;
-        }
-            
-        .menu-desplegable a {
-            color: #333;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-            transition: background-color 0.3s;
-        }
-            
-        .menu-desplegable a:hover {
-            background-color: #f1f1f1;
-        }
-            
-        .menu-configuracion:hover .menu-desplegable {
-            display: block;
-        }
-        a {
-            text-decoration: none;
-        }
-    </style>
+    .campo input:hover, .campo textarea:hover, .campo select:hover {
+      border-color: #2D8EFF;
+      transform: scale(1.01);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .campo input:focus, .campo textarea:focus, .campo select:focus {
+      border-color: #2D8EFF;
+      transform: scale(1.01);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .contador {
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      text-align: right;
+      margin-top: 4px;
+      color: #B1B1B1;
+      display: none;
+    }
+    .contador.error { color: #E33639; }
+
+    .campo input[type="file"] {
+      border-radius: 12px;
+      padding: 6px;
+      border: 1px solid #B1B1B1;
+    }
+
+    #preview-imagen {
+      display: none;
+      margin-top: 12px;
+      width: 350px;
+      height: 200px;
+      border: 1px solid #B1B1B1;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+
+    .campo-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+      color: #403F48;
+      margin: 20px 0;
+    }
+
+    .boton-publicar {
+      width: 200px;
+      height: 50px;
+      background: #61C9A8;
+      border: none;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: bold;
+      font-family: 'Poppins', sans-serif;
+      color: #1B314B;
+      cursor: pointer;
+      transition: 0.3s;
+      display: block;
+      margin: 0 auto;
+    }
+    .boton-publicar:hover { background: #4CA88C; }
+
+    .error {
+      color: #E33629;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* Modal base */
+    .modal {
+      display: none;
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-contenido {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      width: 400px;
+      text-align: center;
+    }
+    .modal h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      color: #403F48;
+      margin-bottom: 10px;
+    }
+    .modal p {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: #403F48;
+      margin-bottom: 20px;
+    }
+    .modal button {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      border: none;
+      margin: 0 5px;
+    }
+    .btn-confirmar { background: #61C9A8; color: #fff; }
+    .btn-cancelar { background: #EB7373; color: #061F3E; }
+  </style>
 </head>
 <body>
 <header>
-        <div class="logo">
-            <img src="imagenes/logo.png" alt="logo">
-        </div>
-        <nav class="informacion">
-            <a href="noticias.php" style="color: white;">Volver a Noticias</a>
-            <div class="menu-configuracion">
-                <img src="imagenes/configurar.png" class="icono-configuracion" alt="ConfiguraciÃ³n">
-                <div class="menu-desplegable">
-                    <a href="actualizar_perfil.php">Configurar Perfil</a>
-                    <a href="logout.php">Cerrar SesiÃ³n</a>
-                </div>
-            </div>
-        </nav>
-    </header>
+  <div class="logo">
+    <img src="imagenes/logo.png" alt="logo">
+  </div>
+  <nav>
+    <a href="#" id="volverNoticias">Volver a Noticias</a>
+  </nav>
+</header>
 
-    <div class="contenedor-principal">
-        <h1>Publicar Nueva Noticia</h1>
+<div class="contenedor-principal">
+  <h1>Publicar Nueva Noticia</h1>
 
-        <?php if ($error): ?>
-            <div class="error"><?php echo htmlspecialchars($error); ?></div>
-        <?php endif; ?>
-
-        <form action="publicar_noticia.php" method="POST" enctype="multipart/form-data">
-            <div class="campo">
-                <label for="categoria" class="requerido">Categoria:</label>
-                <select id="categoria" name="categoria" required>
-                    <option value="">-- Selecciona una categoria --</option>
-                    <option value="Deportes">Deportes</option>
-                    <option value="Clima">Clima</option>
-                    <option value="Educacion">Educacion</option>
-                    <option value="Turismo">Turismo</option>
-                </select>
-            </div>
-
-            <div class="campo">
-                <label for="titulo" class="requerido">Titulo:</label>
-                <input type="text" id="titulo" name="titulo" required placeholder="Escribe el titulo de la noticia">
-            </div> 
-
-            <div class="campo">
-                <label for="descripcion" class="requerido">Descripcion:</label>
-                <textarea id="descripcion" name="descripcion" required placeholder="Escribe la descripcion de la noticia"></textarea>
-            </div> 
-
-            <div class="campo">
-                <label for="imagen">Imagen (opcional):</label>
-                <input type="file" id="imagen" name="imagen" accept="image/*">
-                <img id="preview-imagen" src="#" alt="Vista previa de la imagen">
-            </div>
-
-            <div class="campo">
-                <label>
-                    <input type="checkbox" name="bloquear_comentarios" id="bloquear_comentarios">
-                    Bloquear comentarios
-                </label>
-            </div>
-        
-            <button class="boton-publicar" type="submit">Publicar Noticia</button>
-        </form>
+  <form id="formNoticia" action="publicar_noticia.php" method="POST" enctype="multipart/form-data">
+    <div class="campo">
+      <label for="categoria">Categoría:</label>
+      <select id="categoria" name="categoria" required>
+        <option value="">Seleccione una categoría</option>
+        <option value="Deportes">Deportes</option>
+        <option value="Clima">Clima</option>
+        <option value="Educacion">Educación</option>
+        <option value="Turismo">Turismo</option>
+      </select>
     </div>
 
-    <script>
-        document.getElementById('imagen').addEventListener('change', function(e) {
+    <div class="campo">
+      <label for="titulo">Título:</label>
+      <input type="text" id="titulo" name="titulo" maxlength="150" placeholder="Escribe el título de la noticia">
+      <div id="contadorTitulo" class="contador"></div>
+      <div id="errorTitulo" class="error"></div>
+    </div>
+
+    <div class="campo">
+      <label for="descripcion">Descripción:</label>
+      <textarea id="descripcion" name="descripcion" maxlength="3000" placeholder="Escribe la descripción de tu noticia"></textarea>
+      <div id="contadorDescripcion" class="contador"></div>
+      <div id="errorDescripcion" class="error"></div>
+    </div>
+
+    <div class="campo">
+      <label for="fecha">Fecha del hecho:</label>
+      <input type="date" id="fecha" name="fecha">
+      <div id="errorFecha" class="error"></div>
+    </div>
+
+    <div class="campo">
+      <label for="imagen">Carga una imagen (opcional)</label>
+      <input type="file" id="imagen" name="imagen" accept="image/*">
+      <img id="preview-imagen" src="#" alt="Vista previa de la imagen">
+    </div>
+
+    <div class="campo-checkbox">
+      <input type="checkbox" id="bloquear_comentarios" name="bloquear_comentarios">
+      <label for="bloquear_comentarios">Bloquear comentarios</label>
+    </div>
+
+    <button class="boton-publicar" type="button" id="btnPublicar">Publicar Noticia</button>
+  </form>
+</div>
+
+<!-- Modal volver -->
+<div class="modal" id="modalVolver">
+  <div class="modal-contenido">
+    <h3>¿Estás seguro de volver a la vista de noticias?</h3>
+    <p><b>Esta acción cancelará los cambios hechos en el formulario</b></p>
+    <button class="btn-confirmar" onclick="window.location='noticias.php'">Confirmar</button>
+    <button class="btn-cancelar" onclick="cerrarModal('modalVolver')">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal publicar -->
+<div class="modal" id="modalPublicar">
+  <div class="modal-contenido">
+    <h3>¿Estás seguro de publicar tu noticia?</h3>
+    <p><b>Estás a punto de publicar tu noticia. Una vez publicada, estará disponible para todos los lectores.</b></p>
+    <button class="btn-cancelar" onclick="cerrarModal('modalPublicar')">Cancelar</button>
+    <button class="btn-confirmar" onclick="document.getElementById('formNoticia').submit()">Confirmar</button>
+  </div>
+</div>
+
+<script>
+  const titulo = document.getElementById('titulo');
+  const descripcion = document.getElementById('descripcion');
+  const contadorTitulo = document.getElementById('contadorTitulo');
+  const contadorDescripcion = document.getElementById('contadorDescripcion');
+  const errorTitulo = document.getElementById('errorTitulo');
+  const errorDescripcion = document.getElementById('errorDescripcion');
+  const errorFecha = document.getElementById('errorFecha');
+
+  // Contador título
+  titulo.addEventListener('input', () => {
+    const length = titulo.value.length;
+    contadorTitulo.style.display = 'block';
+    contadorTitulo.textContent = `${length}/150`;
+    if (length < 10) {
+      contadorTitulo.classList.add('error');
+      errorTitulo.textContent = "El título debe tener al menos 10 caracteres.";
+    } else if (length === 150) {
+      errorTitulo.textContent = "Has alcanzado el límite de 150 caracteres.";
+      contadorTitulo.classList.add('error');
+    } else {
+      errorTitulo.textContent = "";
+      contadorTitulo.classList.remove('error');
+    }
+  });
+
+  // Contador descripción
+  descripcion.addEventListener('input', () => {
+    const length = descripcion.value.length;
+    contadorDescripcion.style.display = 'block';
+    contadorDescripcion.textContent = `${length}/3000`;
+    if (length < 300) {
+      contadorDescripcion.classList.add('error');
+      errorDescripcion.textContent = "La descripción debe tener al menos 300 caracteres.";
+    } else if (length === 3000) {
+      errorDescripcion.textContent = "Has alcanzado el límite de 3000 caracteres.";
+      contadorDescripcion.classList.add('error');
+    } else {
+      errorDescripcion.textContent = "";
+      contadorDescripcion.classList.remove('error');
+    }
+  });
+
+  // Imagen preview
+  document.getElementById('imagen').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const preview = document.getElementById('preview-imagen');
-            preview.src = event.target.result;
-            preview.style.display = 'block';
-        }
-        reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const preview = document.getElementById('preview-imagen');
+        preview.src = ev.target.result;
+        preview.style.display = 'block';
+      }
+      reader.readAsDataURL(file);
     }
-});
-    </script>  
+  });
+
+  // Validación antes de modal publicar
+  document.getElementById('btnPublicar').addEventListener('click', () => {
+    let valido = true;
+    if (titulo.value.trim() === "") {
+      errorTitulo.textContent = "El título es obligatorio.";
+      valido = false;
+    }
+    if (descripcion.value.trim() === "") {
+      errorDescripcion.textContent = "La descripción es obligatoria.";
+      valido = false;
+    }
+    if (document.getElementById('fecha').value === "") {
+      errorFecha.textContent = "La fecha es obligatoria.";
+      valido = false;
+    }
+    if (valido) {
+      abrirModal('modalPublicar');
+    }
+  });
+
+  // Modal funciones
+  function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+  function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
+  document.getElementById('volverNoticias').addEventListener('click', (e) => {
+    e.preventDefault();
+    abrirModal('modalVolver');
+  });
+</script>
 </body>
 </html>
