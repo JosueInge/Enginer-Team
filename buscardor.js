@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!contenedor) return;
 
     // Si el campo quedó vacío → recargar “todo” la página (opcional) o pedir sin término.
-    const url = 'buscar.php?categoria=${encodeURIComponent(categoria)}&term=${encodeURIComponent(term)}';
+    const url = `buscar.php?categoria=${encodeURIComponent(categoria)}&term=${encodeURIComponent(term)}`;
 
     try {
       const r = await fetch(url, { headers: { 'X-Requested-With': 'fetch' }});

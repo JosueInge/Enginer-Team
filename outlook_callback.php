@@ -1,46 +1,67 @@
 <?php
 session_start();
 require_once 'conexion.php';
-require_once "vendor/autoload.php";
 
-$client_id = "512235154991-hgfl77nhp3qffmqf1schu1smgea7k8q3.apps.googleusercontent.com";
-$client_secret = "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";
-$redirect_uri = "http://localhost/Enginer-Team/google_callback.php";
+$clientID = "d3017f43-525d-48ea-b29e-f520364ae153";
+$clientSecret = "WQF8Q~QZ9UArljHR70SNBWgmCtxv~e.O631foaxt";
+$redirectUri = "http://localhost/Enginer-Team/outlook_callback.php";
+$tenant = "common";
 
-
-$client = new Google_Client();
-$client->setClientId($client_id);
-$client->setClientSecret($client_secret);
-$client->setRedirectUri($redirect_uri);
-$client->addScope("email");
-$client->addScope("profile");
+if (!isset($_GET['state']) || $_GET['state'] !== $_SESSION['oauth2state']) {
+    die("Error de validación de estado.");
+}
 
 if (isset($_GET['code'])) {
-    $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
+    $tokenUrl = "https://login.microsoftonline.com/$tenant/oauth2/v2.0/token";
 
-    if (isset($token['error'])) {
-        die("Error al obtener token de acceso: " . $token['error_description']);
+    $params = [
+        "client_id" => $clientID,
+        "client_secret" => $clientSecret,
+        "code" => $_GET['code'],
+        "redirect_uri" => $redirectUri,
+        "grant_type" => "authorization_code"
+    ];
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $tokenUrl);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    $tokenData = json_decode($response, true);
+
+    if (isset($tokenData['error'])) {
+        die("Error en la autenticación con Outlook: " . $tokenData['error_description']);
     }
 
-    $client->setAccessToken($token);
+    $accessToken = $tokenData['access_token'];
 
-    $google_oauth = new Google_Service_Oauth2($client);
-    $google_account_info = $google_oauth->userinfo->get();
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://graph.microsoft.com/v1.0/me");
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Authorization: Bearer " . $accessToken]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $userResponse = curl_exec($ch);
+    curl_close($ch);
 
-    $nombre = $google_account_info->name;
-    $email = $google_account_info->email;
-    $foto = $google_account_info->picture;
+    $userData = json_decode($userResponse, true);
 
-    $stmt = $conexion->prepare("SELECT * FROM usuarios WHERE correo = ?");
-    $stmt->bind_param("s", $email);
+    $outlook_id = $userData['id'];
+    $nombre = $userData['displayName'];
+    $email = $userData['userPrincipalName']; 
+    $foto = null; 
+
+    $stmt = $conexion->prepare("SELECT * FROM usuarios_outlook WHERE outlook_id = ?");
+    $stmt->bind_param("s", $outlook_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $usuario = $result->fetch_assoc();
 
     if (!$usuario) {
         $rol = "Poblador";
-        $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, avatar, rol) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $nombre, $email, $foto, $rol);
+        $stmt = $conexion->prepare("INSERT INTO usuarios_outlook (nombre, correo, outlook_id, avatar, rol) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssss", $nombre, $email, $outlook_id, $foto, $rol);
         $stmt->execute();
 
         $usuario_id = $conexion->insert_id;
@@ -48,6 +69,7 @@ if (isset($_GET['code'])) {
         $usuario_id = $usuario['id'];
         $nombre = $usuario['nombre'];
         $rol = $usuario['rol'];
+        $foto = $usuario['avatar'];
     }
 
     $_SESSION['usuario_id'] = $usuario_id;
@@ -56,9 +78,10 @@ if (isset($_GET['code'])) {
     $_SESSION['usuario_imagen'] = $foto;
     $_SESSION['usuario_rol'] = $rol;
 
-    header("Location: inicio.php");
-    exit();
-
+    header("Location: noticias.php");
+    exit;
 } else {
-    echo "No se recibio el codigo de autenticacion.";
+    echo "No se recibió el código de autenticación.";
 }
+
+
