@@ -9,7 +9,7 @@ session_start();
 <title>Formulario de Denuncia Anónima</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <style>
 body { margin:0; font-family:'Poppins', sans-serif; background:#F5F5F5; }
 header{ background:#061F3E; color:#fff; padding:16px 24px; display:flex; justify-content:space-between; align-items:center; }
@@ -44,6 +44,7 @@ input[type="text"]:focus, input[type="date"]:focus, textarea:focus, input[type="
     right:12px; 
     top:36px; 
     color:#1661AC; 
+    font-size:28px;
     pointer-events:none;
 }
 
@@ -82,7 +83,8 @@ button#enviar:hover{ background:#4CA88C; }
 
 <header>
     <h1>Comunicado Digital</h1>
-    <a href="javascript:void(0);" class="volver" id="btnVolver">Volver a Denuncias</a>
+    <!-- Ahora sí redirige directamente -->
+    <a href="denuncias.php" class="volver">Volver a Denuncias</a>
 </header>
 
 <form id="denunciaForm" enctype="multipart/form-data">
@@ -109,22 +111,13 @@ button#enviar:hover{ background:#4CA88C; }
     <div class="form-group">
         <label for="imagen">Cargar Imagen (Solo JPEG)</label>
         <input type="file" id="imagen" name="imagen" accept=".jpeg">
+        <!-- Icono de seguridad ya visible -->
         <span class="material-icons security-icon">security</span>
         <span class="error" id="errorImagen"></span>
     </div>
 
     <button type="button" id="enviar">Enviar Denuncia</button>
 </form>
-
-<!-- Modal Volver -->
-<div class="modal-backdrop" id="modalVolver">
-    <div class="modal">
-        <h3>¿Deseas volver a la vista de denuncias?</h3>
-        <p>Si confirmas, regresarás a la pantalla de denuncias.</p>
-        <button class="btn-cancel" id="cancelVolver">Cancelar</button>
-        <button class="btn-confirm" id="confirmVolver">Confirmar</button>
-    </div>
-</div>
 
 <!-- Modal Enviar -->
 <div class="modal-backdrop" id="modalEnviar">
@@ -146,11 +139,6 @@ button#enviar:hover{ background:#4CA88C; }
 </div>
 
 <script>
-const btnVolver = document.getElementById('btnVolver');
-const modalVolver = document.getElementById('modalVolver');
-const cancelVolver = document.getElementById('cancelVolver');
-const confirmVolver = document.getElementById('confirmVolver');
-
 const btnEnviar = document.getElementById('enviar');
 const modalEnviar = document.getElementById('modalEnviar');
 const cancelEnviar = document.getElementById('cancelEnviar');
@@ -158,10 +146,6 @@ const confirmEnviar = document.getElementById('confirmEnviar');
 
 const modalErrorImagen = document.getElementById('modalErrorImagen');
 const okImagen = document.getElementById('okImagen');
-
-btnVolver.addEventListener('click', ()=>{ modalVolver.style.display='flex'; });
-cancelVolver.addEventListener('click', ()=>{ modalVolver.style.display='none'; });
-confirmVolver.addEventListener('click', ()=>{ window.location.href='denuncias.php'; });
 
 btnEnviar.addEventListener('click', ()=>{
     let titulo = document.getElementById('titulo').value.trim();
@@ -177,7 +161,7 @@ btnEnviar.addEventListener('click', ()=>{
     document.getElementById('errorImagen').textContent='';
 
     if(titulo===''){ document.getElementById('errorTitulo').textContent='El titulo es obligatorio'; error=true;}
-    else if(titulo.length<10){ document.getElementById('errorTitulo').textContent='La descripción debe tener al menos 10 caracteres.'; error=true;}
+    else if(titulo.length<10){ document.getElementById('errorTitulo').textContent='El título debe tener al menos 10 caracteres.'; error=true;}
     else if(titulo.length>150){ document.getElementById('errorTitulo').textContent='Haz alcanzado el límite de 150 caracteres.'; error=true;}
 
     if(descripcion===''){ document.getElementById('errorDescripcion').textContent='La descripción es obligatoria.'; error=true;}
