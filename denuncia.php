@@ -220,8 +220,8 @@ $conexion->close();
     /* ===== Botón flotante ===== */
     .boton-publicar { 
       position: fixed; 
-      bottom: 30px; 
-      right: 30px; 
+      bottom: 30px;
+      left: 30px; 
       background-color: #0d5c9b; 
       color: white; 
       border: none; 

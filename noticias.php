@@ -137,7 +137,7 @@ $conexion->close();
     }
     .boton-publicar { 
       position: fixed; 
-      bottom: 30px; right: 
+      bottom: 30px; left: 
       30px; background-color: #0d5c9b; 
       color: white; 
       border: none; 
