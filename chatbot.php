@@ -116,12 +116,12 @@ No contestes la pregunta normal, solo advierte al usuario sobre su lenguaje."
     display: none;
     position: fixed;
     bottom: 60px;
-    left: 20px;
-    width: 320px;
+    right: 20px;
+    width: 350px;
     background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    font-family: 'Arial', sans-serif;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    font-family: 'Poppins', sans-serif;
     overflow: hidden;
     z-index: 1001;
 }
@@ -272,8 +272,8 @@ No contestes la pregunta normal, solo advierte al usuario sobre su lenguaje."
 .boton-ayuda {
     position: fixed;
     bottom: 0;
-    left: 20px;
-    background-color: #0d5c9b;
+    right: 20px;
+    background-color: #61C9ab;
     color: white;
     border: none;
     border-radius: 10px 10px 0 0;

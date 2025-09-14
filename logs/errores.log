@@ -33,4 +33,13 @@
 =======
 [2025-09-10 22:03:55] Error Denuncia: formato de fecha_evento inválido.
 [2025-09-10 22:03:55] Error Denuncia: formato de fecha_evento inválido.
+<<<<<<< HEAD
 >>>>>>> d3edc11eca651500e095f0d24c13012cdf1ebfad
+=======
+[2025-09-13 03:55:04] Error Denuncia: campos vacíos al enviar los datos.
+[2025-09-13 04:02:20] Error Denuncia: campos vacíos al enviar los datos.
+[2025-09-13 04:02:21] Error Denuncia: campos vacíos al enviar los datos.
+[2025-09-13 04:02:24] Error Denuncia: campos vacíos al enviar los datos.
+[2025-09-13 04:02:30] Error Denuncia: campos vacíos al enviar los datos.
+[2025-09-13 04:02:33] Error Denuncia: campos vacíos al enviar los datos.
+>>>>>>> 14f7e2e9dcdf6fe42dfd7c9b9e0fc4649f2ead78

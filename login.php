@@ -55,237 +55,187 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inicio de Sesión</title>
-  
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-  <!-- Bootstrap Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Inter&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
   <style>
-    :root {
-      --color-primary: #1661AC;
-      --color-secondary: #61C9A8;
-      --color-text: #403F48;
-      --color-gray: #B1B1B1;
-      --color-dark-gray: #555555;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
-      font-family: 'Inter', sans-serif;
-      background: #fff;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      margin:0; padding:0;
+      font-family:'Inter', sans-serif;
+      background:#f9f9f9;
+      display:flex; justify-content:center; align-items:center;
+      height:100vh;
     }
-
     .formulario {
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
+      width:100%; max-width:600px;
+      background:#fff; padding:40px 35px;
+      border-radius:10px;
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+      text-align:center;
     }
-
-    .form-title {
-      font-family: 'Poppins';
-      font-size: 20px;
-      font-weight: 700;
-      color: #1661ac;
-      margin-bottom: 8px;
-      font-weight: bold;
+    .formulario h2 {
+      font-family:'Poppins',sans-serif;
+      font-size:22px; font-weight:600;
+      color:#1661AC; margin-bottom:10px;
     }
-
-    .form-subtitle {
-      font-size: 14px;
-      color: #555555;
-      margin-bottom: 25px;
-      font-family: 'Inter';
+    .formulario p.sub {
+      font-size:14px; color:#666; margin-bottom:25px;
     }
-
+    /* === CAMPOS DE CORREO Y CONTRASEÑA === */
     .campo {
       position: relative;
-      margin-bottom: 15px;
+      margin: 0 auto 20px auto;
+      width: 100%;
+      max-width: 550px;
     }
-
     .campo input {
       width: 100%;
-      padding: 12px 16px 12px 45px;
-      border: 1px solid #ddd;
+      padding: 12px 16px 12px 48px;
+      border: 1px solid #B1B1B1;
       border-radius: 8px;
-      font-size: 15px;
       font-family: 'Inter', sans-serif;
-      height: 48px;
+      font-size: 16px;
+      color: #403F48;
+      box-sizing: border-box;
     }
-
-    .campo input:focus {
-      border-color: var(--color-primary);
-      outline: none;
+    .campo input::placeholder {
+      color: #B1B1B1;
     }
-
     .campo .icon {
       position: absolute;
       top: 50%;
-      left: 14px;
+      left: 12px;
       transform: translateY(-50%);
-      font-size: 18px;
-      color: var(--color-gray);
+      font-size: 24px;
+      color: #B1B1B1;
+      pointer-events: none;
     }
-
     .campo .toggle {
       position: absolute;
       top: 50%;
-      right: 14px;
+      right: 12px;
       transform: translateY(-50%);
+      font-size: 24px;
+      color: #B1B1B1;
       cursor: pointer;
-      font-size: 18px;
-      color: var(--color-gray);
     }
-
-    .forgot-password {
-      text-align: left;
-      margin-bottom: 20px;
+    /* === MENSAJES DE ERROR === */
+    .error-msg {
+      font-size:13px; color:#c00;
+      text-align:left; margin: -10px auto 10px auto;
+      max-width:550px;
     }
-
-    .forgot-password a {
-      font-size: 14px;
-      color: var(--color-primary);
-      text-decoration: none;
+    .forgot {
+      text-align:left;
+      margin:10px auto 20px auto;
+      max-width:550px;
     }
-
+    .forgot a {
+      font-size:13px; color:#1661AC; text-decoration:none;
+    }
+    /* === BOTÓN INGRESAR === */
     .btn-ingresar {
-      display: block;
-      width: 50%;
-      background: #61c9a8;
-      color: #1b314b;
-      border: none;
-      border-radius: 16px;
-      padding: 8px;
-      font-size: 20px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-bottom: 20px;
-      transition: all 0.3s ease;
-      font-family: 'Poppins';
-      font-weight: bold;
+      display:inline-block;
+      background:#61C9A8;
+      color:#1B314B;
+      border:none;
+      border-radius:16px;
+      padding:0.5rem 1.5rem;
+      font-family:'Poppins', sans-serif;
+      font-size:20px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.3s;
+      margin-top:10px;
     }
-
-    .btn-ingresar:hover {
-      background: #61c9a8;
-    }
-
+    .btn-ingresar:hover { background:#4da78b; }
+    /* === DIVISOR Y REDES === */
     .divider {
-      text-align: center;
-      font-size: 14px;
-      color: var(--color-dark-gray);
-      margin: 20px 0;
-      position: relative;
+      display:flex; align-items:center; text-align:center;
+      margin:20px 0;
     }
-
-    .divider::before,
-    .divider::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      width: 40%;
-      height: 1px;
-      background-color: #ddd;
+    .divider::before, .divider::after {
+      content:""; flex:1;
+      border-bottom:1px solid #ddd;
     }
-
-    .divider::before { left: 0; }
-    .divider::after { right: 0; }
-
-    .social-buttons {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      margin-bottom: 20px;
+    .divider:not(:empty)::before { margin-right:.75em; }
+    .divider:not(:empty)::after { margin-left:.75em; }
+    .social-container {
+      display:flex; justify-content:space-between; gap:10px;
+      max-width:550px; margin:0 auto;
     }
-
     .btn-social {
-      flex: 1;
-      font-size: 14px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background: #fff;
-      color: var(--color-text);
-      text-decoration: none;
-      transition: all 0.3s ease;
+      flex:1;
+      display:inline-flex; align-items:center; justify-content:center;
+      border:1px solid #ccc;
+      border-radius:6px; padding:8px 10px;
+      font-size:13px; text-decoration:none;
+      color:#333; transition:.3s;
+      background:#fff;
     }
-
     .btn-social img {
-      width: 20px;
-      height: 20px;
+      width:18px; height:18px; margin-right:6px;
     }
-
-    .btn-social:hover {
-      background: #f5f5f5;
+    .btn-social:hover { background:#f5f5f5; }
+    .registro-text {
+      margin-top:20px; font-size:13px;
     }
-
-    .register-text {
-      font-size: 14px;
-      margin-top: 10px;
-    }
-
-    .register-text a {
-      color: var(--color-primary);
-      font-weight: 600;
-      text-decoration: none;
-    }
-
-    .register-text a:hover {
-      text-decoration: underline;
+    .registro-text a {
+      color:#1661AC; font-weight:600;
+      text-decoration:none;
     }
   </style>
 </head>
 <body>
-  <form method="POST" action="login.php" class="formulario">
-    <h2 class="form-title">Inicia Sesión</h2>
-    <p class="form-subtitle">Ingresa tus credenciales para acceder</p>
 
+  <form method="POST" action="login.php" class="formulario">
+    <h2>Inicia Sesión</h2>
+    <p class="sub">Ingresa tus credenciales para acceder</p>
+
+    <!-- CAMPO CORREO -->
     <div class="campo">
       <i class="bi bi-envelope icon"></i>
-      <input type="email" name="correo" placeholder="Correo electrónico">
+      <input type="email" name="correo" placeholder="Correo electrónico" value="<?= htmlspecialchars($_POST['correo'] ?? '') ?>">
     </div>
+    <?php if ($errorCorreo): ?><div class="error-msg"><?= $errorCorreo ?></div><?php endif; ?>
 
+    <!-- CAMPO CONTRASEÑA -->
     <div class="campo">
       <i class="bi bi-lock icon"></i>
       <input type="password" id="contraseña" name="contraseña" placeholder="Contraseña">
       <i class="bi bi-eye-slash toggle" id="togglePassword"></i>
     </div>
+    <?php if ($errorContraseña): ?><div class="error-msg"><?= $errorContraseña ?></div><?php endif; ?>
 
-    <div class="forgot-password">
-      <a href="#">Olvidé mi contraseña</a>
+    <!-- OLVIDÉ CONTRASEÑA -->
+    <div class="forgot">
+      <a href="recuperar.php">Olvidé mi contraseña</a>
     </div>
 
-      <button type="submit" class="btn-ingresar">Ingresar</button>
+    <!-- BOTÓN INGRESAR -->
+    <button type="submit" class="btn-ingresar">Ingresar</button>
 
-    <div class="divider">O</div>
+    <!-- DIVISOR -->
+    <div class="divider">o</div>
 
-    <div class="social-buttons">
-      <a href="#" class="btn-social">
-        <img src="imagenes/google.png" alt="Google"> Ingresar con Google
+    <!-- BOTONES SOCIALES -->
+    <div class="social-container">
+      <a href="google_login.php" class="btn-social">
+        <img src="imagenes/google.png" alt="Google"> Google
       </a>
-      <a href="#" class="btn-social">
-        <img src="imagenes/outlook.png" alt="Outlook"> Ingresar con Outlook
+      <a href="outlook_login.php" class="btn-social">
+        <img src="imagenes/outlook.png" alt="Outlook"> Outlook
       </a>
     </div>
 
-    <div class="register-text">
-      ¿No tienes una cuenta? <a href="#">Regístrate</a>
+    <!-- REGISTRO -->
+    <div class="registro-text">
+      ¿No tienes una cuenta? <a href="registro.php">Regístrate</a>
     </div>
   </form>
 
   <script>
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('contraseña');
-
     togglePassword.addEventListener('click', () => {
       const type = passwordInput.type === 'password' ? 'text' : 'password';
       passwordInput.type = type;
@@ -293,5 +243,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       togglePassword.classList.toggle('bi-eye-slash');
     });
   </script>
+
 </body>
 </html>
