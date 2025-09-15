@@ -274,7 +274,7 @@ No contestes la pregunta normal, solo advierte al usuario sobre su lenguaje."
     bottom: 0;
     right: 20px;
     background-color: #61C9ab;
-    color: white;
+    color: #1B314B;
     border: none;
     border-radius: 10px 10px 0 0;
     padding: 12px 20px;
