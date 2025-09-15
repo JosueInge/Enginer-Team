@@ -381,5 +381,7 @@ $conexion->close();
         lastScroll = currentScroll <= 0 ? 0 : currentScroll;
       });
     </script>
+    <?php include 'footer.php' ?>
+
 </body>
 </html>

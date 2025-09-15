@@ -55,153 +55,150 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inicio de Sesión</title>
-  <!-- Fuentes -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Inter&display=swap" rel="stylesheet">
-  <!-- Bootstrap + Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
   <style>
-    body { margin:0; background:#fff; font-family:'Inter', sans-serif; }
-    header {
-      background:#1B314B;
-      padding:15px 30px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    header img { height:50px; }
-    nav a {
-      color:#fff; font-family:'Poppins',sans-serif;
-      font-size:14px; margin-left:15px;
-      text-decoration:none; transition:.3s;
-    }
-    nav a:hover { color:#DDDDDD; text-decoration:underline; }
-    .menu-toggle { display:none; font-size:24px; color:#fff; cursor:pointer; }
-    @media(max-width:768px){
-      nav { display:none; flex-direction:column; background:#1B314B; position:absolute; right:0; top:70px; padding:10px; border-radius:6px; }
-      nav.show { display:flex; }
-      .menu-toggle { display:block; }
+    body {
+      margin:0; padding:0;
+      font-family:'Inter', sans-serif;
+      background:#f9f9f9;
+      display:flex; justify-content:center; align-items:center;
+      height:100vh;
     }
     .formulario {
-      max-width:550px; margin:40px auto; padding:30px;
-      border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.1);
-      background:#fff;
+      width:100%; max-width:600px;
+      background:#fff; padding:40px 35px;
+      border-radius:10px;
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+      text-align:center;
     }
     .formulario h2 {
-      font-family:'Poppins',sans-serif; font-size:20px;
-      font-weight:600; color:#1661AC; text-align:center;
+      font-family:'Poppins',sans-serif;
+      font-size:22px; font-weight:600;
+      color:#1661AC; margin-bottom:10px;
     }
     .formulario p.sub {
-      font-family:'Inter',sans-serif; font-size:14px;
-      color:#555; text-align:center; margin-bottom:25px;
+      font-size:14px; color:#666; margin-bottom:25px;
     }
-    .campo { position:relative; margin-bottom:20px; }
+    /* === CAMPOS DE CORREO Y CONTRASEÑA === */
+    .campo {
+      position: relative;
+      margin: 0 auto 20px auto;
+      width: 100%;
+      max-width: 550px;
+    }
     .campo input {
-      width:100%; padding:12px 16px 12px 45px;
-      border:1px solid #B1B1B1; border-radius:8px;
-      font-size:16px; color:#403F48; font-family:'Inter',sans-serif;
-      transition:.3s;
+      width: 100%;
+      padding: 12px 16px 12px 48px;
+      border: 1px solid #B1B1B1;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: #403F48;
+      box-sizing: border-box;
     }
-    .campo input:focus {
-      border-color:#1661AC; transform:scale(1.01);
-      box-shadow:0 0 6px rgba(22,97,172,.3);
+    .campo input::placeholder {
+      color: #B1B1B1;
     }
     .campo .icon {
-      position:absolute; top:50%; left:12px;
-      transform:translateY(-50%); color:#B1B1B1; font-size:20px;
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      font-size: 24px;
+      color: #B1B1B1;
+      pointer-events: none;
     }
     .campo .toggle {
-      position:absolute; top:50%; right:12px;
-      transform:translateY(-50%); cursor:pointer;
-      color:#B1B1B1; font-size:20px;
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      font-size: 24px;
+      color: #B1B1B1;
+      cursor: pointer;
     }
+    /* === MENSAJES DE ERROR === */
     .error-msg {
-      font-family:'Poppins',sans-serif; font-size:16px;
-      color:#1B314B; text-align:center; margin-top:5px;
-      animation:shake .3s;
+      font-size:13px; color:#c00;
+      text-align:left; margin: -10px auto 10px auto;
+      max-width:550px;
     }
-    @keyframes shake {
-      0%,100%{transform:translateX(0);}
-      25%{transform:translateX(-5px);}
-      75%{transform:translateX(5px);}
+    .forgot {
+      text-align:left;
+      margin:10px auto 20px auto;
+      max-width:550px;
     }
+    .forgot a {
+      font-size:13px; color:#1661AC; text-decoration:none;
+    }
+    /* === BOTÓN INGRESAR === */
     .btn-ingresar {
-      display:block; width:100%; background:#61C9A8; color:#1B314B;
-      border:none; border-radius:16px; padding:.5rem 1.5rem;
-      font-size:20px; font-weight:600; font-family:'Poppins',sans-serif;
-      cursor:pointer; transition:.3s; position:relative; overflow:hidden;
-    }
-    .btn-ingresar:hover { box-shadow:0 4px 10px rgba(0,0,0,.2); }
-    .divider { 
-      text-align:center; font-family:'Inter',sans-serif; 
-      font-size:18px; font-weight:600; color:#403F48; margin:20px 0; 
-    }
-    .registro-text {
-      font-size:18px; font-weight:600; font-family:'Poppins',sans-serif;
-    }
-    /* BOTONES SOCIALES */
-    .btn-social {
-      font-family:'Inter', sans-serif;
+      display:inline-block;
+      background:#61C9A8;
+      color:#1B314B;
+      border:none;
+      border-radius:16px;
+      padding:0.5rem 1.5rem;
+      font-family:'Poppins', sans-serif;
       font-size:20px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      justify-content:flex-start;
-      width:100%;
-      padding:12px 16px;
-      border-radius:8px;
-      border:1px solid #1661AC;
-      background:#fff;
-      color:#403F48;
-      text-decoration:none;
+      font-weight:700;
+      cursor:pointer;
       transition:.3s;
-      margin-bottom:10px;
-      position:relative;
-      overflow:hidden;
+      margin-top:10px;
+    }
+    .btn-ingresar:hover { background:#4da78b; }
+    /* === DIVISOR Y REDES === */
+    .divider {
+      display:flex; align-items:center; text-align:center;
+      margin:20px 0;
+    }
+    .divider::before, .divider::after {
+      content:""; flex:1;
+      border-bottom:1px solid #ddd;
+    }
+    .divider:not(:empty)::before { margin-right:.75em; }
+    .divider:not(:empty)::after { margin-left:.75em; }
+    .social-container {
+      display:flex; justify-content:space-between; gap:10px;
+      max-width:550px; margin:0 auto;
+    }
+    .btn-social {
+      flex:1;
+      display:inline-flex; align-items:center; justify-content:center;
+      border:1px solid #ccc;
+      border-radius:6px; padding:8px 10px;
+      font-size:13px; text-decoration:none;
+      color:#333; transition:.3s;
+      background:#fff;
     }
     .btn-social img {
-      width:24px; height:24px;
+      width:18px; height:18px; margin-right:6px;
     }
-    .btn-social:hover {
-      box-shadow:0 4px 10px rgba(0,0,0,0.1);
-      transform:translateY(-1px);
+    .btn-social:hover { background:#f5f5f5; }
+    .registro-text {
+      margin-top:20px; font-size:13px;
     }
-    .btn-social:active::after {
-      content:"";
-      position:absolute;
-      width:100%; height:100%;
-      background:rgba(22,97,172,0.15);
-      top:0; left:0;
-      animation:ripple .4s linear;
-    }
-    @keyframes ripple {
-      from { opacity:1; transform:scale(0); }
-      to { opacity:0; transform:scale(2.5); }
+    .registro-text a {
+      color:#1661AC; font-weight:600;
+      text-decoration:none;
     }
   </style>
 </head>
 <body>
-  
-  <header>
-    <img src="imagenes/logo.png" alt="logo">
-    <div class="menu-toggle" onclick="document.querySelector('nav').classList.toggle('show')"><i class="bi bi-list"></i></div>
-    <nav>
-      <a href="#">Contacto</a>
-      <a href="sobrenosotros.php">Sobre nosotros</a>
-      <a href="login.php">Inicio de sesión</a>
-    </nav>
-  </header>
 
   <form method="POST" action="login.php" class="formulario">
     <h2>Inicia Sesión</h2>
     <p class="sub">Ingresa tus credenciales para acceder</p>
 
+    <!-- CAMPO CORREO -->
     <div class="campo">
       <i class="bi bi-envelope icon"></i>
       <input type="email" name="correo" placeholder="Correo electrónico" value="<?= htmlspecialchars($_POST['correo'] ?? '') ?>">
     </div>
     <?php if ($errorCorreo): ?><div class="error-msg"><?= $errorCorreo ?></div><?php endif; ?>
 
+    <!-- CAMPO CONTRASEÑA -->
     <div class="campo">
       <i class="bi bi-lock icon"></i>
       <input type="password" id="contraseña" name="contraseña" placeholder="Contraseña">
@@ -209,26 +206,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <?php if ($errorContraseña): ?><div class="error-msg"><?= $errorContraseña ?></div><?php endif; ?>
 
-    <div style="text-align:right; margin-bottom:15px;">
-      <a href="recuperar.php" style="font-size:13px; color:#1661AC; text-decoration:none;">Olvidé mi contraseña</a>
+    <!-- OLVIDÉ CONTRASEÑA -->
+    <div class="forgot">
+      <a href="recuperar.php">Olvidé mi contraseña</a>
     </div>
 
+    <!-- BOTÓN INGRESAR -->
     <button type="submit" class="btn-ingresar">Ingresar</button>
 
-    <div class="divider">O</div>
+    <!-- DIVISOR -->
+    <div class="divider">o</div>
 
-    <!-- Botón Google -->
-    <a href="google_login.php" class="btn-social">
-      <img src="imagenes/google.png" alt="Google"> Ingresar con Google
-    </a>
+    <!-- BOTONES SOCIALES -->
+    <div class="social-container">
+      <a href="google_login.php" class="btn-social">
+        <img src="imagenes/google.png" alt="Google"> Google
+      </a>
+      <a href="outlook_login.php" class="btn-social">
+        <img src="imagenes/outlook.png" alt="Outlook"> Outlook
+      </a>
+    </div>
 
-    <!-- Botón Outlook -->
-    <a href="outlook_login.php" class="btn-social">
-      <img src="imagenes/outlook.png" alt="Outlook"> Ingresar con Outlook
-    </a>
-
-    <div style="text-align:center; margin-top:20px;" class="registro-text">
-      ¿No tienes una cuenta? <a href="registro.php" style="color:#1661AC; font-weight:700;">Regístrate</a>
+    <!-- REGISTRO -->
+    <div class="registro-text">
+      ¿No tienes una cuenta? <a href="registro.php">Regístrate</a>
     </div>
   </form>
 
@@ -242,5 +243,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       togglePassword.classList.toggle('bi-eye-slash');
     });
   </script>
+
 </body>
 </html>
