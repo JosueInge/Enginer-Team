@@ -188,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
         font-family:'Poppins',sans-serif;
         font-size:20px;
         font-weight:700;
-        color:#333333;
+        color: #1661AC;
         text-align:center;
         margin:0 0 8px 0;
     }

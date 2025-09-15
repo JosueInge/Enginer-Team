@@ -1,6 +1,6 @@
-<?php
-include 'conexion.php';
+<?php 
 session_start();
+include 'conexion.php';
 
 function guardarLog($mensaje) {
     $rutaLog = __DIR__ . '/logs/errores.log';
@@ -15,260 +15,599 @@ $tipoToast = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $titulo = trim($_POST['titulo'] ?? '');
     $descripcion = trim($_POST['descripcion'] ?? '');
-    $usuario_id = $_SESSION['usuario_id'] ?? null;
+    $fecha_evento = trim($_POST['fecha_evento'] ?? '');
 
-    if ($titulo === '' || $descripcion === '') {
-        guardarLog("Error Denuncia Anonima: campos vacíos al enviar los datos.");
-        $mensajeToast = "Debes completar todos los campos requeridos.";
-        $tipoToast = "danger";
-    } else {
-        $imagen_nombre = null;
-        if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-            $mime = mime_content_type($_FILES['imagen']['tmp_name']);
-            $extension = strtolower(pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION));
-            $info = getimagesize($_FILES['imagen']['tmp_name']);
+    // se inicia array para nombres de imágenes
+    $imagenes_nombres = [null, null, null];
 
-            if ($mime !== 'image/jpeg' || ($extension !== 'jpg' && $extension !== 'jpeg') || $info === false || $info['mime'] !== 'image/jpeg') {
-                $mensajeToast = "Solo se permiten imágenes en formato JPEG.";
-                $tipoToast = "danger";
-                guardarLog("Error Denuncia Anonima: formato no permitido.");
-                $imagen_nombre = null;
-            } else {
-                $imagen_nombre = uniqid() . '.jpg';
-                $ruta_destino = 'imagenes/denuncias/' . $imagen_nombre;
+    // Procesamos imágenes primero
+    if (isset($_FILES['imagenes'])) {
+        $archivos = $_FILES['imagenes'];
+        for ($i = 0; $i < count($archivos['name']); $i++) {
+            if ($archivos['error'][$i] === UPLOAD_ERR_OK) {
+                $mime = mime_content_type($archivos['tmp_name'][$i]);
+                $extension = strtolower(pathinfo($archivos['name'][$i], PATHINFO_EXTENSION));
+                $info = getimagesize($archivos['tmp_name'][$i]);
 
-                if (!file_exists('imagenes/denuncias')) {
-                    mkdir('imagenes/denuncias', 0777, true);
-                }
+                if ($mime === 'image/jpeg' && ($extension === 'jpg' || $extension === 'jpeg') && $info && $info['mime'] === 'image/jpeg') {
+                    $nombreUnico = uniqid() . '.jpg';
+                    $ruta_destino = 'imagenes/denuncias/' . $nombreUnico;
 
-                if (!move_uploaded_file($_FILES['imagen']['tmp_name'], $ruta_destino)) {
-                    $mensajeToast = "Error al subir la imagen.";
-                    $tipoToast = "danger";
-                    guardarLog("Error Denuncia Anonima: al mover la imagen a la carpeta destino: $ruta_destino");
-                    $imagen_nombre = null;
+                    if (!file_exists('imagenes/denuncias')) {
+                        mkdir('imagenes/denuncias', 0755, true);
+                    }
+
+                    // Guardar imagen temporalmente, se moverá al enviar correctamente
+                    move_uploaded_file($archivos['tmp_name'][$i], $ruta_destino);
+                    $imagenes_nombres[$i] = $nombreUnico;
                 }
             }
         }
+    }
 
-        if (!$mensajeToast) {
-            $stmt = $conexion->prepare("INSERT INTO propuestas_denuncias_anonima (titulo, descripcion, imagen, usuario_id, estado)
-                                        VALUES (?, ?, ?, ?, 'pendiente')");
-            $stmt->bind_param("sssi", $titulo, $descripcion, $imagen_nombre, $usuario_id);
+    // Validaciones de campos
+    if ($titulo === '' || $descripcion === '' || $fecha_evento === '') {
+    guardarLog("Error Denuncia: campos vacíos al enviar los datos.");
+    $mensajeToast = "Debes completar todos los campos requeridos.";
+    $tipoToast = "danger";
 
-            if ($stmt->execute()) {
-                $mensajeToast = "Denuncia enviada correctamente.";
+// Validaciones para TÍTULO
+} elseif (strlen($titulo) < 10) {
+    guardarLog("Error Denuncia: título demasiado corto.");
+    $mensajeToast = "El título debe tener al menos 10 caracteres.";
+    $tipoToast = "danger";
+} elseif (strlen($titulo) > 150) {
+    guardarLog("Error Denuncia: título demasiado largo.");
+    $mensajeToast = "El título no debe exceder 150 caracteres.";
+    $tipoToast = "danger";
+
+// Validaciones para DESCRIPCIÓN
+} elseif (strlen($descripcion) < 300) {
+    guardarLog("Error Denuncia: descripción demasiado corta.");
+    $mensajeToast = "La descripción debe tener al menos 300 caracteres.";
+    $tipoToast = "danger";
+} elseif (strlen($descripcion) > 3000) {
+    guardarLog("Error Denuncia: descripción demasiado larga.");
+    $mensajeToast = "La descripción no debe exceder 3000 caracteres.";
+    $tipoToast = "danger";
+    } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_evento)) {
+        guardarLog("Error Denuncia: fecha inválida.");
+        $mensajeToast = "La fecha del evento es inválida.";
+        $tipoToast = "danger";
+    } else {
+      error_log("DEBUG SQL: Titulo=$titulo, Descripcion=$descripcion, Imagen0={$imagenes_nombres[0]}, Imagen1={$imagenes_nombres[1]}, Imagen2={$imagenes_nombres[2]}, Fecha=$fecha_evento");
+        // Inserción en Base de Datos 
+        $stmt = $conexion->prepare("INSERT INTO propuestas_denuncias_anonima 
+            (titulo, descripcion, imagen, imagen2, imagen3, fecha_evento, estado)
+            VALUES (?, ?, ?, ?, ?, ?, 'pendiente')");
+        $stmt->bind_param("ssssss", $titulo, $descripcion, $imagenes_nombres[0], $imagenes_nombres[1], $imagenes_nombres[2], $fecha_evento);
+        if ($stmt->execute()) {
+            $mensajeToast = "Denuncia enviada correctamente.";
                 $tipoToast = "primary";
             } else {
                 $mensajeToast = "Error al enviar la denuncia: " . $conexion->error;
                 $tipoToast = "danger";
-                guardarLog("Error Denuncia Anonima: En BD al insertar denuncia: " . $conexion->error);
+                guardarLog("Error Denuncia: En BD al insertar denuncia: " . $conexion->error);
             }
-        }
-    }
+      }
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enviar Denuncia - Comunicado Digital</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background-color: #fff; 
-            margin: 0;
-        }
-        header {
-            background-color: #1b314b;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center; 
-        }
-        .logo img { 
-            height: 50px; 
-        }
-        .contenedor-principal { 
-            max-width: 800px; 
-            margin: 30px auto;
-            padding: 0 20px; 
-        }
-        h1 { 
-            color: #1661ac;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: 700;
-            font-size: 32px 
-        }
-        h4 {
-            color: #74737C;
-            margin-bottom: 20px;
-            text-align: center;
-            font-family: 'Inter', sans-serif;
-            font-size: 16px
-        }
-        .campo { 
-            margin-bottom: 20px; 
-        }
-        .campo label { 
-            display: block; 
-            margin-bottom: 5px; 
-            font-weight: bold; 
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enviar Denuncia - Comunicado Digital</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+    }
 
-        .campo input[type="text"], 
-        .campo textarea {
-             width: 100%; 
-             padding: 10px; 
-             border: 1px solid #ccc; 
-             border-radius: 4px; 
-        }
-        .campo textarea { 
-            min-height: 150px;
-            font-weight: 400;
-            color: #403F48;
-            font-family: 'Inter', sans-serif;
-            font-size: 16px 
-        }
-        .boton-publicar { 
-            background-color: #1661ac;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-        }
-        .boton-publicar:hover { 
-            background-color: #0a4a7a; 
-        }
-        #preview-imagen { 
-            max-width: 100%; 
-            max-height: 200px; 
-            margin-top: 10px; 
-            display: none; 
-        }
-        .requerido:after { 
-            content: " *"; 
-            color: red; 
-        }
-        a {
-            text-decoration: none; 
-        }
-        .volver { 
-            color: #fff;
-            position: relative;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            font-size: 18px;
-            top: -5px;
-        }
-        .informacion {
-            margin-right: 10px;
-            font-size: 24px;
-        }
-        .informacion a:hover {
-            color: #73d5f5;
-        }
-        .campo input[type="text"],
-        .campo input[type="date"],
-        .campo textarea,
-        .campo select,
-        .campo input[type="file"] {
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
+    header {
+      background-color: #061F3E;
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        .campo input[type="text"]:hover,
-        .campo input[type="date"]:hover,
-        .campo textarea:hover,
-        .campo select:hover,
-        .campo input[type="file"]:hover,
-        .campo input[type="text"]:focus,
-        .campo input[type="date"]:focus,
-        .campo textarea:focus,
-        .campo select:focus,
-        .campo input[type="file"]:focus {
-            border-color: #1661AC;
-            box-shadow: 0 0 0 3px rgba(22, 97, 172, 0.2);
-            outline: none;
-        }
+    header .logo img {
+      height: 45px;
+    }
 
-    </style>
+    header a {
+      color: #fff;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .contenedor-principal {
+      max-width: 650px;
+      margin: 40px auto;
+      padding: 5px;
+      text-align: center;
+    }
+
+    .contenedor-principal h1 {
+      color: #0072ce;
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .contenedor-principal p {
+      color: #555;
+      margin-bottom: 25px;
+      font-size: 0.95rem;
+    }
+
+    .campo {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    .campo label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .campo input[type="text"],
+    .campo input[type="date"],
+    .campo textarea,
+    .campo input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .campo textarea {
+      min-height: 120px;
+      resize: none;
+    }
+
+    .text-muted {
+      font-size: 0.8rem;
+      color: #888 !important;
+      display: inline;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+    }
+
+    .btn-seleccionar {
+      background-color: #0d5c9b;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-seleccionar:hover {
+      background-color: #094574;
+    }
+
+    .boton-publicar {
+      background-color: #61C9A8;
+      color: #1B314B;
+      border: none;
+      padding: 12px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: bold;
+      width: 25%;
+      margin-top: 15px;
+      transition: background 0.3s;
+    }
+
+    .boton-publicar:hover {
+      background-color: #16a085;
+    }
+
+    .requerido:after {
+      content: " *";
+      color: red;
+    }
+
+    /* es donde se cargan las imagenes de files */
+    #preview-imagenes {
+    display: flex !important;
+    gap: 10px;        
+    flex-wrap: wrap;    
+    align-items: flex-start; 
+}
+
+.imagen-preview {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    width: 320px;    
+}
+
+.imagen-preview img {
+    width: 360px;
+    height: 203px;
+    object-fit: cover;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.imagen-preview .info {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.imagen-preview .nombre {
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.imagen-preview .eliminar {
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    line-height: 18px;
+    text-align: center;
+    font-weight: bold;
+}
+
+    .error {
+      color: red;
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #ffeeee;
+      border: 1px solid #ffcccc;
+      border-radius: 4px;
+    }
+
+    .mensaje-error {
+      background-color: #f8d7da;
+      color: #842029;
+      border: 1px solid #f5c2c7;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-top: 5px;
+      animation: aparecer 0.3s ease-in-out;
+    }
+
+    .toast-personalizado {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #0d6efd;
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 9999;
+      text-align: center;
+      min-width: 280px;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .toast-personalizado.text-bg-danger {
+      background: #dc3545;
+    }
+
+    .toast-personalizado.text-bg-primary {
+      background: #0d6efd;
+    }
+
+        /* Animaciones */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -60%); }
+      to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+
+    .error-borde {
+      border: 2px solid red !important;
+    }
+
+    /* Botón del input file */
+    .custom-file-input::file-selector-button {
+      background-color:  #ADEBFFD9;   /* azul */
+      color: #061F3E;
+      border: 1px solid #ADEBFFD9;
+      border-radius: 6px;
+      margin-left: 0px;
+      padding: 6px 14px;
+      margin-right: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.3s, border-color 0.3s, color 0.3s;
+    }
+
+    .custom-file-input:hover::file-selector-button {
+      background-color: #94E3FFD9 !important; 
+      color: #061F3E !important;
+      border-color: #94E3FFD9 !important;
+    }
+
+/* Focus (cuando haces clic y queda seleccionado) */
+    .custom-file-input:focus::file-selector-button {
+      background-color: #94E3FFD9 !important;
+      color: #061F3E !important;
+      border-color: #94E3FFD9 !important;
+      box-shadow: none !important;
+    }
+
+    .campo {
+      position: relative;
+      width: 650px;
+      margin-bottom: 20px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 16px;
+    }
+
+    .campo input,
+    .campo textarea {
+      width: 100%;
+      padding-right: 60px;
+      box-sizing: border-box;
+    }
+
+    .campo small {
+      position: absolute;
+      right: 10px;
+      top: 85%;
+      transform: translateY(-50%);
+      color: gray;
+      pointer-events: none;
+      font-size: 12px;
+    }
+
+    .campo textarea + small {
+      top: auto;
+      bottom: 5px;
+      transform: none;
+    }
+
+    .volver {
+      font-family: poppins; 
+    }
+
+    .parrafo {
+      color: #403F48;
+      font-family: 'Inter', sans-serif;
+    }
+
+    h1 {
+      font-family: 'Poppins', sans-serif;
+      color: #1661AC;
+    }
+
+    .alert {
+      background: #ADEBFFD9;
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      font-size: 14px;
+      color: #004080;
+    }
+
+    .modal-confirmacion {
+      display: none; 
+      position: fixed;
+      z-index: 99999;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-contenido {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      width: 520px;
+      text-align: center;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+      font-family: 'Poppins', sans-serif;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-contenido h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #0d2740;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .modal-contenido p {
+      font-size: 15px;
+      margin-bottom: 30px;
+      color: #444;
+    }
+
+    .modal-botones {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+    }
+
+    .btn-cancelar {
+      flex: 1;
+      background: #dc3545;
+      border: none;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-confirmar {
+      flex: 1;
+      background: #28a745;
+      border: none;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-cancelar:hover { background: #b52b39; }
+    .btn-confirmar:hover { background: #218838; }
+
+    .volverdenuncias {
+      font-family: 'Poppins', sans-serif;
+      font-size: 24px;
+      color: FFFFF;
+    }
+    
+  </style>
 </head>
-<body>
-<header>
-    <div class="logo"><img src="imagenes/logo.png" alt="logo"></div>
-    <nav><a href="denuncia_anonima.php" class="volver">Volver a Denuncias</a></nav>
-</header>
+  <div id="modal-confirmacion" class="modal-confirmacion">
+    <div class="modal-contenido">
+      <h2>¿Estas seguro de enviar tu denuncia?</h2>
+      <p>Un administrador la revisará y publicará posteriormente</p>
+      <div class="modal-botones">
+        <button id="btnCancelar" class="btn-cancelar">Cancelar</button>
+        <button id="btnConfirmar" class="btn-confirmar">Confirmar</button>
+      </div>
+    </div>
+  </div>
 
-<div class="contenedor-principal">
-        <h1>Enviar denuncia anónima</h1>
-        <h4>Tu denuncia será revisada por los administradores</h4>
-
-    <form action="enviar_denuncia_anonima.php" method="POST" enctype="multipart/form-data">
-        <div class="campo">
-            <label for="titulo" class="requerido">Título:</label>
-            <input type="text" id="titulo" name="titulo" required placeholder="Escribe el título de la denuncia">
-        </div> 
-
-        <div class="campo">
-            <label for="descripcion" class="requerido">Descripción:</label>
-            <textarea id="descripcion" name="descripcion" required placeholder="Escribe la descripción de la denuncia"></textarea>
-        </div>
-
-        <input type="hidden" name="fecha" value="<?php echo date('Y-m-d'); ?>">
-
-        <div class="campo">
-            <label for="imagen">Imagen (opcional):</label>               
-            <input type="file" id="imagen" name="imagen" accept="image/jpeg">
-            <img id="preview-imagen" src="#" alt="Vista previa de la imagen">
-        </div>
-
-        <button class="boton-publicar" type="submit">Enviar Denuncia</button>
-    </form>
+ <div id="modal-volver" class="modal-confirmacion">
+  <div class="modal-contenido">
+    <h2>¿Estás seguro de volver a la vista de denuncias?</h2>
+    <p>Esta acción cancelara los cambios hechos en el formulario.</p>
+    <div class="modal-botones">
+      <button id="btnCancelarVolver" class="btn-cancelar">Cancelar</button>
+      <button id="btnConfirmarVolver" class="btn-confirmar">Confirmar</button>
+    </div>
+  </div>
 </div>
 
-<!-- Toast dinámico desde PHP -->
+<body>
+  <header>
+    <div class="logo">
+      <img src="imagenes/logo.png" alt="logo">
+    </div>
+    <a class="volverdenuncias" href="denuncia_anonima.php" id="btnVolver">Volver a Denuncias</a>
+  </header>
+
+  <div class="contenedor-principal">
+    <h1>Enviar denuncia anónima</h1>
+    <p class="parrafo" >Tu denuncia será revisada por los administradores</p>
+
+    <div class="alert">
+      🔒 Tu denuncia es 100% anónima. No pediremos datos personales ni podremos rastrear tu identidad.
+    </div>
+
+    <form action="enviar_denuncia_anonima.php" method="POST" enctype="multipart/form-data">
+      <div class="campo">
+        <label for="titulo" class="requerido">Título:</label>
+        <input type="text" id="titulo" name="titulo" placeholder="Escribe el título de tu denuncia" value="<?= htmlspecialchars($titulo ?? '') ?>">
+        <small id="contadorTitulo">0/150</small>
+      </div>
+
+      <div class="campo">
+        <label for="descripcion" class="requerido">Descripción:</label>
+        <textarea id="descripcion" name="descripcion" placeholder="Escribe la descripción de tu denuncia"><?= htmlspecialchars($descripcion ?? '') ?></textarea>
+        <small id="contadorDescripcion">0/3000</small>
+      </div>
+
+      <div class="campo">
+        <label for="fecha_evento" class="requerido">Fecha del evento denunciado:</label>
+        <input type="date" id="fecha_evento" name="fecha_evento" value="<?= htmlspecialchars($fecha_evento ?? '') ?>">
+      </div>
+
+      <div class="campo">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label for="imagenes" class="fw-semibold">Carga una imagen (Opcional)</label>
+          <span class="text-muted">Puedes cargar hasta 3 imágenes en formato (.jpeg).</span>
+        </div>
+        <input type="file" id="imagenes" name="imagenes[]" accept="image/jpeg" multiple class="form-control custom-file-input">
+        <div id="preview-imagenes" style="display:flex; gap:10px; margin-top:10px;"></div>
+      </div>
+
+      <button class="boton-publicar" type="submit">Enviar denuncia</button>
+    </form>
+  </div>
 <?php if ($mensajeToast): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     mostrarToast("<?php echo htmlspecialchars($mensajeToast); ?>", "<?php echo $tipoToast; ?>");
+    <?php if ($tipoToast === 'primary'):?>
+    setTimeout(() => {
+        window.location.href = 'denuncia_anonima.php';
+    }, 4000);
+    <?php endif; ?>
 });
 </script>
 <?php endif; ?>
 
 <script>
-// Función para mostrar un toast dinámico
-function mostrarToast(mensaje, tipo = 'danger') {
-    const toastContainer = document.createElement('div');
-    toastContainer.className = 'toast align-items-center text-bg-' + tipo + ' border-0 show position-fixed bottom-0 end-0 m-3';
-    toastContainer.setAttribute('role', 'alert');
-    toastContainer.style.zIndex = '9999';
+  document.addEventListener('DOMContentLoaded', function () {
+    const inputs = document.querySelectorAll('#titulo, #descripcion');
 
-    toastContainer.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">${mensaje}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    `;
+    inputs.forEach(input => {
+        input.addEventListener('input', function () { 
+            const valor = this.value.trim();
+            let errorMsg = this.parentNode.querySelector('.mensaje-error');
 
-    document.body.appendChild(toastContainer);
+            if (errorMsg) errorMsg.remove();
+            this.classList.remove('error-borde');
 
-    setTimeout(() => {
-        toastContainer.remove();
-    }, 4000);
-}
+            if (valor === '') {
+                mostrarError(this, 'Este campo es obligatorio');
+            } else if (this.id === 'titulo') {
+                if (valor.length < 10) {
+                    mostrarError(this, 'El título debe tener al menos 10 caracteres.');
+                } else if (valor.length > 150) {
+                    mostrarError(this, 'El título no debe exceder 150 caracteres.');
+                }
+            } else if (this.id === 'descripcion') {
+                if (valor.length < 300) {
+                    mostrarError(this, 'La descripción debe tener al menos 300 caracteres.');
+                } else if (valor.length > 3000) {
+                    mostrarError(this, 'La descripción no debe exceder 3000 caracteres.');
+                }
+            }
+        });
+    });
 
-document.addEventListener('DOMContentLoaded', function () {
-    const fileInput = document.getElementById('imagen');
-    const preview = document.getElementById('preview-imagen');
+    function mostrarError(input, mensaje) {
+        let errorMsg = document.createElement('div');
+        errorMsg.className = 'mensaje-error';
+        errorMsg.textContent = mensaje;
+        input.parentNode.appendChild(errorMsg);
+
+        //  borde rojo al input
+        input.classList.add('error-borde');
+    }
+
+    // Validación de imagen
+    const fileInput = document.getElementById('imagenes');
+    const preview = document.getElementById('preview-imagenes');
 
     fileInput.addEventListener('change', function () {
         const file = this.files[0];
@@ -289,11 +628,242 @@ document.addEventListener('DOMContentLoaded', function () {
                 preview.src = event.target.result;
                 preview.style.display = 'block';
             }
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(file); 
         } else {
             preview.style.display = 'none';
         }
     });
+
+    // Validación al enviar el formulario
+    const form = document.querySelector('form');
+    const titulo = document.getElementById('titulo');
+    const descripcion = document.getElementById('descripcion');
+
+    form.addEventListener('submit', function (e) {
+    // Actualizamos input.files antes de enviar
+        const dataTransfer = new DataTransfer();
+        archivosSeleccionados.forEach(f => dataTransfer.items.add(f));
+        fileInput.files = dataTransfer.files;
+
+        const tituloVal = titulo.value.trim();
+        const descripcionVal = descripcion.value.trim();
+        const fechaVal = fecha_evento.value.trim();
+
+        if (tituloVal === '' || descripcionVal === '' || fechaVal === '') {
+            e.preventDefault();
+            mostrarToast('Debes completar todos los campos requeridos.', 'danger');
+            return;
+        }
+        if (tituloVal.length < 10) {
+            e.preventDefault();
+            mostrarToast('El título debe tener al menos 10 caracteres.', 'danger');
+            return;
+        }
+        if (tituloVal.length > 150) {
+            e.preventDefault();
+            mostrarToast('El título no debe exceder 150 caracteres.', 'danger');
+            return;
+        }
+        if (descripcionVal.length < 300) {
+            e.preventDefault();
+            mostrarToast('La descripción debe tener al menos 300 caracteres.', 'danger');
+            return;
+        }
+        if (descripcionVal.length > 3000) {
+            e.preventDefault();
+            mostrarToast('La descripción no debe exceder 3000 caracteres.', 'danger');
+            return;
+        }
+    });
+
+});
+
+// Toast centrado
+function mostrarToast(mensaje, tipo = 'danger') {
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-personalizado text-bg-' + tipo;
+    toastContainer.setAttribute('role', 'alert');
+
+    toastContainer.innerHTML = `
+        <div class="contenido-toast">${mensaje}</div>
+    `;
+
+    document.body.appendChild(toastContainer);
+
+    setTimeout(() => {
+        toastContainer.remove();
+    }, 7000);
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('imagenes');
+    const estado = document.getElementById('estado-archivo');
+    const previewContainer = document.getElementById('preview-imagenes');
+    const form = document.querySelector('form');
+
+    let archivosSeleccionados = [];
+
+    input.addEventListener('change', function() {
+        const nuevosArchivos = Array.from(this.files);
+
+        // Validar tipo y extensión
+        const validos = nuevosArchivos.filter(file => {
+            const name = file.name.toLowerCase();
+            return file.type === 'image/jpeg' && (name.endsWith('.jpg') || name.endsWith('.jpeg'));
+        });
+
+        if (validos.length < nuevosArchivos.length) {
+            mostrarToast?.('Solo se permiten imágenes en formato JPEG.', 'danger');
+        }
+
+        archivosSeleccionados = archivosSeleccionados.concat(validos);
+
+        // Limitar a 3
+        if (archivosSeleccionados.length > 3) {
+            mostrarToast?.('Solo puedes seleccionar hasta 3 imágenes.', 'danger');
+            archivosSeleccionados = archivosSeleccionados.slice(0, 3);
+        }
+
+        // Refrescar preview
+        actualizarPreview();
+
+        // Limpiar input para poder volver a elegir
+        input.value = '';
+    });
+
+    function actualizarPreview() {
+    previewContainer.innerHTML = '';
+
+    archivosSeleccionados.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'imagen-preview';
+
+            // Imagen
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.alt = file.name;
+            wrapper.appendChild(img);
+
+            // Info (nombre + eliminar)
+            const info = document.createElement('div');
+            info.className = 'info';
+
+            const nombreSpan = document.createElement('span');
+            nombreSpan.className = 'nombre';
+            nombreSpan.textContent = file.name;
+            info.appendChild(nombreSpan);
+
+            const btnX = document.createElement('button');
+            btnX.type = 'button';
+            btnX.className = 'eliminar';
+            btnX.textContent = '×';
+            btnX.addEventListener('click', function() {
+                archivosSeleccionados.splice(index, 1);
+                actualizarPreview();
+            });
+            info.appendChild(btnX);
+
+            wrapper.appendChild(info);
+            previewContainer.appendChild(wrapper);
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Actualizar estado
+    estado.textContent = archivosSeleccionados.length > 0
+        ? `${archivosSeleccionados.length} archivo(s) seleccionado(s)`
+        : 'Ningún archivo seleccionado';
+
+    // Sincronizar input.files
+    const dt = new DataTransfer();
+    archivosSeleccionados.forEach(f => dt.items.add(f));
+    input.files = dt.files;
+}
+
+    // Antes de enviar, aseguramos que se mantenga la selección
+    form?.addEventListener('submit', function() {
+        const dt = new DataTransfer();
+        archivosSeleccionados.forEach(f => dt.items.add(f));
+        input.files = dt.files;
+    });
+});
+
+
+    const inputTitulo = document.getElementById('titulo');
+  const contadorTitulo = document.getElementById('contadorTitulo');
+  const textareaDescripcion = document.getElementById('descripcion');
+  const contadorDescripcion = document.getElementById('contadorDescripcion');
+
+  inputTitulo.addEventListener('input', () => {
+    const longitud = inputTitulo.value.length;
+    contadorTitulo.textContent = `${longitud}/150`;
+  });
+
+  textareaDescripcion.addEventListener('input', () => {
+    const longitud = textareaDescripcion.value.length;
+    contadorDescripcion.textContent = `${longitud}/3000`;
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    contadorTitulo.textContent = `${inputTitulo.value.length}/150`;
+    contadorDescripcion.textContent = `${textareaDescripcion.value.length}/3000`;
+  });
+
+function mostrarToast(mensaje, tipo = 'primary') {
+      const toastContainer = document.createElement('div');
+      toastContainer.className = 'toast-personalizado text-bg-' + tipo;
+      toastContainer.setAttribute('role', 'alert');
+      toastContainer.innerHTML = `<div class="contenido-toast">${mensaje}</div>`;
+      document.body.appendChild(toastContainer);
+      setTimeout(() => toastContainer.remove(), 7000);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form');
+  const modal = document.getElementById('modal-confirmacion');
+  const btnCancelar = document.getElementById('btnCancelar');
+  const btnConfirmar = document.getElementById('btnConfirmar');
+
+  let formPendiente = null; // Guardamos el form temporalmente
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault(); // detenemos el envío
+    formPendiente = this;
+    modal.style.display = 'flex'; // mostramos modal
+  });
+
+  btnCancelar.addEventListener('click', () => {
+    modal.style.display = 'none'; // ocultar modal
+    formPendiente = null;
+  });
+
+  btnConfirmar.addEventListener('click', () => {
+    modal.style.display = 'none';
+    if (formPendiente) {
+      formPendiente.submit(); // ahora sí enviamos el form
+    }
+  });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btnVolver = document.getElementById('btnVolver');
+  const modalVolver = document.getElementById('modal-volver');
+  const btnCancelarVolver = document.getElementById('btnCancelarVolver');
+  const btnConfirmarVolver = document.getElementById('btnConfirmarVolver');
+
+  btnVolver.addEventListener('click', function(e) {
+    e.preventDefault(); // evitamos irnos directamente
+    modalVolver.style.display = 'flex'; // mostramos modal
+  });
+
+  btnCancelarVolver.addEventListener('click', () => {
+    modalVolver.style.display = 'none'; // cerramos modal
+  });
+
+  btnConfirmarVolver.addEventListener('click', () => {
+    window.location.href = btnVolver.getAttribute('href'); // ahora sí volvemos
+  });
 });
 </script>
 </body>

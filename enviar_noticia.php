@@ -203,6 +203,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       position: relative;
       top: -6px;
     }
+
+    /* Evitar que el estilo global sobrescriba el botón */
+.campo input[type="file"] {
+  border: none;
+  padding: 0;
+}
+
+/* Estilo botón igual al de denuncias */
+.custom-file-input::file-selector-button {
+  background-color: #ADEBFFD9;   /* azul */
+  color: #061F3E;
+  border: 1px solid #ADEBFFD9;
+  border-radius: 6px;
+  padding: 6px 14px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
+}
+
+.custom-file-input:hover::file-selector-button {
+  background-color: #94E3FFD9 !important; 
+  color: #061F3E !important;
+  border-color: #94E3FFD9 !important;
+}
+
+
     </style>
 </head>
 <body>
@@ -262,8 +289,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div> 
 
             <div class="campo">
-                <label for="imagen">Imagen (opcional):</label>
-                <input type="file" id="imagen" name="imagen" accept="image/*">
+                <label for="imagen">Carga una imagen (Opcional):</label>
+                <input type="file" id="imagen" name="imagen" accept="image/*" class="form-control custom-file-input">
+                <span id="file-name">No se ha seleccionado ningún archivo</span>
                 <img id="preview-imagen" src="#" alt="Vista previa de la imagen">
             </div>
 
@@ -296,6 +324,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('fecha').value = today;
         });
+
+        document.getElementById('imagen').addEventListener('change', function () {
+            const fileName = this.files.length > 0 ? this.files[0].name : "No se ha seleccionado ningún archivo";
+        document.getElementById('file-name').textContent = fileName;
+});
+
     </script>  
 </body>
 </html>
