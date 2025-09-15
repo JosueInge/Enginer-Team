@@ -170,7 +170,7 @@ No contestes la pregunta normal, solo advierte al usuario sobre su lenguaje."
 
 /* Mensajes */
 .mensaje-bot {
-    background: #c6c9c8ff;
+    background: #EBEAEE;
     border-radius: 8px;
     padding: 10px;
     margin: 10px 0;
@@ -182,7 +182,7 @@ No contestes la pregunta normal, solo advierte al usuario sobre su lenguaje."
     clear: both;
 }
 .mensaje-bot strong {
-    color: #0d5c9b;
+    color: #1661AC;
 }
 .mensaje-usuario {
     background: #d1ecff;
