@@ -25,28 +25,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha = date('Y-m-d H:i:s');
     $usuario_id = $_SESSION['usuario_id'] ?? null;
 
-    $imagen_nombre = null;
-    if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-        $extension = pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION);
-        $imagen_nombre = uniqid() . '.' . $extension;
-        $ruta_destino = 'imagenes/noticias/' . $imagen_nombre;
+    $imagenes = [null, null, null]; // espacio para 3 imágenes
 
-        if (!file_exists('imagenes/noticias')) {
-            mkdir('imagenes/noticias', 0777, true);
-        }
+if (isset($_FILES['imagen']) && isset($_FILES['imagen']['name'])) {
+    foreach ($_FILES['imagen']['name'] as $index => $nombreOriginal) {
+        if ($_FILES['imagen']['error'][$index] === UPLOAD_ERR_OK) {
+            $extension = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
+            $nombreFinal = uniqid() . '.' . $extension;
+            $ruta_destino = 'imagenes/noticias/' . $nombreFinal;
 
-        if (!move_uploaded_file($_FILES['imagen']['tmp_name'], $ruta_destino)) {
-            $errorimagen = "Error al subir la imagen.";
-            $imagen_nombre = null;
+            if (!file_exists('imagenes/noticias')) {
+                mkdir('imagenes/noticias', 0777, true);
+            }
+
+            if (move_uploaded_file($_FILES['imagen']['tmp_name'][$index], $ruta_destino)) {
+                $imagenes[$index] = $nombreFinal; // Guardamos en la posición (0,1,2)
+            }
         }
     }
+}
 
-    $stmt = $conexion->prepare("INSERT INTO propuestas_noticias 
-        (categoria, titulo, descripcion, imagen, autor, fecha, usuario_id, estado, bloquear_comentarios)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'aprobada', ?)");
+// Asignar cada imagen a las variables que usas en el INSERT
+$imagen1 = $imagenes[0];
+$imagen2 = $imagenes[1];
+$imagen3 = $imagenes[2];
 
-    $bloquear_comentarios = isset($_POST['bloquear_comentarios']) ? 1 : 0;
-    $stmt->bind_param("sssssssi", $categoria, $titulo, $descripcion, $imagen_nombre, $autor, $fecha, $usuario_id, $bloquear_comentarios);
+$stmt = $conexion->prepare("INSERT INTO propuestas_noticias 
+    (categoria, titulo, descripcion, imagen, autor, fecha, usuario_id, estado, bloquear_comentarios, imagen2, imagen3)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'aprobada', ?, ?, ?)");
+
+$bloquear_comentarios = isset($_POST['bloquear_comentarios']) ? 1 : 0;
+
+$stmt->bind_param(
+    "sssssssiss",
+    $categoria,
+    $titulo,
+    $descripcion,
+    $imagen1,
+    $autor,
+    $fecha,
+    $usuario_id,
+    $bloquear_comentarios,
+    $imagen2,
+    $imagen3
+);
 
     if ($stmt->execute()) {
         $envioexitoso = "Denuncia enviada correctamente. Será revisada por un administrador.";
@@ -61,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Publicar Noticia - Comunicado Digital</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -154,16 +177,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       border-radius: 12px;
       padding: 6px;
       border: 1px solid #B1B1B1;
+      transition: 0.3s;
     }
 
+    /* Contenedor de previews */
     #preview-imagen {
-      display: none;
-      margin-top: 12px;
-      width: 350px;
-      height: 200px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      margin-top: 10px;
+    }
+
+    /* Caja de cada preview */
+    .imagen-preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 320px;
+      margin-left: 3px;
+    }
+
+    /* Imagen cargada */
+    .imagen-preview img {
+      width: 360px;
+      height: 203px;
+      object-fit: cover;
       border: 1px solid #B1B1B1;
       border-radius: 12px;
-      object-fit: cover;
+    }
+
+    /* Contenedor inferior (nombre + eliminar) */
+    .imagen-preview .info {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 5px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Nombre de archivo */
+    .imagen-preview .nombre {
+      font-size: 0.8rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 260px;
+      color: #403F48;
+    }
+
+    /* Botón eliminar */
+    .imagen-preview .eliminar {
+      background: #EB7373;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      width: 22px;
+      height: 22px;
+      line-height: 20px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 14px;
+      transition: background 0.2s ease;
+    }
+    .imagen-preview .eliminar:hover {
+      background: #d33;
     }
 
     .campo-checkbox {
@@ -241,8 +320,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     .btn-confirmar { background: #61C9A8; color: #fff; }
     .btn-cancelar { background: #EB7373; color: #061F3E; }
+
+    .file-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      border: 1px solid #B1B1B1;
+      border-radius: 12px;
+      padding: 4px 8px;
+      background: #fff;
+      max-width: 100%;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-input-button {
+      background: #ADEBFFD9;
+      border: 1px solid #9ecce6;
+      color:  #061F3E;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      margin-right: 10px;
+    }
+
+    .file-input-text {
+      flex-grow: 1;
+      color: #777;
+      font-size: 14px;
+    }
+
+    .campo .file-input-wrapper:hover,
+    .campo .file-input-wrapper:focus-within {
+      border-color: #2D8EFF;
+      transform: scale(1.01);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
   </style>
 </head>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const fileInputs = document.querySelectorAll('.file-input-wrapper input[type="file"]');
+
+    fileInputs.forEach(input => {
+      const textElement = input.parentElement.querySelector('.file-input-text');
+
+      input.addEventListener("change", function () {
+        if (this.files.length > 0) {
+          // Si hay archivos seleccionados, muestra los nombres
+          const fileNames = Array.from(this.files).map(file => file.name).join(', ');
+          textElement.textContent = fileNames;
+        } else {
+          // Si no hay archivos, muestra el placeholder original
+          textElement.textContent = "No se ha seleccionado ningún archivo";
+        }
+      });
+    });
+  });
+</script>
 <body>
 <header>
   <div class="logo">
@@ -283,16 +429,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <div class="campo">
-      <label for="fecha">Fecha del hecho:</label>
-      <input type="date" id="fecha" name="fecha">
-      <div id="errorFecha" class="error"></div>
+  <div class="d-flex justify-content-between align-items-center mb-1">
+    <label for="imagen" class="fw-semibold">Carga una imagen (Opcional)</label>
+    <span class="text-muted">Puedes cargar hasta 3 imágenes en formato (.jpeg).</span>
+  </div>
+
+  <div class="file-input-wrapper">
+      <span class="file-input-button">Elegir archivo</span>
+      <span id="file-text" class="file-input-text">No se ha seleccionado ningún archivo</span>
+      <input type="file" id="imagen" name="imagen[]" accept="image/jpeg" multiple>
     </div>
 
-    <div class="campo">
-      <label for="imagen">Carga una imagen (opcional)</label>
-      <input type="file" id="imagen" name="imagen" accept="image/*">
-      <img id="preview-imagen" src="#" alt="Vista previa de la imagen">
-    </div>
+    <div id="preview-imagen" style="display:flex; gap:50px; margin-top:10px;"></div>
+  </div>
 
     <div class="campo-checkbox">
       <input type="checkbox" id="bloquear_comentarios" name="bloquear_comentarios">
@@ -367,18 +516,95 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   });
 
   // Imagen preview
-  document.getElementById('imagen').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const preview = document.getElementById('preview-imagen');
-        preview.src = ev.target.result;
-        preview.style.display = 'block';
-      }
-      reader.readAsDataURL(file);
+  document.addEventListener('DOMContentLoaded', function () {
+  const input = document.getElementById('imagen');
+  const previewContainer = document.getElementById('preview-imagen');
+  const form = document.querySelector('form');
+
+  let archivosSeleccionados = [];
+
+  input.addEventListener('change', function () {
+    const nuevosArchivos = Array.from(this.files);
+
+    // Validar tipo y extensión
+    const validos = nuevosArchivos.filter(file => {
+      const name = file.name.toLowerCase();
+      return file.type === 'image/jpeg' && (name.endsWith('.jpg') || name.endsWith('.jpeg'));
+    });
+
+    if (validos.length < nuevosArchivos.length) {
+      mostrarToast?.('Solo se permiten imágenes en formato JPEG.', 'danger');
     }
+
+    archivosSeleccionados = archivosSeleccionados.concat(validos);
+
+    // Limitar a 3
+    if (archivosSeleccionados.length > 3) {
+      mostrarToast?.('Solo puedes seleccionar hasta 3 imágenes.', 'danger');
+      archivosSeleccionados = archivosSeleccionados.slice(0, 3);
+    }
+
+    // Refrescar preview
+    actualizarPreview();
+
+    // Limpiar input para poder volver a elegir
+    input.value = '';
   });
+
+  function actualizarPreview() {
+    previewContainer.innerHTML = '';
+
+    archivosSeleccionados.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'imagen-preview';
+
+        // Imagen
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.alt = file.name;
+        wrapper.appendChild(img);
+
+        // Info (nombre + eliminar)
+        const info = document.createElement('div');
+        info.className = 'info';
+
+        const nombreSpan = document.createElement('span');
+        nombreSpan.className = 'nombre';
+        nombreSpan.textContent = file.name;
+        info.appendChild(nombreSpan);
+
+        const btnX = document.createElement('button');
+        btnX.type = 'button';
+        btnX.className = 'eliminar';
+        btnX.textContent = '×';
+        btnX.addEventListener('click', function () {
+          archivosSeleccionados.splice(index, 1);
+          actualizarPreview();
+        });
+        info.appendChild(btnX);
+
+        wrapper.appendChild(info);
+        previewContainer.appendChild(wrapper);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Sincronizar input.files
+    const dt = new DataTransfer();
+    archivosSeleccionados.forEach(f => dt.items.add(f));
+    input.files = dt.files;
+  }
+
+  // Antes de enviar, aseguramos que se mantenga la selección
+  form?.addEventListener('submit', function () {
+    const dt = new DataTransfer();
+    archivosSeleccionados.forEach(f => dt.items.add(f));
+    input.files = dt.files;
+  });
+});
+
 
   // Validación antes de modal publicar
   document.getElementById('btnPublicar').addEventListener('click', () => {
@@ -389,10 +615,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (descripcion.value.trim() === "") {
       errorDescripcion.textContent = "La descripción es obligatoria.";
-      valido = false;
-    }
-    if (document.getElementById('fecha').value === "") {
-      errorFecha.textContent = "La fecha es obligatoria.";
       valido = false;
     }
     if (valido) {

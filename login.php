@@ -150,8 +150,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .btn-ingresar:hover { background:#4da78b; }
     /* === DIVISOR Y REDES === */
     .divider {
-      display:flex; align-items:center; text-align:center;
+      display:flex; 
+      align-items:center; 
+      text-align:center;
       margin:20px 0;
+      font-size: 25px;
     }
     .divider::before, .divider::after {
       content:""; flex:1;
@@ -166,14 +169,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .btn-social {
       flex:1;
       display:inline-flex; align-items:center; justify-content:center;
-      border:1px solid #ccc;
-      border-radius:6px; padding:8px 10px;
-      font-size:13px; text-decoration:none;
+      border:1px solid #1661AC;
+      border-radius:6px; padding:8px;
+      font-size:18px; text-decoration:none;
       color:#333; transition:.3s;
-      background:#fff;
+      background:#fff; 
     }
     .btn-social img {
-      width:18px; height:18px; margin-right:6px;
+      width:30px; height:30px; margin-right:6px; padding: 5px;
     }
     .btn-social:hover { background:#f5f5f5; }
     .registro-text {
@@ -220,10 +223,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- BOTONES SOCIALES -->
     <div class="social-container">
       <a href="google_login.php" class="btn-social">
-        <img src="imagenes/google.png" alt="Google"> Google
+        <img src="imagenes/google.png" alt="Google"> Ingresa con Google
       </a>
       <a href="outlook_login.php" class="btn-social">
-        <img src="imagenes/outlook.png" alt="Outlook"> Outlook
+        <img src="imagenes/outlook.png" alt="Outlook"> Ingresa con Outlook
       </a>
     </div>
 

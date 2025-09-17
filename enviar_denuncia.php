@@ -404,6 +404,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     h1 {
       font-family: 'Poppins', sans-serif;
     }
+    .campo select,
+    .campo input[type="text"],
+    .campo input[type="date"],
+    .campo textarea {
+      width: 100%;
+      padding: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      border: 1px solid #B1B1B1;
+      border-radius: 12px;
+      color: #061F3E;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .campo input::placeholder,
+    .campo textarea:: ::placeholder { crolo: #B1B1B1; }
+
+    .campo input:hover, .campo textarea:hover, .campo select:hover {
+      border-color: #2D8EFF;
+      transform: scale(1.01);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .campo input:focus, .campo textarea:focus, .campo select:focus {
+      border-color: #2D8EFF;
+      transform: scale(1.01);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
     
   </style>
 </head>

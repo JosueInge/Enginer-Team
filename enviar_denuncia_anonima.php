@@ -453,9 +453,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     .btn-cancelar {
       flex: 1;
-      background: #dc3545;
+      background: #EB7373;
       border: none;
-      color: white;
+      color: #061F3E;
       padding: 10px;
       border-radius: 8px;
       cursor: pointer;
@@ -464,24 +464,241 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     .btn-confirmar {
       flex: 1;
-      background: #28a745;
+      background: #61C9A8;
       border: none;
-      color: white;
+      color: #061F3E;
       padding: 10px;
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
     }
 
-    .btn-cancelar:hover { background: #b52b39; }
-    .btn-confirmar:hover { background: #218838; }
+    .btn-cancelar:hover { background: #c45858ff; }
+    .btn-confirmar:hover { background: #16a085; }
 
     .volverdenuncias {
       font-family: 'Poppins', sans-serif;
       font-size: 24px;
       color: FFFFF;
     }
+
+    .campo select,
+    .campo input[type="text"],
+    .campo input[type="date"],
+    .campo textarea {
+      width: 100%;
+      padding: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      border: 1px solid #B1B1B1;
+      border-radius: 12px;
+      color: #061F3E;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .campo input::placeholder,
+    .campo textarea:: ::placeholder { crolo: #B1B1B1; }
+
+    .campo input:hover, .campo textarea:hover, .campo select:hover {
+      border-color: #2D8EFF;
+      transform: scale(1.01);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .campo input:focus, .campo textarea:focus, .campo select:focus {
+      border-color: #2D8EFF;
+      transform: scale(1.01);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .card-formulario {
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 16px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+      margin-top: 20px;
+  }
+
+  .imagen-preview {
+  width: 180px;
+  position: relative;
+}
+.imagen-preview img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.imagen-preview .eliminar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(220,53,69,0.9);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 20px;
+}
+.toast-personalizado {
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: slideDown 0.4s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translate(-50%, -40px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.modal-imagen {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
     
+    .modal-contenido-imagen {
+      max-width: 650px;
+      max-height: 80vh;
+      width: auto;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      animation: zoomIn 0.3s ease;
+    }
+    
+    @keyframes zoomIn {
+      from {transform: scale(0.9); opacity: 0;}
+      to {transform: scale(1); opacity: 1;}
+    }
+    
+    .modal-imagen {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .contenedor-modal {
+      background-color: #fff;
+      border-radius: 12px;
+      max-width: 650px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      animation: zoomIn 0.3s ease;
+    }
+    
+    @keyframes zoomIn {
+      from {transform: scale(0.9); opacity: 0;}
+      to {transform: scale(1); opacity: 1;}
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: #061F3E;
+      color: white;
+    }
+    
+    .modal-header h2 {
+      font-size: 18px;
+      margin: 0;
+      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .modal-header .cerrar {
+      color: white;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-header .cerrar:hover {
+      color: #ff5252;
+    }
+    
+    .modal-body {
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .modal-imagen-content {
+      max-width: 100%;
+      max-height: 400px;
+      width: auto;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    
+    .modal-info {
+      text-align: left;
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .modal-info h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #061F3E;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .modal-info p {
+      margin: 5px 0;
+      color: #555;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .imagen-preview img {
+      cursor: pointer;
+      transition: transform 0.2s;
+      border: 2px solid transparent;
+    }
+    
+    .imagen-preview img:hover {
+      transform: scale(1.03);
+      border-color: #2D8EFF;
+    }
+    
+    /* Indicador de imagen seleccionada */
+    .imagen-seleccionada {
+      border: 2px solid #2D8EFF !important;
+      box-shadow: 0 0 8px rgba(45, 142, 255, 0.5);
+    }
+
   </style>
 </head>
   <div id="modal-confirmacion" class="modal-confirmacion">
@@ -507,16 +724,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <body>
+  <div id="modal-imagen" class="modal-imagen">
+    <div class="contenedor-modal">
+      <div class="modal-header">
+        <h2>Imagen adjunta</h2>
+        <button class="cerrar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <img class="modal-imagen-content" id="imagen-ampliada">
+        <div class="modal-info">
+          <h3>Información de la imagen</h3>
+          <p id="imagen-nombre"><strong>Nombre:</strong> <span id="nombre-archivo"></span></p>
+          <p id="imagen-tipo"><strong>Tipo:</strong> <span id="tipo-archivo"></span></p>
+          <p id="imagen-tamaño"><strong>Tamaño:</strong> <span id="tamaño-archivo"></span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <header>
     <div class="logo">
       <img src="imagenes/logo.png" alt="logo">
     </div>
-    <a class="volverdenuncias" href="denuncia_anonima.php" id="btnVolver">Volver a Denuncias</a>
+    <a class="volver" href="denuncia_anonima.php" id="btnVolver">Volver a Denuncias</a>
   </header>
 
+
   <div class="contenedor-principal">
-    <h1>Enviar denuncia anónima</h1>
-    <p class="parrafo" >Tu denuncia será revisada por los administradores</p>
+    <div class="card-formulario">
+      <h1>Enviar denuncia anónima</h1>
+      <p class="parrafo" >Tu denuncia será revisada por los administradores</p>
+    </div>
 
     <div class="alert">
       🔒 Tu denuncia es 100% anónima. No pediremos datos personales ni podremos rastrear tu identidad.
@@ -568,6 +806,8 @@ document.addEventListener('DOMContentLoaded', function () {
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const inputs = document.querySelectorAll('#titulo, #descripcion');
+
+    
 
     inputs.forEach(input => {
         input.addEventListener('input', function () { 
@@ -864,6 +1104,85 @@ document.addEventListener('DOMContentLoaded', () => {
   btnConfirmarVolver.addEventListener('click', () => {
     window.location.href = btnVolver.getAttribute('href'); // ahora sí volvemos
   });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+      // Modal para visualización de imágenes
+      const modalImagen = document.getElementById('modal-imagen');
+      const imagenAmpliada = document.getElementById('imagen-ampliada');
+      const nombreArchivoSpan = document.getElementById('nombre-archivo');
+      const tipoArchivoSpan = document.getElementById('tipo-archivo');
+      const tamañoArchivoSpan = document.getElementById('tamaño-archivo');
+      const cerrarModal = document.querySelector('.modal-imagen .cerrar');
+      
+      // Función para formatear el tamaño del archivo
+      function formatearTamaño(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+      
+      // Función para abrir el modal con la imagen seleccionada
+      function abrirModalImagen(src, file) {
+        imagenAmpliada.src = src;
+        nombreArchivoSpan.textContent = file.name;
+        tipoArchivoSpan.textContent = file.type || 'image/jpeg';
+        tamañoArchivoSpan.textContent = formatearTamaño(file.size);
+        
+        modalImagen.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Evitar scroll
+        
+        // Marcar la imagen como seleccionada
+        const todasImagenes = document.querySelectorAll('#preview-imagenes img');
+        todasImagenes.forEach(img => img.classList.remove('imagen-seleccionada'));
+        
+        // Encontrar y marcar la imagen correspondiente
+        for (let img of todasImagenes) {
+          if (img.src === src) {
+            img.classList.add('imagen-seleccionada');
+            break;
+          }
+        }
+      }
+      
+      // Cerrar modal al hacer clic en la X
+      cerrarModal.addEventListener('click', function() {
+        modalImagen.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Restaurar scroll
+      });
+      
+      // Cerrar modal al hacer clic fuera del contenedor
+      modalImagen.addEventListener('click', function(e) {
+        if (e.target === modalImagen) {
+          modalImagen.style.display = 'none';
+          document.body.style.overflow = 'auto';
+        }
+      });
+      
+      // Cerrar modal con tecla Escape
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modalImagen.style.display === 'flex') {
+          modalImagen.style.display = 'none';
+          document.body.style.overflow = 'auto';
+        }
+      });
+      
+      // Delegación de eventos para las imágenes de vista previa
+      document.addEventListener('click', function(e) {
+        // Verificar si se hizo clic en una imagen de vista previa
+        if (e.target.tagName === 'IMG' && 
+            e.target.closest('#preview-imagenes') && 
+            !e.target.closest('.eliminar')) {
+          
+          // Obtener el archivo correspondiente a esta imagen
+          const index = Array.from(document.querySelectorAll('#preview-imagenes img')).indexOf(e.target);
+          if (index !== -1 && archivosSeleccionados[index]) {
+            abrirModalImagen(e.target.src, archivosSeleccionados[index]);
+          }
+        }
+      });
 });
 </script>
 </body>
