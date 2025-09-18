@@ -100,7 +100,7 @@ $stmt->bind_param(
     .logo img { height: 50px; }
     nav a {
       font-family: 'Poppins', sans-serif;
-      font-size: 24px;
+      font-size: 15px;
       font-weight: 600;
       color: #fff;
       text-decoration: none;
@@ -115,10 +115,11 @@ $stmt->bind_param(
       max-width: 800px;
       margin: 30px auto;
       padding: 20px;
+      
     }
     h1 {
       font-family: 'Poppins', sans-serif;
-      font-size: 32px;
+      font-size: 32px, Bold;
       font-weight: 700;
       color: #1661AC;
       text-align: center;
@@ -133,12 +134,27 @@ $stmt->bind_param(
       display: block;
       margin-bottom: 8px;
     }
+    .campo-categoria {
+      background: #ADEBFF;
+      width: 100%;
+      padding: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      border: 1px solid #B1B1B1;
+      border-radius: 12px;
+      color: #061F3E;
+      outline: none;
+      transition: 0.3s;
+      min-height: 120px; 
+      border-radius: 6px; 
+      
+    }
     .campo select,
     .campo input[type="text"],
     .campo input[type="date"],
     .campo textarea {
       width: 100%;
-      padding: 10px;
+      padding: 8px;
       font-family: 'Inter', sans-serif;
       font-size: 16px;
       border: 1px solid #B1B1B1;
@@ -259,7 +275,7 @@ $stmt->bind_param(
       height: 50px;
       background: #61C9A8;
       border: none;
-      border-radius: 12px;
+      border-radius: 25px;
       font-size: 20px;
       font-weight: bold;
       font-family: 'Poppins', sans-serif;
@@ -319,7 +335,9 @@ $stmt->bind_param(
       margin: 0 5px;
     }
     .btn-confirmar { background: #61C9A8; color: #fff; }
-    .btn-cancelar { background: #EB7373; color: #061F3E; }
+    .btn-cancelar { 
+      background: #EB7373; 
+      color: #061F3E; }
 
     .file-input-wrapper {
       position: relative;
@@ -365,6 +383,10 @@ $stmt->bind_param(
       border-color: #2D8EFF;
       transform: scale(1.01);
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .requerido:after {
+      content: " *";
+      color: red;
     }
 
   </style>
@@ -415,17 +437,23 @@ $stmt->bind_param(
     </div>
 
     <div class="campo">
-      <label for="titulo">Título:</label>
+      <label for="titulo" class="requerido">Título:</label>
       <input type="text" id="titulo" name="titulo" maxlength="150" placeholder="Escribe el título de la noticia">
       <div id="contadorTitulo" class="contador"></div>
       <div id="errorTitulo" class="error"></div>
     </div>
 
     <div class="campo">
-      <label for="descripcion">Descripción:</label>
+      <label for="descripcion" class="requerido">Descripción: </label>
       <textarea id="descripcion" name="descripcion" maxlength="3000" placeholder="Escribe la descripción de tu noticia"></textarea>
-      <div id="contadorDescripcion" class="contador"></div>
       <div id="errorDescripcion" class="error"></div>
+      <small id="contadorDescription">0/3000</small>
+    </div>
+
+    <div class="campo">
+      <label for="fecha del hecho" class="requerido">Fecha del hecho:</label>
+      <input type="date" id="fechadelhecho" name="fechadelhecho" placeholder="Selecciona la fecha">
+      
     </div>
 
     <div class="campo">
@@ -630,6 +658,12 @@ $stmt->bind_param(
     e.preventDefault();
     abrirModal('modalVolver');
   });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const inputs = document.querySelectorAll('')
+  })
+
 </script>
 </body>
 </html>
