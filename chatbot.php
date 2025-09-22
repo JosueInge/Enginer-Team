@@ -28,7 +28,7 @@ Los usuarios pueden referirse al sitio como: “esta app”, “esta aplicación
 Comportamiento:
 1. Responde siempre de forma natural, cordial y profesional, como si conversaras normalmente con el usuario.
 2. Da prioridad a explicar soluciones de manera sencilla, práctica y paso a paso. No uses frases rígidas como si fueran preguntas predefinidas, responde al problema que el usuario plantee.
-3. Si la pregunta está fuera del contexto del periódico, responde: “Lo siento, no entendí tu mensaje. ¿Podrías reformularlo o preguntar de otra manera ?”.
+3. Si la pregunta está fuera del contexto del periódico, responde: “Lo siento, no encontré respuesta para eso.”.
 
 Contexto del sitio y posibles dudas:
 - Noticias y navegación: las más recientes aparecen primero; en Inicio se ven todas las categorías; se puede leer sin iniciar sesión, pero para comentar, enviar, denunciar o reportar debes iniciar sesión.
@@ -85,7 +85,7 @@ No contestes la pregunta normal, solo advierte al usuario sobre su lenguaje."
     curl_close($ch);
 
     $result = json_decode($response, true);
-    $respuestaIA = $result['choices'][0]['message']['content'] ?? "Lo siento, no encontré información.";
+    $respuestaIA = $result['choices'][0]['message']['content'] ?? "No me llega bien el internet, pide que lo mejoren, porfa";
 
     echo json_encode(["respuesta" => $respuestaIA]);
     exit;
@@ -170,7 +170,7 @@ No contestes la pregunta normal, solo advierte al usuario sobre su lenguaje."
 
 /* Mensajes */
 .mensaje-bot {
-    background: #EBEAEE;
+    background: #c6c9c8ff;
     border-radius: 8px;
     padding: 10px;
     margin: 10px 0;
@@ -182,7 +182,7 @@ No contestes la pregunta normal, solo advierte al usuario sobre su lenguaje."
     clear: both;
 }
 .mensaje-bot strong {
-    color: #1661AC;
+    color: #0d5c9b;
 }
 .mensaje-usuario {
     background: #d1ecff;
@@ -274,7 +274,7 @@ No contestes la pregunta normal, solo advierte al usuario sobre su lenguaje."
     bottom: 0;
     right: 20px;
     background-color: #61C9ab;
-    color: #1B314B;
+    color: white;
     border: none;
     border-radius: 10px 10px 0 0;
     padding: 12px 20px;

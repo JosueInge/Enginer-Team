@@ -9,148 +9,272 @@ if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.php");
     exit();
 }
-
 if ($_SESSION['usuario_rol'] !== 'Administrador') {
     header("Location: noticias.php");
     exit();
 }
 
-$error = null;
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $categoria = $_POST['categoria'] ?? '';
-    $titulo = $_POST['titulo'] ?? '';
-    $descripcion = $_POST['descripcion'] ?? '';
-    $autor = $_SESSION['usuario_nombre'];
+    $categoria = trim($_POST['categoria'] ?? '');
+    $titulo = trim($_POST['titulo'] ?? '');
+    $descripcion = trim($_POST['descripcion'] ?? '');
+    $fecha_hecho = trim($_POST['fecha'] ?? '');
+    $autor = $_SESSION['usuario_nombre'] ?? '';
     $fecha = date('Y-m-d H:i:s');
-    $usuario_id = $_SESSION['usuario_id'] ?? null;
+    $usuario_id = isset($_SESSION['usuario_id']) ? (int)$_SESSION['usuario_id'] : 0;
+    $bloquear_comentarios = isset($_POST['bloquear_comentarios']) ? 1 : 0;
 
-    $imagenes = [null, null, null]; // espacio para 3 imágenes
-
-if (isset($_FILES['imagen']) && isset($_FILES['imagen']['name'])) {
-    foreach ($_FILES['imagen']['name'] as $index => $nombreOriginal) {
-        if ($_FILES['imagen']['error'][$index] === UPLOAD_ERR_OK) {
-            $extension = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
-            $nombreFinal = uniqid() . '.' . $extension;
-            $ruta_destino = 'imagenes/noticias/' . $nombreFinal;
-
-            if (!file_exists('imagenes/noticias')) {
-                mkdir('imagenes/noticias', 0777, true);
-            }
-
-            if (move_uploaded_file($_FILES['imagen']['tmp_name'][$index], $ruta_destino)) {
-                $imagenes[$index] = $nombreFinal; // Guardamos en la posición (0,1,2)
+    // Manejo de hasta 3 imágenes JPEG
+    $imagenes = [null, null, null];
+    if (isset($_FILES['imagen']) && isset($_FILES['imagen']['name'])) {
+        // Normalize arrays
+        $names = $_FILES['imagen']['name'];
+        for ($i = 0, $c = count($names); $i < $c && $i < 3; $i++) {
+            if ($_FILES['imagen']['error'][$i] === UPLOAD_ERR_OK) {
+                $tmp = $_FILES['imagen']['tmp_name'][$i];
+                $orig = $_FILES['imagen']['name'][$i];
+                $mime = mime_content_type($tmp);
+                $ext = strtolower(pathinfo($orig, PATHINFO_EXTENSION));
+                if (($mime === 'image/jpeg' || $ext === 'jpg' || $ext === 'jpeg') && ($ext === 'jpg' || $ext === 'jpeg')) {
+                    $nombreFinal = uniqid() . '.' . $ext;
+                    $ruta_destino = __DIR__ . '/imagenes/noticias/' . $nombreFinal;
+                    if (!file_exists(__DIR__ . '/imagenes/noticias')) {
+                        mkdir(__DIR__ . '/imagenes/noticias', 0755, true);
+                    }
+                    if (move_uploaded_file($tmp, $ruta_destino)) {
+                        $imagenes[$i] = $nombreFinal;
+                    }
+                }
             }
         }
     }
-}
 
-// Asignar cada imagen a las variables que usas en el INSERT
-$imagen1 = $imagenes[0];
-$imagen2 = $imagenes[1];
-$imagen3 = $imagenes[2];
-
-$stmt = $conexion->prepare("INSERT INTO propuestas_noticias 
-    (categoria, titulo, descripcion, imagen, autor, fecha, usuario_id, estado, bloquear_comentarios, imagen2, imagen3)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'aprobada', ?, ?, ?)");
-
-$bloquear_comentarios = isset($_POST['bloquear_comentarios']) ? 1 : 0;
-
-$stmt->bind_param(
-    "sssssssiss",
-    $categoria,
-    $titulo,
-    $descripcion,
-    $imagen1,
-    $autor,
-    $fecha,
-    $usuario_id,
-    $bloquear_comentarios,
-    $imagen2,
-    $imagen3
-);
-
-    if ($stmt->execute()) {
-        $envioexitoso = "Denuncia enviada correctamente. Será revisada por un administrador.";
+    // Insert en DB
+    $stmt = $conexion->prepare("INSERT INTO propuestas_noticias 
+        (categoria, titulo, descripcion, imagen, imagen2, imagen3, fecha_hecho, autor, fecha, usuario_id, estado, bloquear_comentarios)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'aprobada', ?)");
+    if ($stmt) {
+        $stmt->bind_param(
+            "sssssssssii",
+            $categoria,
+            $titulo,
+            $descripcion,
+            $imagenes[0],
+            $imagenes[1],
+            $imagenes[2],
+            $fecha_hecho,
+            $autor,
+            $fecha,
+            $usuario_id,
+            $bloquear_comentarios
+        );
+        if ($stmt->execute()) {
+            header("Location: noticias.php?publicada=1");
+            exit();
+        } else {
+            $errorenviar = "Error al publicar: " . $stmt->error;
+        }
     } else {
-        $errorenviar = "Error al enviar la denuncia: " . $conexion->error;
+        $errorenviar = "Error en la preparación de la consulta: " . $conexion->error;
     }
 }
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Publicar Noticia - Comunicado Digital</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="utf-8" />
+  <title>Publicar Noticia</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: #fff; }
+    /* ---------- BASE ---------- */
+    * { 
+      box-sizing: border-box; 
+    }
+    body { 
+      margin:0; 
+      font-family: 'Inter', sans-serif; 
+      background:#fff; 
+      color:#061F3E; 
+    }
+    header { 
+      background:#061F3E; 
+      color:#fff; 
+      padding:12px 18px; 
+      display:flex; 
+      justify-content:space-between; 
+      align-items:center; 
+    }
+    .logo img { 
+      height:40px; 
+    }
+    nav a { 
+      color:#fff; 
+      text-decoration:none; 
+      font-weight:600; 
+    }
 
-    header {
-      background-color: #061F3E;
-      color: white;
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .contenedor-principal { 
+      max-width:820px; 
+      margin:28px auto; 
+      padding:18px; 
     }
-    .logo img { height: 50px; }
-    nav a {
-      font-family: 'Poppins', sans-serif;
-      font-size: 24px;
-      font-weight: 600;
-      color: #fff;
-      text-decoration: none;
-      margin-left: 20px;
-    }
-    nav a:hover {
-      color: #1661AC;
-      text-decoration: underline;
+    h1 { 
+      font-family:'Poppins',sans-serif; 
+      color:#1661AC; 
+      text-align:center; 
+      margin-bottom:18px; 
+      font-size:26px; 
     }
 
-    .contenedor-principal {
-      max-width: 800px;
-      margin: 30px auto;
-      padding: 20px;
+    .campo { 
+      margin-bottom:18px; 
+      position:relative; 
     }
-    h1 {
-      font-family: 'Poppins', sans-serif;
-      font-size: 32px;
-      font-weight: 700;
-      color: #1661AC;
-      text-align: center;
-      margin-bottom: 30px;
+    .campo label { 
+      display:block; 
+      margin-bottom:6px; 
+      font-weight:600; 
+      color:#403F48; 
     }
-    .campo { margin-bottom: 20px; }
-    .campo label {
-      font-family: 'Poppins', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      color: #403F48;
-      display: block;
-      margin-bottom: 8px;
-    }
-    .campo select,
-    .campo input[type="text"],
-    .campo input[type="date"],
+    .campo input[type="text"], 
+    .campo input[type="date"], 
+    .campo select, 
     .campo textarea {
-      width: 100%;
-      padding: 10px;
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      border: 1px solid #B1B1B1;
-      border-radius: 12px;
-      color: #061F3E;
-      outline: none;
-      transition: 0.3s;
+      width:100%; 
+      padding:10px 12px; 
+      border:1px solid #B1B1B1; 
+      border-radius:10px; 
+      font-size:15px; 
+      outline:none;
+      transition: box-shadow .12s, border-color .12s;
+      padding-right:60px;
     }
-    .campo textarea { min-height: 120px; border-radius: 6px; }
+    .campo textarea { 
+      min-height:140px; 
+      resize:vertical; 
+    }
 
-    .campo input::placeholder,
-    .campo textarea::placeholder { color: #B1B1B1; }
+    .campo input:focus, 
+    .campo textarea:focus, 
+    .campo select:focus { 
+      border-color:#2D8EFF; 
+      box-shadow: 0 4px 14px rgba(45,142,255,0.08); 
+    }
+
+    .contador { 
+      position:absolute; 
+      right:12px; 
+      bottom:10px; 
+      font-size:12px; 
+      color:#8A8A8A; 
+      display:none; 
+      pointer-events:none; 
+    }
+    .error { 
+      color:#E33629; 
+      font-size:13px; 
+      margin-top:6px; 
+      min-height:18px; 
+    }
+    .requerido:after {
+      content: " *";
+      color: red;
+    }
+
+    /* shake */
+    .shake { 
+      animation: shake .36s; 
+    }
+    @keyframes shake { 0%,100%{transform:translateX(0);
+    } 25%{transform:translateX(-6px);
+    } 75%{transform:translateX(6px);
+    } }
+
+    /* ---------- FILE INPUT (estilo denuncias) ---------- */
+    .file-input-wrapper {
+      position:relative;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid #B1B1B1;
+      border-radius:12px;
+      padding:8px 10px;
+      background:#fff;
+      cursor:pointer;
+      transition: border-color .12s, box-shadow .12s;
+    }
+    .file-input-wrapper:hover { border-color:#2D8EFF; box-shadow:0 4px 12px rgba(45,142,255,0.05); }
+    .file-input-wrapper.disabled { opacity:0.6; cursor:not-allowed; pointer-events:none; }
+
+    .file-input-button {
+      background:#ADEBFFD9;
+      border:1px solid #9ecce6;
+      color:#061F3E;
+      padding:8px 14px;
+      border-radius:8px;
+      font-size:14px;
+      font-weight:600;
+      white-space:nowrap;
+    }
+    .file-input-text { color:#6f6f6f; font-size:14px; flex:1; word-break:break-word; }
+
+    .file-input-wrapper input[type="file"] {
+      position:absolute; left:0; top:0; width:100%; height:100%; opacity:0; cursor:pointer;
+    }
+
+    /* previews */
+    #preview-imagen { display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; }
+    .imagen-preview { width:200px; display:flex; flex-direction:column; align-items:center; }
+    .imagen-preview img {
+      width:100%; height:130px; object-fit:cover; border:1px solid #D1D5DB; border-radius:8px; cursor:pointer;
+      transition: transform .12s;
+    }
+    .imagen-preview img:hover { transform: scale(1.02); }
+    .imagen-preview .info { width:100%; display:flex; justify-content:space-between; align-items:center; margin-top:8px; gap:8px; }
+    .imagen-preview .nombre { font-size:13px; color:#403F48; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:150px; }
+    .imagen-preview .eliminar {
+      background:#EB7373; color:#fff; border:none; border-radius:50%; width:26px; height:26px; cursor:pointer; font-weight:700;
+    }
+
+    /* botón publicar */
+    .boton-publicar {
+      display:block; margin:18px auto; background:#61C9A8; color:#061F3E; border:none; border-radius:25px;
+      padding:12px 28px; font-size:18px; font-weight:700; cursor:pointer;
+    }
+    .boton-publicar:hover { background:#4CA88C; }
+
+    /* ---------- MODALES ---------- */
+    .modal-confirmacion {
+      display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,.6);
+      justify-content:center; align-items:center;
+    }
+    .modal-contenido {
+      background:#fff; padding:22px; border-radius:12px; width:520px; max-width:94%;
+      text-align:center; box-shadow:0 6px 24px rgba(0,0,0,.25);
+      font-family:'Poppins',sans-serif;
+    }
+    .modal-contenido h2 { font-size:20px; margin-bottom:10px; color:#0d2740; }
+    .modal-contenido p { font-size:15px; color:#444; margin-bottom:18px; }
+    .modal-botones { display:flex; gap:18px; justify-content:space-between; }
+    .btn-cancelar { flex:1; background:#EB7373; border:none; color:#061F3E; padding:10px; border-radius:8px; font-weight:700; cursor:pointer; }
+    .btn-confirmar { flex:1; background:#61C9A8; border:none; color:#061F3E; padding:10px; border-radius:8px; font-weight:700; cursor:pointer; }
+    .btn-cancelar:hover { background:#c45858; } .btn-confirmar:hover { background:#16a085; }
+
+    /* modal imagen ampliada */
+    .image-modal .modal-contenido { padding:12px; position:relative; }
+    .image-modal .modal-close {
+      position:absolute; right:12px; top:12px; background:rgba(0,0,0,0.08);
+      border:none; width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:18px;
+    }
+    .image-modal img { max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto 12px; }
+    .image-modal .modal-filename { font-size:14px; color:#333; margin-bottom:10px; text-align:center; }
+    /* toast */
+    .toast-personalizado { position:fixed; top:22px; left:50%; transform:translateX(-50%); background:#0d6efd; color:#fff; padding:12px 18px; border-radius:8px; z-index:110000; font-weight:700; box-shadow:0 6px 18px rgba(0,0,0,.18); }
+    .toast-personalizado.danger { background:#dc3545; }
+
+   .campo input::placeholder,
+    .campo textarea:: ::placeholder { crolo: #B1B1B1; }
 
     .campo input:hover, .campo textarea:hover, .campo select:hover {
       border-color: #2D8EFF;
@@ -163,248 +287,35 @@ $stmt->bind_param(
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    .contador {
-      font-size: 14px;
-      font-family: 'Inter', sans-serif;
-      text-align: right;
-      margin-top: 4px;
-      color: #B1B1B1;
-      display: none;
-    }
-    .contador.error { color: #E33639; }
-
-    .campo input[type="file"] {
-      border-radius: 12px;
-      padding: 6px;
-      border: 1px solid #B1B1B1;
-      transition: 0.3s;
-    }
-
-    /* Contenedor de previews */
-    #preview-imagen {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      align-items: flex-start;
-      margin-top: 10px;
-    }
-
-    /* Caja de cada preview */
-    .imagen-preview {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 320px;
-      margin-left: 3px;
-    }
-
-    /* Imagen cargada */
-    .imagen-preview img {
-      width: 360px;
-      height: 203px;
-      object-fit: cover;
-      border: 1px solid #B1B1B1;
-      border-radius: 12px;
-    }
-
-    /* Contenedor inferior (nombre + eliminar) */
-    .imagen-preview .info {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-      margin-top: 5px;
-      font-family: 'Inter', sans-serif;
-    }
-
-    /* Nombre de archivo */
-    .imagen-preview .nombre {
-      font-size: 0.8rem;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 260px;
-      color: #403F48;
-    }
-
-    /* Botón eliminar */
-    .imagen-preview .eliminar {
-      background: #EB7373;
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      width: 22px;
-      height: 22px;
-      line-height: 20px;
-      text-align: center;
-      font-weight: bold;
-      font-size: 14px;
-      transition: background 0.2s ease;
-    }
-    .imagen-preview .eliminar:hover {
-      background: #d33;
-    }
-
-    .campo-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-family: 'Inter', sans-serif;
-      color: #403F48;
-      margin: 20px 0;
-    }
-
-    .boton-publicar {
-      width: 200px;
-      height: 50px;
-      background: #61C9A8;
-      border: none;
-      border-radius: 12px;
-      font-size: 20px;
-      font-weight: bold;
-      font-family: 'Poppins', sans-serif;
-      color: #1B314B;
-      cursor: pointer;
-      transition: 0.3s;
-      display: block;
-      margin: 0 auto;
-    }
-    .boton-publicar:hover { background: #4CA88C; }
-
-    .error {
-      color: #E33629;
-      font-size: 16px;
-      font-family: 'Inter', sans-serif;
-      text-align: center;
-      margin-top: 8px;
-    }
-
-    /* Modal base */
-    .modal {
-      display: none;
-      position: fixed;
-      top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    .modal-contenido {
+    .card-formulario {
       background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      width: 400px;
-      text-align: center;
-    }
-    .modal h3 {
-      font-family: 'Poppins', sans-serif;
-      font-size: 16px;
-      font-weight: bold;
-      color: #403F48;
-      margin-bottom: 10px;
-    }
-    .modal p {
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      color: #403F48;
-      margin-bottom: 20px;
-    }
-    .modal button {
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-family: 'Inter', sans-serif;
-      cursor: pointer;
-      border: none;
-      margin: 0 5px;
-    }
-    .btn-confirmar { background: #61C9A8; color: #fff; }
-    .btn-cancelar { background: #EB7373; color: #061F3E; }
-
-    .file-input-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      border: 1px solid #B1B1B1;
-      border-radius: 12px;
-      padding: 4px 8px;
-      background: #fff;
-      max-width: 100%;
-    }
-
-    .file-input-wrapper input[type="file"] {
-      position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
-
-    .file-input-button {
-      background: #ADEBFFD9;
-      border: 1px solid #9ecce6;
-      color:  #061F3E;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 14px;
-      cursor: pointer;
-      white-space: nowrap;
-      margin-right: 10px;
-    }
-
-    .file-input-text {
-      flex-grow: 1;
-      color: #777;
-      font-size: 14px;
-    }
-
-    .campo .file-input-wrapper:hover,
-    .campo .file-input-wrapper:focus-within {
-      border-color: #2D8EFF;
-      transform: scale(1.01);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
+      padding: 25px 30px;
+      border-radius: 16px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+      margin-top: 20px;
+  }
 
   </style>
 </head>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const fileInputs = document.querySelectorAll('.file-input-wrapper input[type="file"]');
-
-    fileInputs.forEach(input => {
-      const textElement = input.parentElement.querySelector('.file-input-text');
-
-      input.addEventListener("change", function () {
-        if (this.files.length > 0) {
-          // Si hay archivos seleccionados, muestra los nombres
-          const fileNames = Array.from(this.files).map(file => file.name).join(', ');
-          textElement.textContent = fileNames;
-        } else {
-          // Si no hay archivos, muestra el placeholder original
-          textElement.textContent = "No se ha seleccionado ningún archivo";
-        }
-      });
-    });
-  });
-</script>
 <body>
 <header>
-  <div class="logo">
-    <img src="imagenes/logo.png" alt="logo">
-  </div>
-  <nav>
-    <a href="#" id="volverNoticias">Volver a Noticias</a>
-  </nav>
+  <div class="logo"><img src="imagenes/logo.png" alt="logo"></div>
+  <nav><a href="#" id="volverNoticias">Volver a Noticias</a></nav>
 </header>
 
 <div class="contenedor-principal">
   <h1>Publicar Nueva Noticia</h1>
 
-  <form id="formNoticia" action="publicar_noticia.php" method="POST" enctype="multipart/form-data">
+  <?php if (!empty($errorenviar)): ?>
+    <div style="background:#ffecec;border:1px solid #f5c2c2;padding:10px;border-radius:8px;margin-bottom:12px;color:#842029;">
+      <?= htmlspecialchars($errorenviar) ?>
+    </div>
+  <?php endif; ?>
+
+  <form id="formNoticia" action="publicar_noticia.php" method="POST" enctype="multipart/form-data" novalidate>
+    <!-- CATEGORIA (nuevo) -->
     <div class="campo">
-      <label for="categoria">Categoría:</label>
+      <label for="categoria" class="requerido">Categoría:</label>
       <select id="categoria" name="categoria" required>
         <option value="">Seleccione una categoría</option>
         <option value="Deportes">Deportes</option>
@@ -412,38 +323,51 @@ $stmt->bind_param(
         <option value="Educacion">Educación</option>
         <option value="Turismo">Turismo</option>
       </select>
+      <div id="errorCategoria" class="error"></div>
     </div>
 
+    <!-- TITULO -->
     <div class="campo">
-      <label for="titulo">Título:</label>
+      <label for="titulo" class="requerido">Título:</label>
       <input type="text" id="titulo" name="titulo" maxlength="150" placeholder="Escribe el título de la noticia">
-      <div id="contadorTitulo" class="contador"></div>
+      <div id="contadorTitulo" class="contador">0/150</div>
       <div id="errorTitulo" class="error"></div>
     </div>
 
+    <!-- DESCRIPCION -->
     <div class="campo">
-      <label for="descripcion">Descripción:</label>
+      <label for="descripcion" class="requerido">Descripción:</label>
       <textarea id="descripcion" name="descripcion" maxlength="3000" placeholder="Escribe la descripción de tu noticia"></textarea>
-      <div id="contadorDescripcion" class="contador"></div>
+      <div id="contadorDescripcion" class="contador">0/3000</div>
       <div id="errorDescripcion" class="error"></div>
     </div>
 
+    <!-- FECHA DEL HECHO -->
     <div class="campo">
-  <div class="d-flex justify-content-between align-items-center mb-1">
-    <label for="imagen" class="fw-semibold">Carga una imagen (Opcional)</label>
-    <span class="text-muted">Puedes cargar hasta 3 imágenes en formato (.jpeg).</span>
-  </div>
-
-  <div class="file-input-wrapper">
-      <span class="file-input-button">Elegir archivo</span>
-      <span id="file-text" class="file-input-text">No se ha seleccionado ningún archivo</span>
-      <input type="file" id="imagen" name="imagen[]" accept="image/jpeg" multiple>
+      <label for="fecha" class="requerido">Fecha del hecho:</label>
+      <input type="date" id="fecha" name="fecha">
+      <div id="errorFecha" class="error"></div>
     </div>
 
-    <div id="preview-imagen" style="display:flex; gap:50px; margin-top:10px;"></div>
-  </div>
+    <!-- IMAGENES -->
+    <div class="campo">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <label>Imágenes (máx. 3, solo JPEG)</label>
+        <span style="color:#8a8a8a; font-size:13px;">Puedes subir hasta 3 imágenes (.jpeg)</span>
+      </div>
 
-    <div class="campo-checkbox">
+      <div id="file-wrapper" class="file-input-wrapper" role="button" aria-label="Elegir imágenes">
+        <span class="file-input-button">Elegir archivo</span>
+        <span id="file-text" class="file-input-text">No se ha seleccionado ninguna imagen</span>
+        <input type="file" id="imagen" name="imagen[]" accept="image/jpeg" multiple>
+      </div>
+
+      <div id="preview-imagen"></div>
+      <div id="errorImagen" class="error"></div>
+    </div>
+
+    <!-- BLOQUEAR COMENTARIOS -->
+    <div class="campo" style="display:flex; align-items:center; gap:10px;">
       <input type="checkbox" id="bloquear_comentarios" name="bloquear_comentarios">
       <label for="bloquear_comentarios">Bloquear comentarios</label>
     </div>
@@ -452,184 +376,269 @@ $stmt->bind_param(
   </form>
 </div>
 
-<!-- Modal volver -->
-<div class="modal" id="modalVolver">
+<!-- MODAL PUBLICAR -->
+<div class="modal-confirmacion" id="modalPublicar">
   <div class="modal-contenido">
-    <h3>¿Estás seguro de volver a la vista de noticias?</h3>
-    <p><b>Esta acción cancelará los cambios hechos en el formulario</b></p>
-    <button class="btn-confirmar" onclick="window.location='noticias.php'">Confirmar</button>
-    <button class="btn-cancelar" onclick="cerrarModal('modalVolver')">Cancelar</button>
+    <h2>¿Publicar esta noticia?</h2>
+    <p>Una vez publicada, estará disponible para todos los lectores.</p>
+    <div class="modal-botones">
+      <button class="btn-cancelar" onclick="cerrarModal('modalPublicar')">Cancelar</button>
+      <button class="btn-confirmar" onclick="document.getElementById('formNoticia').submit()">Confirmar</button>
+    </div>
   </div>
 </div>
 
-<!-- Modal publicar -->
-<div class="modal" id="modalPublicar">
+<!-- MODAL VOLVER -->
+<div class="modal-confirmacion" id="modalVolver">
   <div class="modal-contenido">
-    <h3>¿Estás seguro de publicar tu noticia?</h3>
-    <p><b>Estás a punto de publicar tu noticia. Una vez publicada, estará disponible para todos los lectores.</b></p>
-    <button class="btn-cancelar" onclick="cerrarModal('modalPublicar')">Cancelar</button>
-    <button class="btn-confirmar" onclick="document.getElementById('formNoticia').submit()">Confirmar</button>
+    <h2>¿Estás seguro de volver a la vista de noticias?</h2>
+    <p>Esta acción cancelara los cambios hechos en el formulario.</p>
+    <div class="modal-botones">
+      <button class="btn-cancelar" onclick="cerrarModal('modalVolver')">Cancelar</button>
+      <button class="btn-confirmar" onclick="window.location='noticias.php'">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL IMAGEN AMPLIADA -->
+<div class="modal-confirmacion image-modal" id="imageModal">
+  <div class="modal-contenido">
+    <button class="modal-close" aria-label="Cerrar" onclick="closeImageModal()">✕</button>
+    <img id="modalImage" src="#" alt="Imagen ampliada">
+    <div id="modalFilename" class="modal-filename"></div>
+    <div style="display:flex;justify-content:center;">
+      <button class="btn-confirmar" onclick="closeImageModal()">Cerrar</button>
+    </div>
   </div>
 </div>
 
 <script>
-  const titulo = document.getElementById('titulo');
-  const descripcion = document.getElementById('descripcion');
-  const contadorTitulo = document.getElementById('contadorTitulo');
-  const contadorDescripcion = document.getElementById('contadorDescripcion');
-  const errorTitulo = document.getElementById('errorTitulo');
-  const errorDescripcion = document.getElementById('errorDescripcion');
-  const errorFecha = document.getElementById('errorFecha');
+/* ---------- UTIL / TOAST ---------- */
+function mostrarToast(mensaje, tipo = 'danger') {
+  const t = document.createElement('div');
+  t.className = 'toast-personalizado' + (tipo === 'danger' ? ' danger' : '');
+  t.textContent = mensaje;
+  document.body.appendChild(t);
+  setTimeout(()=> t.remove(), 4500);
+}
 
-  // Contador título
-  titulo.addEventListener('input', () => {
-    const length = titulo.value.length;
-    contadorTitulo.style.display = 'block';
-    contadorTitulo.textContent = `${length}/150`;
-    if (length < 10) {
-      contadorTitulo.classList.add('error');
-      errorTitulo.textContent = "El título debe tener al menos 10 caracteres.";
-    } else if (length === 150) {
-      errorTitulo.textContent = "Has alcanzado el límite de 150 caracteres.";
-      contadorTitulo.classList.add('error');
-    } else {
-      errorTitulo.textContent = "";
-      contadorTitulo.classList.remove('error');
-    }
+/* ---------- ELEMENTOS ---------- */
+const titulo = document.getElementById('titulo');
+const descripcion = document.getElementById('descripcion');
+const fecha = document.getElementById('fecha');
+const categoria = document.getElementById('categoria');
+
+const contadorTitulo = document.getElementById('contadorTitulo');
+const contadorDescripcion = document.getElementById('contadorDescripcion');
+
+const errorTitulo = document.getElementById('errorTitulo');
+const errorDescripcion = document.getElementById('errorDescripcion');
+const errorFecha = document.getElementById('errorFecha');
+const errorCategoria = document.getElementById('errorCategoria');
+const errorImagen = document.getElementById('errorImagen');
+
+const fileWrapper = document.getElementById('file-wrapper');
+const inputImagen = document.getElementById('imagen');
+const fileText = document.getElementById('file-text');
+const previewContainer = document.getElementById('preview-imagen');
+
+const btnPublicar = document.getElementById('btnPublicar');
+
+/* ---------- CONTADORES (dentro del campo) ---------- */
+function manejarContador(input, contador, max) {
+  input.addEventListener('focus', () => {
+    contador.style.display = 'block';
+    contador.textContent = `${input.value.length}/${max}`;
   });
-
-  // Contador descripción
-  descripcion.addEventListener('input', () => {
-    const length = descripcion.value.length;
-    contadorDescripcion.style.display = 'block';
-    contadorDescripcion.textContent = `${length}/3000`;
-    if (length < 300) {
-      contadorDescripcion.classList.add('error');
-      errorDescripcion.textContent = "La descripción debe tener al menos 300 caracteres.";
-    } else if (length === 3000) {
-      errorDescripcion.textContent = "Has alcanzado el límite de 3000 caracteres.";
-      contadorDescripcion.classList.add('error');
-    } else {
-      errorDescripcion.textContent = "";
-      contadorDescripcion.classList.remove('error');
-    }
+  input.addEventListener('input', () => {
+    contador.textContent = `${input.value.length}/${max}`;
   });
-
-  // Imagen preview
-  document.addEventListener('DOMContentLoaded', function () {
-  const input = document.getElementById('imagen');
-  const previewContainer = document.getElementById('preview-imagen');
-  const form = document.querySelector('form');
-
-  let archivosSeleccionados = [];
-
-  input.addEventListener('change', function () {
-    const nuevosArchivos = Array.from(this.files);
-
-    // Validar tipo y extensión
-    const validos = nuevosArchivos.filter(file => {
-      const name = file.name.toLowerCase();
-      return file.type === 'image/jpeg' && (name.endsWith('.jpg') || name.endsWith('.jpeg'));
-    });
-
-    if (validos.length < nuevosArchivos.length) {
-      mostrarToast?.('Solo se permiten imágenes en formato JPEG.', 'danger');
-    }
-
-    archivosSeleccionados = archivosSeleccionados.concat(validos);
-
-    // Limitar a 3
-    if (archivosSeleccionados.length > 3) {
-      mostrarToast?.('Solo puedes seleccionar hasta 3 imágenes.', 'danger');
-      archivosSeleccionados = archivosSeleccionados.slice(0, 3);
-    }
-
-    // Refrescar preview
-    actualizarPreview();
-
-    // Limpiar input para poder volver a elegir
-    input.value = '';
+  input.addEventListener('blur', () => {
+    if (input.value.trim() === '') contador.style.display = 'none';
   });
+}
+manejarContador(titulo, contadorTitulo, 150);
+manejarContador(descripcion, contadorDescripcion, 3000);
 
-  function actualizarPreview() {
-    previewContainer.innerHTML = '';
+/* ---------- VALIDACIONES REACTIVAS ---------- */
+function shake(el) {
+  el.classList.add('shake');
+  setTimeout(()=> el.classList.remove('shake'), 420);
+}
 
-    archivosSeleccionados.forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'imagen-preview';
+function validarTitulo() {
+  const l = titulo.value.trim().length;
+  errorTitulo.textContent = '';
+  if (l === 0) { errorTitulo.textContent = 'El título es obligatorio.'; shake(titulo); return false; }
+  if (l < 10)  { errorTitulo.textContent = 'El título debe tener al menos 10 caracteres.'; shake(titulo); return false; }
+  if (l > 150) { errorTitulo.textContent = 'Haz alcanzado el límite de 150 caracteres.'; shake(titulo); return false; }
+  return true;
+}
+function validarDescripcion() {
+  const l = descripcion.value.trim().length;
+  errorDescripcion.textContent = '';
+  if (l === 0) { errorDescripcion.textContent = 'La descripción es obligatoria.'; shake(descripcion); return false; }
+  if (l < 300) { errorDescripcion.textContent = 'La descripción debe tener al menos 300 caracteres.'; shake(descripcion); return false; }
+  if (l > 3000) { errorDescripcion.textContent = 'Haz alcanzado el límite de 3000 caracteres.'; shake(descripcion); return false; }
+  return true;
+}
+function validarFecha() {
+  errorFecha.textContent = '';
+  if (!fecha.value) { errorFecha.textContent = 'La fecha es obligatoria.'; shake(fecha); return false; }
+  return true;
+}
+function validarCategoria() {
+  errorCategoria.textContent = '';
+  if (!categoria.value) { errorCategoria.textContent = 'La categoría es obligatoria.'; shake(categoria); return false; }
+  return true;
+}
 
-        // Imagen
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.alt = file.name;
-        wrapper.appendChild(img);
+/* eventos reactivos */
+titulo.addEventListener('input', validarTitulo);
+descripcion.addEventListener('input', validarDescripcion);
+fecha.addEventListener('blur', validarFecha);
+categoria.addEventListener('change', validarCategoria);
 
-        // Info (nombre + eliminar)
-        const info = document.createElement('div');
-        info.className = 'info';
+/* ---------- PREVIEW / IMAGENES (máx 3 JPEG) ---------- */
+let archivosSeleccionados = [];
 
-        const nombreSpan = document.createElement('span');
-        nombreSpan.className = 'nombre';
-        nombreSpan.textContent = file.name;
-        info.appendChild(nombreSpan);
-
-        const btnX = document.createElement('button');
-        btnX.type = 'button';
-        btnX.className = 'eliminar';
-        btnX.textContent = '×';
-        btnX.addEventListener('click', function () {
-          archivosSeleccionados.splice(index, 1);
-          actualizarPreview();
-        });
-        info.appendChild(btnX);
-
-        wrapper.appendChild(info);
-        previewContainer.appendChild(wrapper);
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // Sincronizar input.files
-    const dt = new DataTransfer();
-    archivosSeleccionados.forEach(f => dt.items.add(f));
-    input.files = dt.files;
+function actualizarFileWrapperState() {
+  if (archivosSeleccionados.length >= 3) {
+    fileWrapper.classList.add('disabled');
+    inputImagen.disabled = true;
+    fileText.textContent = `${archivosSeleccionados.length} imagen(es) seleccionadas (límite alcanzado)`;
+  } else {
+    fileWrapper.classList.remove('disabled');
+    inputImagen.disabled = false;
+    if (archivosSeleccionados.length === 0) fileText.textContent = 'No se ha seleccionado ninguna imagen';
+    else fileText.textContent = `${archivosSeleccionados.length} imagen(es) seleccionadas`;
   }
+}
 
-  // Antes de enviar, aseguramos que se mantenga la selección
-  form?.addEventListener('submit', function () {
-    const dt = new DataTransfer();
-    archivosSeleccionados.forEach(f => dt.items.add(f));
-    input.files = dt.files;
+function esJPEG(file) {
+  const name = file.name.toLowerCase();
+  return file.type === 'image/jpeg' || name.endsWith('.jpg') || name.endsWith('.jpeg');
+}
+
+inputImagen.addEventListener('change', function () {
+  const nuevos = Array.from(this.files);
+  let validos = [];
+  let rechazados = 0;
+  nuevos.forEach(f => {
+    if (esJPEG(f)) validos.push(f);
+    else rechazados++;
   });
+  if (rechazados > 0) mostrarToast('Solo se permiten imágenes en formato JPEG.', 'danger');
+
+  archivosSeleccionados = archivosSeleccionados.concat(validos);
+  if (archivosSeleccionados.length > 3) {
+    archivosSeleccionados = archivosSeleccionados.slice(0,3);
+    mostrarToast('Máximo 3 imágenes. Se han descartado las restantes.', 'danger');
+  }
+  actualizarPreview();
+  actualizarFileWrapperState();
+  this.value = '';
 });
 
+function actualizarPreview() {
+  previewContainer.innerHTML = '';
+  archivosSeleccionados.forEach((file, index) => {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'imagen-preview';
 
-  // Validación antes de modal publicar
-  document.getElementById('btnPublicar').addEventListener('click', () => {
-    let valido = true;
-    if (titulo.value.trim() === "") {
-      errorTitulo.textContent = "El título es obligatorio.";
-      valido = false;
-    }
-    if (descripcion.value.trim() === "") {
-      errorDescripcion.textContent = "La descripción es obligatoria.";
-      valido = false;
-    }
-    if (valido) {
-      abrirModal('modalPublicar');
-    }
+      // imagen
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.alt = file.name;
+      img.title = 'Ver ampliada';
+      img.addEventListener('click', () => abrirImagen(e.target.result, file.name));
+      wrapper.appendChild(img);
+
+      // info: nombre + eliminar
+      const info = document.createElement('div');
+      info.className = 'info';
+
+      const nombre = document.createElement('div');
+      nombre.className = 'nombre';
+      nombre.textContent = file.name;
+
+      const btnEliminar = document.createElement('button');
+      btnEliminar.type = 'button';
+      btnEliminar.className = 'eliminar';
+      btnEliminar.textContent = '×';
+      btnEliminar.title = 'Eliminar imagen';
+      btnEliminar.addEventListener('click', () => {
+        archivosSeleccionados.splice(index, 1);
+        actualizarPreview();
+        actualizarFileWrapperState();
+      });
+
+      info.appendChild(nombre);
+      info.appendChild(btnEliminar);
+      wrapper.appendChild(info);
+      previewContainer.appendChild(wrapper);
+    };
+    reader.readAsDataURL(file);
   });
 
-  // Modal funciones
-  function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
-  function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+  // Sincronizar input.files para envío (DataTransfer)
+  const dt = new DataTransfer();
+  archivosSeleccionados.forEach(f => dt.items.add(f));
+  inputImagen.files = dt.files;
+}
 
-  document.getElementById('volverNoticias').addEventListener('click', (e) => {
-    e.preventDefault();
-    abrirModal('modalVolver');
-  });
+/* ---------- MODAL IMAGEN AMPLIADA ---------- */
+function abrirImagen(src, name) {
+  document.getElementById('modalImage').src = src;
+  document.getElementById('modalFilename').textContent = name;
+  document.getElementById('imageModal').style.display = 'flex';
+}
+function closeImageModal() {
+  document.getElementById('imageModal').style.display = 'none';
+  document.getElementById('modalImage').src = '#';
+  document.getElementById('modalFilename').textContent = '';
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeImageModal(); });
+
+/* ---------- MODALES CONFIRMACION ---------- */
+function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
+document.getElementById('volverNoticias').addEventListener('click', (e) => {
+  e.preventDefault();
+  abrirModal('modalVolver'); // si quieres otro modal para volver, puedes crear otro similar
+});
+
+/* ---------- PUBLICAR (validación final) ---------- */
+btnPublicar.addEventListener('click', () => {
+  // Validar categoria, titulo, descripcion, fecha
+  const catOk = validarCategoria();
+  const titOk = validarTitulo();
+  const descOk = validarDescripcion();
+  const fechaOk = validarFecha();
+
+  // Validar imágenes: si hay y si todas son jpeg (cliente ya filtró)
+  if (archivosSeleccionados.length > 0) {
+    const anyNotJpeg = archivosSeleccionados.some(f => !esJPEG(f));
+    if (anyNotJpeg) {
+      errorImagen.textContent = 'Solo se permiten imágenes JPEG.';
+      mostrarToast('Solo se permiten imágenes JPEG.', 'danger');
+    } else {
+      errorImagen.textContent = '';
+    }
+  } else {
+    errorImagen.textContent = '';
+  }
+
+  if (catOk && titOk && descOk && fechaOk) {
+    abrirModal('modalPublicar');
+  } else {
+    mostrarToast('Corrige los errores en el formulario.', 'danger');
+  }
+});
 </script>
 </body>
 </html>
