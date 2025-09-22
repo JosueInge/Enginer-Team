@@ -56,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
     $contraseña = $_POST['contraseña'] ?? '';
     $repetir = $_POST['repetir'] ?? '';
     $terminos = $_POST['terminos'] ?? '';
+    $politicas = $_POST['politicas'] ?? '';
 
     if ($contraseña !== $repetir) { 
         $contraseñasnocoinciden = "Las contraseñas no coinciden";
@@ -63,6 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
         $error = "La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un carácter especial";
     } elseif ($terminos !== 'on') {
         $error = "Debes aceptar los términos y condiciones";
+    } elseif ($politicas !== 'on') {
+        $error = "Debes aceptar las políticas de privacidad";
     } else {
         $contraseña_hash = password_hash($contraseña, PASSWORD_DEFAULT);
 
@@ -120,624 +123,604 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Registro</title>
-
-    <!-- Fuentes -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-
-    <!-- Bootstrap (solo para toasts y utilidades) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Cuenta</title>
+    <!-- Fuentes de Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-    :root{
-        --header-bg: #1B314B;
-        --link-hover: #DDDDDD;
-        --primary: #61C9A8;
-        --primary-dark: #1B314B;
-        --border-gray: #B1B1B1;
-        --text-dark: #403F48;
-        --muted: #555555;
-        --error-red: #E85D5D;
-        --check-green: #61C9A8;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    html,body{height:100%;margin:0;background:#fff;font-family: 'Inter', sans-serif;color:var(--text-dark);}
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-    /* HEADER */
-    header{
-        background: var(--header-bg);
-        color:#fff;
-        padding: 14px 22px;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-    }
-    .brand { display:flex; align-items:center; gap:12px; }
-    .brand img { height:44px; width:auto; display:block; }
-    nav { display:flex; gap:15px; align-items:center;}
-    nav a { font-family:'Poppins',sans-serif; font-size:14px; color:#fff; padding:8px; }
-    nav a:hover{ color:var(--link-hover); text-decoration:underline; }
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
 
-    /* hamburger */
-    .hamburger{ display:none; font-size:24px; color:#fff; cursor:pointer; background:transparent; border:none; }
-    @media (max-width:900px){
-        nav{ display:none; position:absolute; right:12px; top:62px; background:var(--header-bg); padding:12px; border-radius:6px; flex-direction:column; min-width:170px; z-index:1000; }
-        nav.show{ display:flex; }
-        .hamburger{ display:block; }
-    }
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1661AC; /* Cambiado a azul como solicitado */
+            text-align: center;
+            margin-bottom: 10px;
+        }
 
-    /* Container */
-    .page{
-        max-width:820px;
-        margin:28px auto;
-        padding: 18px;
-    }
+        .subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: #555555;
+            text-align: center;
+            margin-bottom: 25px;
+        }
 
-    .card {
-        padding:28px;
-        border-radius:12px;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.05);
-        background: #fff;
-    }
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
 
-    /* Títulos */
-    .title {
-        font-family:'Poppins',sans-serif;
-        font-size:20px;
-        font-weight:700;
-        color:#333333;
-        text-align:center;
-        margin:0 0 8px 0;
-    }
-    .subtitle {
-        font-family:'Inter',sans-serif;
-        font-size:14px;
-        color:var(--muted);
-        text-align:center;
-        margin:0 0 20px 0;
-    }
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #B1B1B1;
+            font-size: 18px;
+            z-index: 1;
+        }
 
-    /* Inputs */
-    form{ display:flex; flex-direction:column; align-items:center; gap:8px; }
-    .field {
-        width:100%;
-        max-width:550px;
-        position:relative;
-    }
-    .field input {
-        width:100%;
-        box-sizing:border-box;
-        padding:12px 44px 12px 44px;
-        border:1px solid var(--border-gray);
-        border-radius:8px;
-        font-family:'Inter',sans-serif;
-        font-size:16px;
-        color:var(--text-dark);
-        transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-        background: #fff;
-    }
-    .field input::placeholder { color:#9b9b9b; }
-    .field input:focus { transform:scale(1.01); box-shadow: 0 6px 18px rgba(0,0,0,0.08); outline:none; }
+        .input-icon-right {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #B1B1B1;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 1;
+        }
 
-    /* iconos */
-    .icon-left, .icon-right {
-        position:absolute;
-        top:50%;
-        transform:translateY(-50%);
-        pointer-events:none;
-        width:31px;
-        height:24px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        color:var(--border-gray);
-    }
-    .icon-left{ left:12px; pointer-events:none; }
-    .icon-right{ right:12px; pointer-events:auto; cursor:pointer; }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px 12px 50px;
+            border: 1px solid #B1B1B1;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            color: #403F48;
+            transition: all 0.3s ease;
+        }
 
-    /* error state */
-    .field.error input { border-color: var(--error-red); animation: shake .18s linear; }
-    @keyframes shake { 0%{transform:translateX(0)}25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-4px)}100%{transform:translateX(0)} }
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #61C9A8;
+            box-shadow: 0 0 0 3px rgba(97, 201, 168, 0.2);
+            transform: scale(1.01);
+        }
 
-    /* mensajes de error debajo del campo */
-    .msg {
-        width:100%;
-        max-width:550px;
-        text-align:center;
-        font-family:'Poppins',sans-serif;
-        color:var(--primary-dark);
-        font-size:16px;
-        margin-top:6px;
-        min-height:20px;
-    }
-    .msg.error { color:var(--error-red); }
+        input.error {
+            border-color: #E85D5D;
+            animation: shake 0.5s linear;
+        }
 
-    /* Reglas de contraseña (visible solo on focus) */
-    .pw-rules {
-        width:100%;
-        max-width:550px;
-        margin-top:6px;
-        display:none;
-        flex-direction:column;
-        gap:6px;
-    }
-    .pw-rules.visible { display:flex; }
-    .rule {
-        display:flex;
-        align-items:center;
-        gap:10px;
-        font-family:'Inter',sans-serif;
-        font-size:16px;
-        color:var(--text-dark);
-    }
-    .rule .dot {
-        width:20px; height:20px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center;
-        font-size:12px;
-        color:#fff;
-        background: var(--border-gray);
-    }
-    .rule.valid .dot { background: var(--check-green); }
-    .rule.invalid .dot { background: var(--border-gray); }
+        @keyframes shake {
+            0%, 100% {transform: translateX(0);}
+            25% {transform: translateX(-5px);}
+            75% {transform: translateX(5px);}
+        }
 
-    /* Aceptación de términos */
-    .terms {
-        width:100%;
-        max-width:550px;
-        display:flex;
-        align-items:center;
-        gap:8px;
-        font-family:'Inter',sans-serif;
-        font-size:16px;
-        color:var(--text-dark);
-    }
-    .terms a { color:#1661AC; text-decoration:none; }
-    .terms a:hover { text-decoration:underline; }
+        .password-requirements {
+            display: none;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 12px; /* Más redondeado como solicitado */
+            border: 1px solid #eee;
+        }
 
-    /* Botón continuar */
-    .btn-submit {
-        margin-top:12px;
-        background: var(--primary);
-        color: var(--primary-dark);
-        font-family:'Poppins',sans-serif;
-        font-size:20px;
-        font-weight:700;
-        padding:0.5rem 1.5rem;
-        border-radius:16px;
-        border: none;
-        cursor:pointer;
-        transition: transform .12s ease, box-shadow .12s ease;
-    }
-    .btn-submit:disabled { opacity:0.6; cursor:not-allowed; transform:none; box-shadow:none; }
-    .btn-submit:hover:not(:disabled){ transform:translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: #403F48;
+        }
 
-    /* login link */
-    .login-line {
-        width:100%;
-        max-width:550px;
-        text-align:center;
-        margin-top:12px;
-        font-family:'Inter',sans-serif;
-        font-size:16px;
-        color:var(--text-dark);
-    }
-    .login-line a { color:#1661AC; font-weight:700; text-decoration:none; }
-    .login-line a:hover { text-decoration:underline; }
+        .requirement i {
+            margin-right: 10px;
+            font-size: 14px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            background-color: #B1B1B1;
+        }
 
-    /* separador O */
-    .separator {
-        font-family:'Inter',sans-serif;
-        color:var(--text-dark);
-        font-size:20px;
-        margin:12px 0;
-        text-align:center;
-        width:100%;
-        max-width:550px;
-    }
+        .requirement.valid i {
+            background-color: #61C9A8;
+        }
 
-    /* social buttons */
-    .socials {
-        width:100%;
-        max-width:550px;
-        display:flex;
-        justify-content:space-between;
-        gap:12px;
-    }
-    .social {
-        width:49%;
-        display:flex;
-        align-items:center;
-        gap:12px;
-        padding:12px 16px;
-        border-radius:8px;
-        background:#fff;
-        border:1px solid #1661AC;
-        cursor:pointer;
-        font-family:'Inter',sans-serif;
-        font-size:20px;
-        color:var(--text-dark);
-        justify-content:center;
-        transition: transform .12s ease, box-shadow .12s ease;
-    }
-    .social img { height:20px; width:auto; }
-    .social:hover { transform:translateY(-3px); box-shadow: 0 8px 18px rgba(0,0,0,0.08); }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
 
-    /* responsive behaviour */
-    @media (max-width:640px) {
-        .page { padding:12px; margin-top:8px; }
-        .card { padding:18px; }
-        .brand img { height:38px; }
-        .field input { padding:10px 40px 10px 44px; font-size:15px; }
-        .title { font-size:18px; }
-        .subtitle { font-size:13px; }
-        .social { font-size:16px; padding:10px; }
-    }
+        input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+            accent-color: #61C9A8;
+        }
+
+        .checkbox-group label {
+            font-size: 16px;
+            color: #403F48;
+        }
+
+        .checkbox-group a {
+            color: #1661AC;
+            text-decoration: none;
+        }
+
+        .checkbox-group a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-continue {
+            display: block;
+            width: auto; /* Cambiado para que no ocupe todo el ancho */
+            margin: 20px auto; /* Centrado */
+            background-color: #61C9A8;
+            color: #1B314B;
+            border: none;
+            border-radius: 16px;
+            padding: 10px 30px; /* Más pequeño */
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px; /* Un poco más pequeño */
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-continue:hover {
+            background-color: #4fb598;
+            box-shadow: 0 4px 12px rgba(97, 201, 168, 0.3);
+        }
+
+        .btn-continue:active {
+            transform: scale(0.98);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #403F48;
+        }
+
+        .login-link a {
+            color: #1661AC;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .separator {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #403F48;
+            font-size: 20px;
+        }
+
+        .separator::before,
+        .separator::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #B1B1B1;
+        }
+
+        .separator:not(:empty)::before {
+            margin-right: .25em;
+        }
+
+        .separator:not(:empty)::after {
+            margin-left: .25em;
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-social {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 10px; /* Más pequeño */
+            background-color: #FFFFFF;
+            border: 1px solid #1661AC;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px; /* Tamaño de fuente más pequeño */
+            color: #403F48;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: 40px; /* Altura fija para uniformidad */
+        }
+
+        .btn-social:hover {
+            background-color: #f5f5f5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-social:active {
+            transform: scale(0.98);
+        }
+
+        .social-icon {
+            width: 18px; /* Iconos más pequeños */
+            height: 18px;
+        }
+
+        .error-message {
+            display: none;
+            background-color: #F8D7DA;
+            color: #842029;
+            border: 1px solid #F5C2C7;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-top: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .social-buttons {
+                flex-direction: column;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <header>
-        <div class="brand">
-            <a href="/"><img src="imagenes/logo.png" alt="logo" /></a>
-        </div>
-
-        <button class="hamburger" aria-label="Abrir menú" onclick="toggleMenu()">☰</button>
-
-        <nav id="navMenu" aria-label="Navegación principal">
-            <a href="#">Contacto</a>
-            <a href="sobrenosotros.php">Sobre nosotros</a>
-            <a href="login.php">Inicio de sesión</a>
-        </nav>
-    </header>
-
-    <main class="page">
-        <div class="card">
-            <h1 class="title">Crea tu cuenta</h1>
+    <div class="container">
+        <form id="registerForm" method="POST" action="">
+            <h1>Crea tu cuenta</h1>
             <p class="subtitle">Únete a nuestra comunidad y mantente informado al instante</p>
 
-            <form id="formRegistro" method="POST" action="registro.php" novalidate>
-                <!-- Nombre -->
-                <div class="field" id="field-nombre">
-                    <span class="icon-left" aria-hidden="true">
-                        <!-- usuario SVG -->
-                        <svg width="31" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zM3 20c0-3.866 3.582-7 9-7s9 3.134 9 7v1H3v-1z" fill="#B1B1B1"/></svg>
-                    </span>
-                    <input id="nombre" name="nombre" type="text" placeholder="Nombre" value="<?= isset($_POST['nombre']) ? htmlspecialchars($_POST['nombre']) : '' ?>" />
+            <!-- Campo Nombre -->
+            <div class="input-group">
+                <span class="input-icon"><i class="fas fa-user"></i></span>
+                <input type="text" id="nombre" name="nombre" placeholder="Nombre" value="<?= isset($_POST['nombre']) ? htmlspecialchars($_POST['nombre']) : '' ?>" required>
+                <div id="nameError" class="error-message"></div>
+            </div>
+
+            <!-- Campo Correo Electrónico -->
+            <div class="input-group">
+                <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                <input type="email" id="correo" name="correo" placeholder="Correo electrónico" value="<?= isset($_POST['correo']) ? htmlspecialchars($_POST['correo']) : '' ?>" required>
+                <div id="emailError" class="error-message"></div>
+            </div>
+
+            <!-- Campo Contraseña -->
+            <div class="input-group">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="contraseña" name="contraseña" placeholder="Contraseña" required>
+                <span class="input-icon-right" id="togglePassword">
+                    <i class="fas fa-eye"></i>
+                </span>
+                <div id="passwordError" class="error-message"></div>
+            </div>
+
+            <!-- Indicadores de fuerza de contraseña -->
+            <div id="passwordRequirements" class="password-requirements">
+                <div class="requirement" id="lengthReq">
+                    <i class="fas fa-times"></i>
+                    <span>Mínimo 8 caracteres</span>
                 </div>
-                <div id="msg-nombre" class="msg"></div>
-
-                <!-- Correo -->
-                <div class="field" id="field-correo">
-                    <span class="icon-left" aria-hidden="true">
-                        <!-- sobre SVG -->
-                        <svg width="31" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 4H4c-1.1 0-2 .9-2 2v0 12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5L4 8V6l8 5 8-5v2z" fill="#B1B1B1"/></svg>
-                    </span>
-                    <input id="correo" name="correo" type="email" placeholder="Correo electrónico" value="<?= isset($_POST['correo']) ? htmlspecialchars($_POST['correo']) : '' ?>" />
+                <div class="requirement" id="uppercaseReq">
+                    <i class="fas fa-times"></i>
+                    <span>Al menos una mayúscula</span>
                 </div>
-                <div id="msg-correo" class="msg"></div>
-
-                <!-- Contraseña -->
-                <div class="field" id="field-password">
-                    <span class="icon-left" aria-hidden="true">
-                        <!-- candado SVG -->
-                        <svg width="31" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17 8h-1V6c0-2.761-2.239-5-5-5S6 3.239 6 6v2H5c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-8c0-1.103-.897-2-2-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v2H8V6z" fill="#B1B1B1"/></svg>
-                    </span>
-                    <input id="contraseña" name="contraseña" type="password" placeholder="Contraseña" onfocus="showPwRules(true)" onblur="showPwRules(false)" />
-                    <span class="icon-right" onclick="toggleEye('contraseña')" title="Mostrar/ocultar contraseña">
-                        <!-- ojo SVG (cambia por JS) -->
-                        <svg id="eye-contraseña" width="31" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5c-7 0-11 6-11 7 0 1 4 7 11 7s11-6 11-7c0-1-4-7-11-7zm0 11a4 4 0 1 1 .001-8.001A4 4 0 0 1 12 16z" fill="#B1B1B1"/></svg>
-                    </span>
+                <div class="requirement" id="lowercaseReq">
+                    <i class="fas fa-times"></i>
+                    <span>Al menos una minúscula</span>
                 </div>
-                <div id="msg-password" class="msg"></div>
-
-                <!-- password rules (hidden until focus) -->
-                <div id="pw-rules" class="pw-rules" aria-hidden="true">
-                    <div id="rule-length" class="rule invalid"><span class="dot">✓</span> Mínimo 8 caracteres</div>
-                    <div id="rule-upper" class="rule invalid"><span class="dot">✓</span> Al menos una mayúscula</div>
-                    <div id="rule-lower" class="rule invalid"><span class="dot">✓</span> Al menos una minúscula</div>
-                    <div id="rule-number" class="rule invalid"><span class="dot">✓</span> Al menos un número</div>
-                    <div id="rule-special" class="rule invalid"><span class="dot">✓</span> Al menos un carácter especial</div>
+                <div class="requirement" id="numberReq">
+                    <i class="fas fa-times"></i>
+                    <span>Al menos un número</span>
                 </div>
-
-                <!-- Confirmar contraseña -->
-                <div class="field" id="field-repetir">
-                    <span class="icon-left" aria-hidden="true">
-                        <!-- candado SVG -->
-                        <svg width="31" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17 8h-1V6c0-2.761-2.239-5-5-5S6 3.239 6 6v2H5c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-8c0-1.103-.897-2-2-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v2H8V6z" fill="#B1B1B1"/></svg>
-                    </span>
-                    <input id="repetir" name="repetir" type="password" placeholder="Confirmar contraseña" />
-                    <span class="icon-right" onclick="toggleEye('repetir')" title="Mostrar/ocultar contraseña">
-                        <svg id="eye-repetir" width="31" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5c-7 0-11 6-11 7 0 1 4 7 11 7s11-6 11-7c0-1-4-7-11-7zm0 11a4 4 0 1 1 .001-8.001A4 4 0 0 1 12 16z" fill="#B1B1B1"/></svg>
-                    </span>
+                <div class="requirement" id="specialcharReq">
+                    <i class="fas fa-times"></i>
+                    <span>Al menos un carácter especial</span>
                 </div>
-                <div id="msg-repetir" class="msg"></div>
+            </div>
 
-                <!-- Términos -->
-                <div class="terms">
-                    <input id="terminos" name="terminos" type="checkbox" <?= isset($_POST['terminos']) ? 'checked' : '' ?> />
-                    <label for="terminos">He leído y acepto los <a href="terminos.php">Términos y condiciones</a></label>
-                </div>
-                <div id="msg-terminos" class="msg"></div>
+            <!-- Campo Confirmar Contraseña -->
+            <div class="input-group">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="repetir" name="repetir" placeholder="Confirmar contraseña" required>
+                <span class="input-icon-right" id="toggleConfirmPassword">
+                    <i class="fas fa-eye"></i>
+                </span>
+                <div id="confirmPasswordError" class="error-message"></div>
+            </div>
 
-                <!-- Botón continuar -->
-                <button id="btnContinuar" type="submit" class="btn-submit" disabled>Continuar</button>
+            <!-- Checkbox Términos y Condiciones -->
+            <div class="checkbox-group">
+                <input type="checkbox" id="terminos" name="terminos" <?= isset($_POST['terminos']) ? 'checked' : '' ?>>
+                <label for="terminos">He leído y acepto los <a href="terminos.php">Términos y Condiciones</a></label>
+            </div>
+            <div id="termsError" class="error-message"></div>
 
-                <!-- Login link -->
-                <div class="login-line">¿Ya tienes una cuenta? <a href="login.php">Inicia sesión</a></div>
+            <!-- Checkbox Políticas de Privacidad -->
+            <div class="checkbox-group">
+                <input type="checkbox" id="politicas" name="politicas" <?= isset($_POST['politicas']) ? 'checked' : '' ?>>
+                <label for="politicas">He leído y acepto las <a href="politicas.php">Políticas de Privacidad</a></label>
+            </div>
+            <div id="privacyError" class="error-message"></div>
 
-                <div class="separator">O</div>
+            <!-- Botón Continuar -->
+            <button type="submit" class="btn-continue">Continuar</button>
 
-                <!-- Social buttons -->
-                <div class="socials">
-                    <button type="button" class="social" onclick="location.href='google_login.php'">
-                        <img src="imagenes/google.png" alt="Google">Continuar con Google
-                    </button>
-                    <button type="button" class="social" onclick="location.href='outlook_login.php'">
-                        <img src="imagenes/outlook.png" alt="Outlook">Continuar con Outlook
-                    </button>
-                </div>
+            <!-- Enlace para iniciar sesión -->
+            <div class="login-link">
+                ¿Ya tienes una cuenta? <a href="login.php">Inicia sesión</a>
+            </div>
 
-                <!-- Mostrar toasts de PHP (errores de servidor) -->
-                <?php if (isset($error)): ?>
-                    <div class="msg error"><?= htmlspecialchars($error) ?></div>
-                <?php endif; ?>
+            <!-- Separador -->
+            <div class="separator">O</div>
 
-                <?php if (isset($contraseñasnocoinciden)): ?>
-                    <div class="msg error"><?= htmlspecialchars($contraseñasnocoinciden) ?></div>
-                <?php endif; ?>
+            <!-- Botones de redes sociales -->
+            <div class="social-buttons">
+                <button type="button" class="btn-social" onclick="location.href='google_login.php'">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4=" alt="Google" class="social-icon">
+                    Continuar con Google
+                </button>
+                <button type="button" class="btn-social" onclick="location.href='outlook_login.php'">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTQuMDMgMTBIMjB2OS4wMmEuOTguOTggMCAwIDEtLjk4Ljk4SDQuMDNhMy4wMyAzLjAzIDAgMCAxLTMuMDMtM1YxM2MwLTEuNjYgMS4zNy0zIDMuMDMtM3ptMTUuOTktNGgtOXY5aDEwVjZhLjk4Ljk4IDAgMCAwLS45OC0uOTh6TTQgMTloMTZ2LTZINFYxOXoiIGZpbGw9IiMwMDc4ZDQiLz48cGF0aCBkPSJNMTIgMTVWN2w1IDRsLTUgNHoiIGZpbGw9IiM1ZWI2ZmYiLz48L3N2Zz4=" alt="Outlook" class="social-icon">
+                    Continuar con Outlook
+                </button>
+            </div>
 
-                <?php if (isset($registroexistente)): ?>
-                    <div class="msg error"><?= htmlspecialchars($registroexistente) ?></div>
-                <?php endif; ?>
+            <!-- Mostrar errores de PHP -->
+            <?php if (isset($error)): ?>
+                <div class="error-message" style="display: block; margin-top: 20px;"><?= htmlspecialchars($error) ?></div>
+            <?php endif; ?>
 
-            </form>
-        </div>
-    </main>
+            <?php if (isset($contraseñasnocoinciden)): ?>
+                <div class="error-message" style="display: block; margin-top: 20px;"><?= htmlspecialchars($contraseñasnocoinciden) ?></div>
+            <?php endif; ?>
 
-    <!-- Bootstrap bundle (toasts) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+            <?php if (isset($registroexistente)): ?>
+                <div class="error-message" style="display: block; margin-top: 20px;"><?= htmlspecialchars($registroexistente) ?></div>
+            <?php endif; ?>
+        </form>
+    </div>
 
     <script>
-    // Toggle mobile menu
-    function toggleMenu(){
-        document.getElementById('navMenu').classList.toggle('show');
-    }
-
-    // Toggle eye icons
-    function toggleEye(fieldId){
-        const input = document.getElementById(fieldId);
-        if(!input) return;
-        input.type = input.type === 'password' ? 'text' : 'password';
-        // update icon fill color (simple visual)
-        const eye = document.getElementById('eye-' + fieldId);
-        if(eye){
-            // change fill color to indicate visible (just visual, using fill attr is enough)
-            const color = input.type === 'text' ? '#1661AC' : '#B1B1B1';
-            eye.querySelectorAll('path').forEach(p => p.setAttribute('fill', color));
-        }
-    }
-
-    // Show/hide pw rules
-    function showPwRules(show){
-        const el = document.getElementById('pw-rules');
-        if(show) el.classList.add('visible'); else el.classList.remove('visible');
-    }
-
-    // Element refs
-    const nombre = document.getElementById('nombre');
-    const correo = document.getElementById('correo');
-    const contraseña = document.getElementById('contraseña');
-    const repetir = document.getElementById('repetir');
-    const terminos = document.getElementById('terminos');
-    const btnContinuar = document.getElementById('btnContinuar');
-
-    // messages
-    const msgNombre = document.getElementById('msg-nombre');
-    const msgCorreo = document.getElementById('msg-correo');
-    const msgPassword = document.getElementById('msg-password');
-    const msgRepetir = document.getElementById('msg-repetir');
-    const msgTerminos = document.getElementById('msg-terminos');
-
-    // password rule nodes
-    const ruleLength = document.getElementById('rule-length');
-    const ruleUpper = document.getElementById('rule-upper');
-    const ruleLower = document.getElementById('rule-lower');
-    const ruleNumber = document.getElementById('rule-number');
-    const ruleSpecial = document.getElementById('rule-special');
-
-    // utilities
-    function validarEmailFormato(email){
-        const re = /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/;
-        return re.test(email);
-    }
-
-    // Check email existence via AJAX to same PHP file
-    let checkEmailTimeout = null;
-    async function checkEmailExists(email){
-        // return {exists: true/false, error?: 'invalid_format'}
-        const form = new FormData();
-        form.append('check_email', email);
-        try {
-            const resp = await fetch('registro.php', { method: 'POST', body: form });
-            const data = await resp.json();
-            return data;
-        } catch (e){
-            return { exists:false };
-        }
-    }
-
-    // Update password rules UI
-    function updatePasswordRules(val){
-        const hasLen = val.length >= 8;
-        const hasUpper = /[A-Z]/.test(val);
-        const hasLower = /[a-z]/.test(val);
-        const hasNum = /[0-9]/.test(val);
-        const hasSpec = /[^A-Za-z0-9]/.test(val);
-
-        toggleRule(ruleLength, hasLen);
-        toggleRule(ruleUpper, hasUpper);
-        toggleRule(ruleLower, hasLower);
-        toggleRule(ruleNumber, hasNum);
-        toggleRule(ruleSpecial, hasSpec);
-
-        return hasLen && hasUpper && hasLower && hasNum && hasSpec;
-    }
-
-    function toggleRule(el, ok){
-        if(ok){
-            el.classList.remove('invalid');
-            el.classList.add('valid');
-        } else {
-            el.classList.remove('valid');
-            el.classList.add('invalid');
-        }
-    }
-
-    // Listeners
-    contraseña.addEventListener('input', (e)=>{
-        const v = e.target.value;
-        updatePasswordRules(v);
-        // disable continue if weak
-        checkFormEnable();
-    });
-
-    nombre.addEventListener('input', ()=>{ msgNombre.textContent=''; document.getElementById('field-nombre').classList.remove('error'); checkFormEnable(); });
-
-    correo.addEventListener('input', ()=> {
-        msgCorreo.textContent=''; document.getElementById('field-correo').classList.remove('error');
-        checkFormEnable();
-
-        // debounce check email existence
-        if(checkEmailTimeout) clearTimeout(checkEmailTimeout);
-        checkEmailTimeout = setTimeout(async ()=>{
-            const val = correo.value.trim();
-            if(!val) return;
-            if(!validarEmailFormato(val)){
-                msgCorreo.textContent = "Formato de correo incorrecto";
-                document.getElementById('field-correo').classList.add('error');
-                btnContinuar.disabled = true;
-                return;
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('registerForm');
+            const passwordInput = document.getElementById('contraseña');
+            const confirmPasswordInput = document.getElementById('repetir');
+            const togglePasswordButton = document.getElementById('togglePassword');
+            const toggleConfirmPasswordButton = document.getElementById('toggleConfirmPassword');
+            const passwordRequirements = document.getElementById('passwordRequirements');
+            const terminosCheckbox = document.getElementById('terminos');
+            const politicasCheckbox = document.getElementById('politicas');
+            
+            // Mostrar/ocultar contraseña
+            togglePasswordButton.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+            
+            // Mostrar/ocultar confirmación de contraseña
+            toggleConfirmPasswordButton.addEventListener('click', function() {
+                const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmPasswordInput.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+            
+            // Mostrar requisitos de contraseña al enfocar
+            passwordInput.addEventListener('focus', function() {
+                passwordRequirements.style.display = 'block';
+            });
+            
+            // Ocultar requisitos de contraseña al quitar el foco (si no hay contenido)
+            passwordInput.addEventListener('blur', function() {
+                if (!this.value) {
+                    passwordRequirements.style.display = 'none';
+                }
+            });
+            
+            // Validar contraseña en tiempo real
+            passwordInput.addEventListener('input', function() {
+                validatePassword(this.value);
+            });
+            
+            // Validar formulario al enviar
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (validateForm()) {
+                    form.submit();
+                }
+            });
+            
+            function validatePassword(password) {
+                // Validar longitud
+                const lengthValid = password.length >= 8;
+                toggleRequirement('lengthReq', lengthValid);
+                
+                // Validar mayúsculas
+                const uppercaseValid = /[A-Z]/.test(password);
+                toggleRequirement('uppercaseReq', uppercaseValid);
+                
+                // Validar minúsculas
+                const lowercaseValid = /[a-z]/.test(password);
+                toggleRequirement('lowercaseReq', lowercaseValid);
+                
+                // Validar números
+                const numberValid = /[0-9]/.test(password);
+                toggleRequirement('numberReq', numberValid);
+                
+                // Validar caracteres especiales
+                const specialCharValid = /[^A-Za-z0-9]/.test(password);
+                toggleRequirement('specialcharReq', specialCharValid);
+                
+                return lengthValid && uppercaseValid && lowercaseValid && numberValid && specialCharValid;
             }
-            const res = await checkEmailExists(val);
-            if(res.error === 'invalid_format'){
-                msgCorreo.textContent = "Formato de correo incorrecto";
-                document.getElementById('field-correo').classList.add('error');
-                btnContinuar.disabled = true;
-                return;
+            
+            function toggleRequirement(elementId, isValid) {
+                const element = document.getElementById(elementId);
+                const icon = element.querySelector('i');
+                
+                if (isValid) {
+                    element.classList.add('valid');
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-check');
+                } else {
+                    element.classList.remove('valid');
+                    icon.classList.remove('fa-check');
+                    icon.classList.add('fa-times');
+                }
             }
-            if(res.exists){
-                msgCorreo.textContent = "Este correo ya está registrado";
-                document.getElementById('field-correo').classList.add('error');
-                btnContinuar.disabled = true;
-            } else {
-                if(msgCorreo.textContent === "Este correo ya está registrado") msgCorreo.textContent='';
-                document.getElementById('field-correo').classList.remove('error');
+            
+            function validateForm() {
+                let isValid = true;
+                const name = document.getElementById('nombre').value.trim();
+                const email = document.getElementById('correo').value.trim();
+                const password = document.getElementById('contraseña').value;
+                const confirmPassword = document.getElementById('repetir').value;
+                const terms = document.getElementById('terminos').checked;
+                const privacy = document.getElementById('politicas').checked;
+                
+                // Validar nombre
+                if (name === '') {
+                    showError('nameError', 'El nombre es obligatorio');
+                    document.getElementById('nombre').classList.add('error');
+                    isValid = false;
+                } else {
+                    hideError('nameError');
+                    document.getElementById('nombre').classList.remove('error');
+                }
+                
+                // Validar email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (email === '') {
+                    showError('emailError', 'El correo electrónico es obligatorio');
+                    document.getElementById('correo').classList.add('error');
+                    isValid = false;
+                } else if (!emailRegex.test(email)) {
+                    showError('emailError', 'Formato de correo incorrecto');
+                    document.getElementById('correo').classList.add('error');
+                    isValid = false;
+                } else {
+                    hideError('emailError');
+                    document.getElementById('correo').classList.remove('error');
+                }
+                
+                // Validar contraseña
+                if (password === '') {
+                    showError('passwordError', 'La contraseña es obligatoria');
+                    document.getElementById('contraseña').classList.add('error');
+                    isValid = false;
+                } else if (!validatePassword(password)) {
+                    showError('passwordError', 'La contraseña no cumple con los requisitos');
+                    document.getElementById('contraseña').classList.add('error');
+                    isValid = false;
+                } else {
+                    hideError('passwordError');
+                    document.getElementById('contraseña').classList.remove('error');
+                }
+                
+                // Validar confirmación de contraseña
+                if (confirmPassword === '') {
+                    showError('confirmPasswordError', 'La confirmación de contraseña es obligatoria');
+                    document.getElementById('repetir').classList.add('error');
+                    isValid = false;
+                } else if (password !== confirmPassword) {
+                    showError('confirmPasswordError', 'Las contraseñas no coinciden');
+                    document.getElementById('repetir').classList.add('error');
+                    isValid = false;
+                } else {
+                    hideError('confirmPasswordError');
+                    document.getElementById('repetir').classList.remove('error');
+                }
+                
+                // Validar términos y condiciones
+                if (!terms) {
+                    showError('termsError', 'Debes aceptar nuestros Términos y condiciones');
+                    isValid = false;
+                } else {
+                    hideError('termsError');
+                }
+                
+                // Validar políticas de privacidad
+                if (!privacy) {
+                    showError('privacyError', 'Debes aceptar nuestras Políticas de privacidad');
+                    isValid = false;
+                } else {
+                    hideError('privacyError');
+                }
+                
+                return isValid;
             }
-        }, 600);
-    });
-
-    repetir.addEventListener('input', ()=>{
-        msgRepetir.textContent=''; document.getElementById('field-repetir').classList.remove('error'); checkFormEnable();
-    });
-
-    terminos.addEventListener('change', ()=>{ msgTerminos.textContent=''; checkFormEnable(); });
-
-    // enable/disable continue button based on local checks (not server final)
-    function checkFormEnable(){
-        const nameOk = nombre.value.trim().length > 0;
-        const emailOk = correo.value.trim().length > 0 && validarEmailFormato(correo.value.trim());
-        const pwOk = updatePasswordRules(contraseña.value);
-        const repeatOk = repetir.value.trim().length > 0 && (contraseña.value === repetir.value);
-        const termsOk = terminos.checked;
-
-        btnContinuar.disabled = !(nameOk && emailOk && pwOk && repeatOk && termsOk);
-    }
-
-    // final client validation on submit (also leaves actual POST for server)
-    document.getElementById('formRegistro').addEventListener('submit', async function(e){
-        // clear messages
-        msgNombre.textContent=''; msgCorreo.textContent=''; msgPassword.textContent=''; msgRepetir.textContent=''; msgTerminos.textContent='';
-
-        let ok = true;
-
-        if(nombre.value.trim() === ''){
-            msgNombre.textContent = "El nombre es obligatorio";
-            document.getElementById('field-nombre').classList.add('error');
-            ok = false;
-        }
-
-        if(correo.value.trim() === ''){
-            msgCorreo.textContent = "El correo electrónico es obligatorio";
-            document.getElementById('field-correo').classList.add('error');
-            ok = false;
-        } else if(!validarEmailFormato(correo.value.trim())){
-            msgCorreo.textContent = "Formato de correo incorrecto";
-            document.getElementById('field-correo').classList.add('error');
-            ok = false;
-        } else {
-            // check server if already registered
-            const res = await checkEmailExists(correo.value.trim());
-            if(res.exists){
-                msgCorreo.textContent = "Este correo ya está registrado";
-                document.getElementById('field-correo').classList.add('error');
-                ok = false;
+            
+            function showError(elementId, message) {
+                const errorElement = document.getElementById(elementId);
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
             }
-        }
-
-        if(contraseña.value.trim() === ''){
-            msgPassword.textContent = "La contraseña es obligatoria";
-            document.getElementById('field-password').classList.add('error');
-            ok = false;
-        } else {
-            const passOk = updatePasswordRules(contraseña.value);
-            if(!passOk){
-                msgPassword.textContent = "La contraseña debe tener mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial";
-                document.getElementById('field-password').classList.add('error');
-                ok = false;
+            
+            function hideError(elementId) {
+                const errorElement = document.getElementById(elementId);
+                errorElement.style.display = 'none';
             }
-        }
-
-        if(repetir.value.trim() === ''){
-            msgRepetir.textContent = "La confirmación de contraseña es obligatoria";
-            document.getElementById('field-repetir').classList.add('error');
-            ok = false;
-        } else if(contraseña.value !== repetir.value){
-            msgRepetir.textContent = "Las contraseñas no coinciden";
-            document.getElementById('field-repetir').classList.add('error');
-            ok = false;
-        }
-
-        if(!terminos.checked){
-            msgTerminos.textContent = "Debes aceptar nuestros Términos y condiciones";
-            ok = false;
-        }
-
-        if(!ok){
-            e.preventDefault();
-            // animate shake briefly on invalid fields already applied via class .error
-            return false;
-        }
-
-        // All client checks passed -> allow submit to server
-        // Optionally show a quick confirmation (keeps submit)
-        // You requested: when giving continuar, show message "Se ha enviado correctamente".
-        // But since the server will redirect to login.php on success, showing client toast before submit may be redundant.
-        // We'll allow the normal POST to proceed.
-        return true;
-    });
-
-    // Initialize eye icons colors based on default (hidden)
-    document.querySelectorAll('[id^="eye-"]').forEach(svg => {
-        svg.querySelectorAll('path').forEach(p => p.setAttribute('fill','#B1B1B1'));
-    });
-
-    // enable checks on load in case form pre-filled (server-side re-render)
-    window.addEventListener('load', ()=> {
-        updatePasswordRules(contraseña.value || '');
-        checkFormEnable();
-    });
-
+        });
     </script>
 </body>
 </html>

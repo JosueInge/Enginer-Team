@@ -697,7 +697,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .imagen-seleccionada {
       border: 2px solid #2D8EFF !important;
       box-shadow: 0 0 8px rgba(45, 142, 255, 0.5);
-    }
+    }  
 
   </style>
 </head>
