@@ -5,7 +5,7 @@ include 'conexion.php'; // debe definir $conexion (mysqli)
 // ------------------- FUNCIONES ------------------- //
 function guardarLog($mensaje) {
     $rutaLog = __DIR__ . '/logs/errores.log';
-    if (!is_dir(DIR . '/logs')) mkdir(DIR . '/logs', 0777, true);
+    if (!is_dir(__DIR__ . '/logs')) mkdir(__DIR__ . '/logs', 0777, true);
     $fecha = date('Y-m-d H:i:s');
     file_put_contents($rutaLog, "[$fecha] $mensaje" . PHP_EOL, FILE_APPEND);
 }
