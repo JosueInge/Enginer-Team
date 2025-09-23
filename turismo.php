@@ -178,7 +178,7 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
     }
     .boton-publicar { 
       position: fixed; 
-      bottom: 30px; right: 
+      bottom: 30px; left: 
       30px; background-color: #0d5c9b; 
       color: white; 
       border: none; 
@@ -399,5 +399,7 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
         lastScroll = currentScroll <= 0 ? 0 : currentScroll;
       });
     </script>
+    <?php include 'footer.php' ?>
+
 </body>
 </html>

@@ -2,346 +2,250 @@
 session_start();
 include 'conexion.php';
 
-$error = null;
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $correo = $_POST['correo'] ?? '';
-  $contraseña = $_POST['contraseña'] ?? '';
-
-  // Buscar solo por correo
-  $stmt = $conexion->prepare("SELECT id, contraseña, nombre, email_verificacion, rol FROM usuarios WHERE correo = ?");
-  $stmt->bind_param("s", $correo);
-  $stmt->execute();
-  $resultado = $stmt->get_result();
-
-  if ($resultado->num_rows === 1) {
-    $usuario = $resultado->fetch_assoc();
-
-    // Verificar si el correo está verificado
-    if ($usuario['email_verificacion'] != 1) {
-      $VerificarCorreo = "Debes verificar tu correo electrónico antes de iniciar sesión.";
-    }
-    // Verificar contraseña
-    elseif (password_verify($contraseña, $usuario['contraseña'])) {
-      $_SESSION['usuario_id'] = $usuario['id'];
-      $_SESSION['usuario_correo'] = $correo;
-      $_SESSION['usuario_nombre'] = $usuario['nombre'];
-      $_SESSION['usuario_rol'] = $usuario['rol'];
-      header("Location: inicio.php");
-      exit();
-    } else {
-      $DatosIncorrectos = "Correo o contraseña incorrectas.";
-    }
-  } else {
-    $DatosIncorrectos = "Correo o contraseña incorrectas.";
-  }
+function guardarLog($mensaje) {
+    $rutaLog = __DIR__ . '/logs/errores.log';
+    $fecha = date('Y-m-d H:i:s');
+    $mensajeCompleto = "[$fecha] $mensaje" . PHP_EOL;
+    file_put_contents($rutaLog, $mensajeCompleto, FILE_APPEND);
 }
 
-?>
+$errorCorreo = $errorContraseña = null;
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $correo = trim($_POST['correo'] ?? '');
+  $contraseña = $_POST['contraseña'] ?? '';
+
+  if (empty($correo)) {
+      $errorCorreo = "El correo electrónico es obligatorio.";
+  } elseif (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+      $errorCorreo = "Formato de correo incorrecto.";
+  } elseif (empty($contraseña)) {
+      $errorContraseña = "La contraseña es obligatoria.";
+  } else {
+      $stmt = $conexion->prepare("SELECT id, contraseña, nombre, email_verificacion, rol FROM usuarios WHERE correo = ?");
+      $stmt->bind_param("s", $correo);
+      $stmt->execute();
+      $resultado = $stmt->get_result();
+
+      if ($resultado->num_rows === 1) {
+          $usuario = $resultado->fetch_assoc();
+
+          if ($usuario['email_verificacion'] != 1) {
+              $errorCorreo = "Debes verificar tu correo electrónico antes de iniciar sesión.";
+          } elseif (password_verify($contraseña, $usuario['contraseña'])) {
+              $_SESSION['usuario_id'] = $usuario['id'];
+              $_SESSION['usuario_correo'] = $correo;
+              $_SESSION['usuario_nombre'] = $usuario['nombre'];
+              $_SESSION['usuario_rol'] = $usuario['rol'];
+              header("Location: inicio.php");
+              exit();
+          } else {
+              $errorContraseña = "Correo electrónico o contraseña incorrectos.";
+              guardarLog("Intento fallido de inicio de sesión: $correo");
+          }
+      } else {
+          $errorCorreo = "Correo electrónico o contraseña incorrectos.";
+      }
+  }
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inicio de Sesión</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Inter&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #fff;
+      margin:0; padding:0;
+      font-family:'Inter', sans-serif;
+      background:#f9f9f9;
+      display:flex; justify-content:center; align-items:center;
+      height:100vh;
     }
-
-    header {
-      background-color: #0d5c9b;
-      color: white;
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .formulario {
+      width:100%; max-width:600px;
+      background:#fff; padding:40px 35px;
+      border-radius:10px;
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+      text-align:center;
     }
-    .logo {
-      display: flex;
-      align-items: center;
+    .formulario h2 {
+      font-family:'Poppins',sans-serif;
+      font-size:22px; font-weight:600;
+      color:#1661AC; margin-bottom:10px;
     }
-    .logo img {
-      height: 50px; 
-      margin-right: 10px;
+    .formulario p.sub {
+      font-size:14px; color:#666; margin-bottom:25px;
     }
-
-    .informacion a {
-      color: white;
-      margin-left: 20px;
-      text-decoration: none;
-      font-size: 14px;
-      font-family: 'Open Sans Regular';
-    }
-
-    main {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    h2 {
-      margin-bottom: 10px;
-      font-family: 'Open Sans Bold';
-    }
-
-    p {
-      font-family: 'Open Sans Regular';
-    }
-
-    .login {
-      border: 2px solid black;
-      padding: 30px;
-      border-radius: 10px;
-      max-width: 400px;
+    /* === CAMPOS DE CORREO Y CONTRASEÑA === */
+    .campo {
+      position: relative;
+      margin: 0 auto 20px auto;
       width: 100%;
-      text-align: left;
+      max-width: 550px;
     }
-
-    .login label {
-      font-weight: bold;
-      display: block;
-      margin: 15px 0 5px;
-      font-family: 'Open Sans Regular';
-    }
-
-    .login input[type="email"],
-    .login input[type="password"] {
+    .campo input {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      background-color: #d9d9d9;
+      padding: 12px 16px 12px 48px;
+      border: 1px solid #B1B1B1;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: #403F48;
+      box-sizing: border-box;
     }
-
-    .password {
-      font-size: 13px;
-      color: black;
-      margin-top: 5px;
-      display: inline-block;
-      font-family: 'Open Sans Regular';
+    .campo input::placeholder {
+      color: #B1B1B1;
     }
-    .login input[type="text"].password-visible {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      background-color: #d9d9d9;
-    }
-
-    .login button {
-      margin-top: 50px;
-      width: 100%;
-      background-color: #0d5c9b;
-      color: white;
-      border: none;
-      padding: 10px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      font-family: 'Open Sans Regular';
-    }
-
-    .registro {
-      text-align: center;
-      margin-top: 15px;
-      font-size: 14px;
-      font-family: 'Open Sans Regular';
-    }
-
-    .registro a {
-      text-decoration: none;
-      font-weight: bold;
-      color: black;
-    }
-    .menu-desplegable {
-      display: none;
+    .campo .icon {
       position: absolute;
-      right: 0;
-      background-color: white;
-      min-width: 160px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      z-index: 1001;
-      border-radius: 4px;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      font-size: 24px;
+      color: #B1B1B1;
+      pointer-events: none;
     }
-    
-    .menu-desplegable a {
-      color: #333;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-      transition: background-color 0.3s;
+    .campo .toggle {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      font-size: 24px;
+      color: #B1B1B1;
+      cursor: pointer;
     }
-    
-    .menu-desplegable a:hover {
-      background-color: #f1f1f1;
+    /* === MENSAJES DE ERROR === */
+    .error-msg {
+      font-size:13px; color:#c00;
+      text-align:left; margin: -10px auto 10px auto;
+      max-width:550px;
     }
-    
-    .menu-configuracion:hover .menu-desplegable {
-      display: block;
+    .forgot {
+      text-align:left;
+      margin:10px auto 20px auto;
+      max-width:550px;
+    }
+    .forgot a {
+      font-size:13px; color:#1661AC; text-decoration:none;
+    }
+    /* === BOTÓN INGRESAR === */
+    .btn-ingresar {
+      display:inline-block;
+      background:#61C9A8;
+      color:#1B314B;
+      border:none;
+      border-radius:16px;
+      padding:0.5rem 1.5rem;
+      font-family:'Poppins', sans-serif;
+      font-size:20px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.3s;
+      margin-top:10px;
+    }
+    .btn-ingresar:hover { background:#4da78b; }
+    /* === DIVISOR Y REDES === */
+    .divider {
+      display:flex; 
+      align-items:center; 
+      text-align:center;
+      margin:20px 0;
+      font-size: 25px;
+    }
+    .divider::before, .divider::after {
+      content:""; flex:1;
+      border-bottom:1px solid #ddd;
+    }
+    .divider:not(:empty)::before { margin-right:.75em; }
+    .divider:not(:empty)::after { margin-left:.75em; }
+    .social-container {
+      display:flex; justify-content:space-between; gap:10px;
+      max-width:550px; margin:0 auto;
+    }
+    .btn-social {
+      flex:1;
+      display:inline-flex; align-items:center; justify-content:center;
+      border:1px solid #1661AC;
+      border-radius:6px; padding:8px;
+      font-size:18px; text-decoration:none;
+      color:#333; transition:.3s;
+      background:#fff; 
+    }
+    .btn-social img {
+      width:30px; height:30px; margin-right:6px; padding: 5px;
+    }
+    .btn-social:hover { background:#f5f5f5; }
+    .registro-text {
+      margin-top:20px; font-size:13px;
+    }
+    .registro-text a {
+      color:#1661AC; font-weight:600;
+      text-decoration:none;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <img src="imagenes/logo.png" alt="logo">
+
+  <form method="POST" action="login.php" class="formulario">
+    <h2>Inicia Sesión</h2>
+    <p class="sub">Ingresa tus credenciales para acceder</p>
+
+    <!-- CAMPO CORREO -->
+    <div class="campo">
+      <i class="bi bi-envelope icon"></i>
+      <input type="email" name="correo" placeholder="Correo electrónico" value="<?= htmlspecialchars($_POST['correo'] ?? '') ?>">
     </div>
-    <div class="informacion">
-      <a href="#">Contacto</a>
-      <a href="sobrenosotros.php">Sobre Nosotros</a>
-      <a href="login.php">Iniciar Sesión</a>
+    <?php if ($errorCorreo): ?><div class="error-msg"><?= $errorCorreo ?></div><?php endif; ?>
+
+    <!-- CAMPO CONTRASEÑA -->
+    <div class="campo">
+      <i class="bi bi-lock icon"></i>
+      <input type="password" id="contraseña" name="contraseña" placeholder="Contraseña">
+      <i class="bi bi-eye-slash toggle" id="togglePassword"></i>
     </div>
-  </header>
-  <main>
-    <h2>Inicio de Sesión</h2>
-    <p>Ingresa tus credenciales para acceder</p>
+    <?php if ($errorContraseña): ?><div class="error-msg"><?= $errorContraseña ?></div><?php endif; ?>
 
-    <?php if ($error): ?>
-      <div style="color: red; text-align: center; margin: 15px 0;">
-        <?php echo htmlspecialchars($error); ?>
-      </div>
-    <?php endif; ?>
-
-    <div class="login">
-      <form method="POST" action="login.php">
-        <label for="correo">Correo</label>
-        <input type="email" id="correo" name="correo" required>
-
-        <label for="contraseña">Contraseña</label>
-        <div style="position: relative;">
-          <input type="password" id="contraseña" name="contraseña" required>
-          <img src="imagenes/ojoAbierto.webp" id="togglePassword" alt="Mostrar/Ocultar" 
-            style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer; width: 24px;">
-        </div>
-
-        <a href="recuperar.php" class="password">Olvidé mi contraseña</a>
-
-        <button type="submit">Ingresar</button>
-
-       
-      </form>
-
-      <div class="registro">
-        ¿No tienes una cuenta? <a href="registro.php">Regístrate</a>
-      </div>
+    <!-- OLVIDÉ CONTRASEÑA -->
+    <div class="forgot">
+      <a href="recuperar.php">Olvidé mi contraseña</a>
     </div>
-  </main>
-  <!-- Mensaje de envio de correo -->
-  <?php if (isset($_SESSION['correo'])): ?>
-  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
-    <div class="toast align-items-center text-bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body">
-                <?= htmlspecialchars($_SESSION['correo']) ?>
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-        </div>
-    </div>
-  </div>
-  <?php unset($_SESSION['correo']); ?>
-  <?php endif; ?>
 
-<!-- Mensaje a usuario no logueado que desee comentar -->
-  <?php if (isset($_SESSION['comentario'])): ?>
-  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
-  <div class="toast align-items-center text-bg-primary border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-          <div class="toast-body">
-              <?= htmlspecialchars($_SESSION['comentario']) ?>
-          </div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-      </div>
-    </div>
-  </div>
-  <?php unset($_SESSION['comentario']); ?>
-  <?php endif; ?>
+    <!-- BOTÓN INGRESAR -->
+    <button type="submit" class="btn-ingresar">Ingresar</button>
 
-<!-- Mensaje a usuario no logueado que desee reportar -->
-  <?php if (isset($_SESSION['reportar'])): ?>
-  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
-  <div class="toast align-items-center text-bg-primary border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-          <div class="toast-body">
-              <?= htmlspecialchars($_SESSION['reportar']) ?>
-          </div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-      </div>
-    </div>
-  </div>
-  <?php unset($_SESSION['reportar']); ?>
-  <?php endif; ?>
+    <!-- DIVISOR -->
+    <div class="divider">o</div>
 
-<!-- Mensaje para verificacion del registro -->
-  <?php if (isset($VerificarCorreo)): ?> 
-  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
-    <div class="toast align-items-center text-bg-primary border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body">
-                <?= htmlspecialchars($VerificarCorreo) ?>
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-        </div>
+    <!-- BOTONES SOCIALES -->
+    <div class="social-container">
+      <a href="google_login.php" class="btn-social">
+        <img src="imagenes/google.png" alt="Google"> Ingresa con Google
+      </a>
+      <a href="outlook_login.php" class="btn-social">
+        <img src="imagenes/outlook.png" alt="Outlook"> Ingresa con Outlook
+      </a>
     </div>
-  </div>
-  <?php unset($VerificarCorreo); ?>
-  <?php endif; ?>
-  
-<!-- Mensaje de datos incorrectos -->
-  <?php if (isset($DatosIncorrectos)): ?>
-  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
-    <div class="toast align-items-center text-bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body">
-                <?= htmlspecialchars($DatosIncorrectos) ?>
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-        </div>
+
+    <!-- REGISTRO -->
+    <div class="registro-text">
+      ¿No tienes una cuenta? <a href="registro.php">Regístrate</a>
     </div>
-  </div>
-  <?php unset($DatosIncorrectos); ?>
-  <?php endif; ?>
+  </form>
 
   <script>
-    document.querySelector('form').addEventListener('submit', function(e) {
-      if (!this.checkValidity()) {
-        e.preventDefault();
-        alert('Completa todos los campos');
-      }
-    });
-    document.addEventListener('DOMContentLoaded', function () {
-        const toastEl = document.querySelector('.toast');
-        if (toastEl) {
-            const bsToast = new bootstrap.Toast(toastEl, {
-                autohide: true,
-                delay: 7000
-            });
-            bsToast.show();
-        }
-    });
-    // Codigo que hace aparecer y desaparecer la contraseña.
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('contraseña');
-
-    togglePassword.addEventListener('click', function () {
-      const isPassword = passwordInput.type === 'password';
-      passwordInput.type = isPassword ? 'text' : 'password';
-
-      if (isPassword) {
-        passwordInput.classList.add('password-visible');
-          this.src = 'imagenes/ojoCerrado.webp';
-          this.alt = 'Ocultar contraseña';
-      } else {
-        passwordInput.classList.remove('password-visible');
-        this.src = 'imagenes/ojoAbierto.webp';
-        this.alt = 'Mostrar contraseña';
-      }
+    togglePassword.addEventListener('click', () => {
+      const type = passwordInput.type === 'password' ? 'text' : 'password';
+      passwordInput.type = type;
+      togglePassword.classList.toggle('bi-eye');
+      togglePassword.classList.toggle('bi-eye-slash');
     });
   </script>
+
 </body>
 </html>

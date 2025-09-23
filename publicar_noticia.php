@@ -304,7 +304,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </header>
 
 <div class="contenedor-principal">
-  <h1>Publicar Nueva Noticia</h1>
+  <h1>Publicar Noticia</h1>
 
   <?php if (!empty($errorenviar)): ?>
     <div style="background:#ffecec;border:1px solid #f5c2c2;padding:10px;border-radius:8px;margin-bottom:12px;color:#842029;">

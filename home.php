@@ -1,4 +1,5 @@
 <?php
+$categoria_actual = 'inicio';
 session_start();
 include 'menu.php';
 include 'conexion.php';
@@ -31,16 +32,15 @@ $noticias = $resultado->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 $conexion->close();
 ?>
-
+<script src="buscador.js" defer></script>
 <?php
 echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
 ?>
-?>
-
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Comunicado Digital</title> 
@@ -192,15 +192,7 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
 </head>
 <body>
   <div class="contenido-principal">
-      <?php if (!empty($termino_busqueda)): ?>
-        <div class="resultados-busqueda">
-          <p>Resultados de búsqueda para: <strong><?= htmlspecialchars($termino_busqueda) ?></strong></p>
-          <?php if (empty($noticias)): ?>
-            <p>No se encontraron noticias que coincidan con tu búsqueda.</p>
-          <?php endif; ?>
-        </div>
-      <?php endif; ?>
-
+    <div id="contenedor-noticias">
       <?php if (empty($noticias)): ?>
         <div class="sin-noticias">
           <h2>No hay noticias publicadas aún</h2>
@@ -229,6 +221,7 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
         <?php endforeach; ?>
       <?php endif; ?>
     </div>
+  </div>
 
     <link rel="stylesheet" href="asistente_virtual.css">
     <?php include 'chatbot.php'; ?>
@@ -263,5 +256,6 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
         lastScroll = currentScroll <= 0 ? 0 : currentScroll;
       });
     </script>
+    <?php include "footer.php"; ?>
 </body>
 </html>

@@ -1,4 +1,5 @@
 <?php
+$categoria_actual = 'deportes';
 session_start();
 include 'menu.php';
 include 'conexion.php';
@@ -35,7 +36,7 @@ $noticias = $resultado->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 $conexion->close();
 ?>
-
+<script src="buscador.js" defer></script>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -136,7 +137,7 @@ $conexion->close();
     }
     .boton-publicar { 
       position: fixed; 
-      bottom: 30px; right: 
+      bottom: 30px; left: 
       30px; background-color: #0d5c9b; 
       color: white; 
       border: none; 
@@ -153,28 +154,25 @@ $conexion->close();
       padding: 50px; 
       color: #666; 
     }
-    .Buscador { 
-      display: flex; 
-      align-items: center; 
-      gap: 8px; 
-    }
-    .Buscador img { 
-      width: 20px; 
-      height: 20px; 
+    .Buscador {
+      position: relative;
+      width: 200px;
     }
     .Buscador input {
-      padding: 8px 12px; 
-      border: 1px solid #ccc; 
-      border-radius: 4px; 
-      font-size: 14px; 
+      width: 100%;
+      padding: 8px 8px 8px 35px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
     }
-    .Buscador button { 
-      padding: 8px 12px; 
-      background-color: #0d5c9b; 
-      color: white; 
-      border: none; 
-      border-radius: 4px; 
-      cursor: pointer; 
+    .Buscador img {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
     }
     .menu-configuracion { 
       position: relative; 
@@ -266,51 +264,44 @@ $conexion->close();
 </head>
 <body>
   <div class="contenido-principal">
-    
-    <?php if (!empty($termino_busqueda)): ?>
-      <div class="resultados-busqueda">
-        <p>Resultados de búsqueda para: <strong><?= htmlspecialchars($termino_busqueda) ?></strong></p>
-        <?php if (empty($noticias)): ?>
-          <p>No se encontraron noticias que coincidan con tu búsqueda.</p>
-        <?php endif; ?>
-      </div>
-    <?php endif; ?>
+    <div id="contenedor-noticias">
 
-    <?php if (empty($noticias)): ?>
-      <div class="sin-noticias">
-        <h2>No hay noticias publicadas aún</h2>
-        <p>¡Sé el primero en compartir una noticia!</p>
-      </div>
-    <?php else: ?>
-      <?php foreach ($noticias as $noticia): ?>
-        <article class="noticia-card" style="position: relative;">
-          <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
-            <div class="menu-admin dropdown" style="position: absolute; top: 15px; right: 15px;">
-              <span style="cursor: pointer;">⋮</span>
-              <div class="dropdown-content">
-                <a href="editar_noticia.php?id=<?= $noticia['id'] ?>">Editar</a>
-                <a href="eliminar_noticia.php?id=<?= $noticia['id'] ?>" onclick="return confirm('¿Deseas eliminar esta noticia?')">Eliminar</a>
+      <?php if (empty($noticias)): ?>
+        <div class="sin-noticias">
+          <h2>No hay noticias publicadas aún</h2>
+          <p>¡Sé el primero en compartir una noticia!</p>
+        </div>
+      <?php else: ?>
+        <?php foreach ($noticias as $noticia): ?>
+          <article class="noticia-card" style="position: relative;">
+            <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
+              <div class="menu-admin dropdown" style="position: absolute; top: 15px; right: 15px;">
+                <span style="cursor: pointer;">⋮</span>
+                <div class="dropdown-content">
+                  <a href="editar_noticia.php?id=<?= $noticia['id'] ?>">Editar</a>
+                  <a href="eliminar_noticia.php?id=<?= $noticia['id'] ?>" onclick="return confirm('¿Deseas eliminar esta noticia?')">Eliminar</a>
+                </div>
               </div>
-            </div>
-          <?php endif; ?>
+            <?php endif; ?>
 
-          <a href="ver_noticia.php?id=<?= $noticia['id'] ?>" style="text-decoration: none; color: inherit;">
-            <h2 class="noticia-titulo"><?= htmlspecialchars($noticia['titulo']) ?></h2>
-          </a>
-          <div class="noticia-meta">
-            <span><?= htmlspecialchars($noticia['categoria']) ?></span>
-            <span><?= htmlspecialchars($noticia['autor']) ?></span>
-            <span><?= htmlspecialchars($noticia['fecha']) ?></span>
-          </div>
-          <?php if ($noticia['imagen']): ?>
-            <div class="imagen-contenedor">
-              <img src="imagenes/noticias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
+            <a href="ver_noticia.php?id=<?= $noticia['id'] ?>" style="text-decoration: none; color: inherit;">
+              <h2 class="noticia-titulo"><?= htmlspecialchars($noticia['titulo']) ?></h2>
+            </a>
+            <div class="noticia-meta">
+              <span><?= htmlspecialchars($noticia['categoria']) ?></span>
+              <span><?= htmlspecialchars($noticia['autor']) ?></span>
+              <span><?= htmlspecialchars($noticia['fecha']) ?></span>
             </div>
-          <?php endif; ?>
-          <p class="noticia-resumen"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
-        </article>
-      <?php endforeach; ?>
-    <?php endif; ?>
+            <?php if ($noticia['imagen']): ?>
+              <div class="imagen-contenedor">
+                <img src="imagenes/noticias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
+              </div>
+            <?php endif; ?>
+            <p class="noticia-resumen"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
+          </article>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    </div>
   </div>
 
   <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>

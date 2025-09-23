@@ -171,7 +171,7 @@ $conexion->close();
     }
     .boton-publicar { 
       position: fixed; 
-      bottom: 30px; right: 
+      bottom: 30px; left: 
       30px; background-color: #0d5c9b; 
       color: white; 
       border: none; 
@@ -314,6 +314,10 @@ $conexion->close();
   <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
     <a href="publicar_denuncia.php" class="boton-publicar">Publicar denuncia</a>
   <?php endif; ?>
+
+  <link rel="stylesheet" href="asistente_virtual.css">
+    <?php include 'chatbot.php'; ?>
+    <script src="chatbot.js"></script>
   
     <script>
   // Confirmación de cierre de sesión
@@ -381,5 +385,7 @@ $conexion->close();
         lastScroll = currentScroll <= 0 ? 0 : currentScroll;
       });
     </script>
+    <?php include 'footer.php' ?>
+
 </body>
 </html>

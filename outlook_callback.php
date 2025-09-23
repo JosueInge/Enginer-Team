@@ -1,72 +1,92 @@
-<?php 
+<?php
 session_start();
+require_once 'conexion.php';
 
-$client_id = '493826cc-aa37-4e71-81c2-456a1b369fca';
-$client_secret = '';
-$redirect_uri ='http://localhost/Engine-Team/outlook_callback.php';
+// Configuración
+$clientID = "d3017f43-525d-48ea-b29e-f520364ae153";
+$clientSecret = "WQF8Q~QZ9UArljHR70SNBWgmCtxv~e.O631foaxt";
+$redirectUri = "http://localhost/Enginer-Team/outlook_callback.php";
+$tenant = "common";
 
+// Verificar estado
+if (!isset($_GET['state']) || $_GET['state'] !== $_SESSION['oauth2state']) {
+    die("Error de validación de estado.");
+}
+
+// Intercambiar el "code" por un token
 if (isset($_GET['code'])) {
-    $code = $_GET['code'];
+    $tokenUrl = "https://login.microsoftonline.com/$tenant/oauth2/v2.0/token";
 
-    $token_url = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
-    $data = [
-        'client_id' => $client_id,
-        'scope' => 'User.Read',
-        'code' => $code,
-        'redirect_uri' => $redirect_uri,
-        'grant_type' => 'authorization_code',
-        'client_secret' => $client_secret
+    $params = [
+        "client_id" => $clientID,
+        "client_secret" => $clientSecret,
+        "code" => $_GET['code'],
+        "redirect_uri" => $redirectUri,
+        "grant_type" => "authorization_code"
     ];
 
-    $option = ['http' => [
-        'header' => "COntent-type: application/x-www-form-urlencoded",
-        'method' => 'POST',
-        'content'=> http_build_query($data), 
-    ]];
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $tokenUrl);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    curl_close($ch);
 
-    $content = stream_content_create($options);
-    $response = file_get_contents($token_url, false, $content);
-    $tokens = json_decode($response, true);
+    $tokenData = json_decode($response, true);
 
-    $access_token = $tokens['access_token'];
-    $user_url = 'https://graph.microsoft.com/v1.0/me';
-    $opts = [
-        'https' => [
-            'header' => "Authorization: Bearer $access_token",
-        ]
-    ];
-
-    $ctx = stream_context_create($opts);
-    $uses_response = file_get_contents($user_url, false, $ctx);
-    $user = json_decode($user_response, true);
-
-    $correo = $user['mail'] ?? $user['userPrincipalName'];
-    $nombre = $user['displayName'];
-
-    include 'conexion.php';
-
-    $stmt = $conexion->prepare("SELECT * FROM usuarios WHERE correo = ?");
-    $stmt->bind_param("s", $correo);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $usuario = $result->fetch_assoc();
-    } else {
-        $rol = "Poblador";
-        $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, rol, email_verificacion) VALUES (?, ?, ?, 1)");
-        $stmt->execute();
-        $usuario_id = $stmt->insert_id;
-        $usuario = ['id' => $usuario_id, 'nombre' => $nombre, 'correo' => $correo, 'rol' => $rol];
+    if (isset($tokenData['error'])) {
+        die("Error en la autenticación con Outlook: " . $tokenData['error_description']);
     }
 
-    $_SESSION['usuario_id'] = $usuario['id'];
-    $_SESSION['usuario_nombre'] = $usuario['nombre'];
-    $_SESSION['usuario_correo'] = $usuario['correo'];
-    $_SESSION['rol'] = $usuario['rol'];
+    $accessToken = $tokenData['access_token'];
 
+    // Obtener datos del usuario desde Microsoft Graph
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://graph.microsoft.com/v1.0/me");
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Authorization: Bearer " . $accessToken]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $userResponse = curl_exec($ch);
+    curl_close($ch);
+
+    $userData = json_decode($userResponse, true);
+
+    $outlook_id = $userData['id'];
+    $nombre = $userData['displayName'];
+    $email = $userData['userPrincipalName']; // correo
+    $foto = null; // Podríamos pedir la foto con otra petición a Graph
+
+    // Buscar usuario en la BD
+    $stmt = $conexion->prepare("SELECT * FROM usuarios_outlook WHERE outlook_id = ?");
+    $stmt->bind_param("s", $outlook_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $usuario = $result->fetch_assoc();
+
+    if (!$usuario) {
+        $rol = "Poblador";
+        $stmt = $conexion->prepare("INSERT INTO usuarios_outlook (nombre, correo, outlook_id, avatar, rol) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssss", $nombre, $email, $outlook_id, $foto, $rol);
+        $stmt->execute();
+
+        $usuario_id = $conexion->insert_id;
+    } else {
+        $usuario_id = $usuario['id'];
+        $nombre = $usuario['nombre'];
+        $rol = $usuario['rol'];
+        $foto = $usuario['avatar'];
+    }
+
+    // Guardar en sesión
+    $_SESSION['usuario_id'] = $usuario_id;
+    $_SESSION['usuario_nombre'] = $nombre;
+    $_SESSION['usuario_correo'] = $email;
+    $_SESSION['usuario_imagen'] = $foto;
+    $_SESSION['usuario_rol'] = $rol;
+
+    // Redirigir a noticias
     header("Location: noticias.php");
     exit;
 } else {
-    echo "Error: no se recibio el codigo de autorizacion.";
+    echo "No se recibió el código de autenticación.";
 }
