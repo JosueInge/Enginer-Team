@@ -237,6 +237,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       outline: none;
       border-radius: 12px;
     }
+    /* Boton de volver a denuncias */
 
     .volverDenuncias {
       display: block;            

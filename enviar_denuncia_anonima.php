@@ -1,101 +1,52 @@
-<?php 
+<?php
+// -------------------- BACKEND PHP --------------------
 session_start();
-include 'conexion.php';
 
-function guardarLog($mensaje) {
-    $rutaLog = __DIR__ . '/logs/errores.log';
-    $fecha = date('Y-m-d H:i:s');
-    $mensajeCompleto = "[$fecha] $mensaje" . PHP_EOL;
-    file_put_contents($rutaLog, $mensajeCompleto, FILE_APPEND);
+// Conexión a base de datos (ajusta credenciales)
+$conexion = new mysqli("localhost", "root", "", "tu_base");
+if ($conexion->connect_error) {
+    die("Error en conexión: " . $conexion->connect_error);
 }
 
-$mensajeToast = null;
-$tipoToast = null;
-
+$mensaje = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $titulo = trim($_POST['titulo'] ?? '');
-    $descripcion = trim($_POST['descripcion'] ?? '');
-    $fecha_evento = trim($_POST['fecha_evento'] ?? '');
+    $titulo = trim($_POST['titulo'] ?? "");
+    $descripcion = trim($_POST['descripcion'] ?? "");
+    $fecha_evento = trim($_POST['fecha_evento'] ?? "");
+    $errores = [];
 
-    // se inicia array para nombres de imágenes
-    $imagenes_nombres = [null, null, null];
-
-    // Procesamos imágenes primero
-    if (isset($_FILES['imagenes'])) {
-        $archivos = $_FILES['imagenes'];
-        for ($i = 0; $i < count($archivos['name']); $i++) {
-            if ($archivos['error'][$i] === UPLOAD_ERR_OK) {
-                $mime = mime_content_type($archivos['tmp_name'][$i]);
-                $extension = strtolower(pathinfo($archivos['name'][$i], PATHINFO_EXTENSION));
-                $info = getimagesize($archivos['tmp_name'][$i]);
-
-                if ($mime === 'image/jpeg' && ($extension === 'jpg' || $extension === 'jpeg') && $info && $info['mime'] === 'image/jpeg') {
-                    $nombreUnico = uniqid() . '.jpg';
-                    $ruta_destino = 'imagenes/denuncias/' . $nombreUnico;
-
-                    if (!file_exists('imagenes/denuncias')) {
-                        mkdir('imagenes/denuncias', 0755, true);
-                    }
-
-                    // Guardar imagen temporalmente, se moverá al enviar correctamente
-                    move_uploaded_file($archivos['tmp_name'][$i], $ruta_destino);
-                    $imagenes_nombres[$i] = $nombreUnico;
-                }
-            }
-        }
+    // Validaciones servidor
+    if (strlen($titulo) < 10 || strlen($titulo) > 150) {
+        $errores[] = "El título debe tener entre 10 y 150 caracteres.";
+    }
+    if (strlen($descripcion) < 300 || strlen($descripcion) > 3000) {
+        $errores[] = "La descripción debe tener entre 300 y 3000 caracteres.";
+    }
+    if (empty($fecha_evento)) {
+        $errores[] = "La fecha del evento es obligatoria.";
+    }
+    if (!isset($_FILES['imagenes']) || $_FILES['imagenes']['error'][0] !== UPLOAD_ERR_OK) {
+        $errores[] = "Debes subir al menos una imagen.";
     }
 
-    // Validaciones de campos
-    if ($titulo === '' || $descripcion === '' || $fecha_evento === '') {
-    guardarLog("Error Denuncia: campos vacíos al enviar los datos.");
-    $mensajeToast = "Debes completar todos los campos requeridos.";
-    $tipoToast = "danger";
-
-// Validaciones para TÍTULO
-} elseif (strlen($titulo) < 10) {
-    guardarLog("Error Denuncia: título demasiado corto.");
-    $mensajeToast = "El título debe tener al menos 10 caracteres.";
-    $tipoToast = "danger";
-} elseif (strlen($titulo) > 150) {
-    guardarLog("Error Denuncia: título demasiado largo.");
-    $mensajeToast = "El título no debe exceder 150 caracteres.";
-    $tipoToast = "danger";
-
-// Validaciones para DESCRIPCIÓN
-} elseif (strlen($descripcion) < 300) {
-    guardarLog("Error Denuncia: descripción demasiado corta.");
-    $mensajeToast = "La descripción debe tener al menos 300 caracteres.";
-    $tipoToast = "danger";
-} elseif (strlen($descripcion) > 3000) {
-    guardarLog("Error Denuncia: descripción demasiado larga.");
-    $mensajeToast = "La descripción no debe exceder 3000 caracteres.";
-    $tipoToast = "danger";
-    } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_evento)) {
-        guardarLog("Error Denuncia: fecha inválida.");
-        $mensajeToast = "La fecha del evento es inválida.";
-        $tipoToast = "danger";
-    } else {
-      error_log("DEBUG SQL: Titulo=$titulo, Descripcion=$descripcion, Imagen0={$imagenes_nombres[0]}, Imagen1={$imagenes_nombres[1]}, Imagen2={$imagenes_nombres[2]}, Fecha=$fecha_evento");
-        // Inserción en Base de Datos 
-        $stmt = $conexion->prepare("INSERT INTO propuestas_denuncias_anonima 
-            (titulo, descripcion, imagen, imagen2, imagen3, fecha_evento, estado)
-            VALUES (?, ?, ?, ?, ?, ?, 'pendiente')");
-        $stmt->bind_param("ssssss", $titulo, $descripcion, $imagenes_nombres[0], $imagenes_nombres[1], $imagenes_nombres[2], $fecha_evento);
+    if (empty($errores)) {
+        // Guardar en base
+        $stmt = $conexion->prepare("INSERT INTO eventos (titulo, descripcion, fecha_evento) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $titulo, $descripcion, $fecha_evento);
         if ($stmt->execute()) {
-            $mensajeToast = "Denuncia enviada correctamente.";
-                $tipoToast = "primary";
-            } else {
-                $mensajeToast = "Error al enviar la denuncia: " . $conexion->error;
-                $tipoToast = "danger";
-                guardarLog("Error Denuncia: En BD al insertar denuncia: " . $conexion->error);
-            }
-      }
+            $mensaje = "Evento publicado correctamente ✅";
+        } else {
+            $mensaje = "Error al guardar: " . $conexion->error;
+        }
+    } else {
+        $mensaje = implode("<br>", $errores);
+    }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<<<<<<< HEAD
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enviar Denuncia - Comunicado Digital</title>
@@ -700,490 +651,118 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }  
 
   </style>
+=======
+<meta charset="UTF-8">
+<title>Publicar Evento</title>
+<style>
+    body { font-family: Poppins, sans-serif; background:#f8f9fa; margin:0; padding:20px; }
+    .contenedor { max-width:600px; margin:auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.1);}
+    h2 { text-align:center; color:#1661AC; }
+    label { display:block; margin-top:15px; font-weight:600; }
+    input[type=text], textarea, input[type=date] {
+        width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-size:14px;
+    }
+    textarea { min-height:120px; resize:vertical; }
+    .contador { font-size:12px; color:#666; float:right; }
+    .contador.error { color:red; }
+    .btn { margin-top:20px; width:100%; height:48px; background:#61C9A8; border:none; border-radius:12px;
+           font-size:20px; font-weight:bold; color:#1B314B; cursor:pointer; }
+    .btn:hover { background:#4CA88C; }
+    .mensaje { margin-top:15px; padding:10px; background:#eee; border-radius:8px; color:#333; }
+    #preview-imagenes img { width:100px; margin:5px; border-radius:8px; }
+</style>
+>>>>>>> 1c32133142b1ba498ce7a5b04b68cb7f13433626
 </head>
-  <div id="modal-confirmacion" class="modal-confirmacion">
-    <div class="modal-contenido">
-      <h2>¿Estas seguro de enviar tu denuncia?</h2>
-      <p>Un administrador la revisará y publicará posteriormente</p>
-      <div class="modal-botones">
-        <button id="btnCancelar" class="btn-cancelar">Cancelar</button>
-        <button id="btnConfirmar" class="btn-confirmar">Confirmar</button>
-      </div>
-    </div>
-  </div>
+<body>
+<div class="contenedor">
+    <h2>Publicar Evento</h2>
+    <?php if ($mensaje): ?>
+        <div class="mensaje"><?= $mensaje ?></div>
+    <?php endif; ?>
+    <form method="post" enctype="multipart/form-data" id="formEvento">
+        <label for="titulo">Título</label>
+        <span id="contadorTitulo" class="contador">0/150</span>
+        <input type="text" id="titulo" name="titulo" maxlength="150" required>
 
- <div id="modal-volver" class="modal-confirmacion">
-  <div class="modal-contenido">
-    <h2>¿Estás seguro de volver a la vista de denuncias?</h2>
-    <p>Esta acción cancelara los cambios hechos en el formulario.</p>
-    <div class="modal-botones">
-      <button id="btnCancelarVolver" class="btn-cancelar">Cancelar</button>
-      <button id="btnConfirmarVolver" class="btn-confirmar">Confirmar</button>
-    </div>
-  </div>
+        <label for="descripcion">Descripción</label>
+        <span id="contadorDescripcion" class="contador">0/3000</span>
+        <textarea id="descripcion" name="descripcion" maxlength="3000" required></textarea>
+
+        <label for="fecha_evento">Fecha del evento</label>
+        <input type="date" id="fecha_evento" name="fecha_evento" required>
+
+        <label for="inputImagenes">Imágenes</label>
+        <input type="file" id="inputImagenes" name="imagenes[]" accept="image/*" multiple required>
+        <div id="preview-imagenes"></div>
+
+        <button type="submit" class="btn" id="btnEnviar">Publicar</button>
+    </form>
 </div>
 
-<body>
-  <div id="modal-imagen" class="modal-imagen">
-    <div class="contenedor-modal">
-      <div class="modal-header">
-        <h2>Imagen adjunta</h2>
-        <button class="cerrar">&times;</button>
-      </div>
-      <div class="modal-body">
-        <img class="modal-imagen-content" id="imagen-ampliada">
-        <div class="modal-info">
-          <h3>Información de la imagen</h3>
-          <p id="imagen-nombre"><strong>Nombre:</strong> <span id="nombre-archivo"></span></p>
-          <p id="imagen-tipo"><strong>Tipo:</strong> <span id="tipo-archivo"></span></p>
-          <p id="imagen-tamaño"><strong>Tamaño:</strong> <span id="tamaño-archivo"></span></p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <header>
-    <div class="logo">
-      <img src="imagenes/logo.png" alt="logo">
-    </div>
-    <a class="volver" href="denuncia_anonima.php" id="btnVolver">Volver a Denuncias</a>
-  </header>
-
-
-  <div class="contenedor-principal">
-    <div class="card-formulario">
-      <h1>Enviar denuncia anónima</h1>
-      <p class="parrafo" >Tu denuncia será revisada por los administradores</p>
-    </div>
-
-    <div class="alert">
-      🔒 Tu denuncia es 100% anónima. No pediremos datos personales ni podremos rastrear tu identidad.
-    </div>
-
-    <form action="enviar_denuncia_anonima.php" method="POST" enctype="multipart/form-data">
-      <div class="campo">
-        <label for="titulo" class="requerido">Título:</label>
-        <input type="text" id="titulo" name="titulo" placeholder="Escribe el título de tu denuncia" value="<?= htmlspecialchars($titulo ?? '') ?>">
-        <small id="contadorTitulo">0/150</small>
-      </div>
-
-      <div class="campo">
-        <label for="descripcion" class="requerido">Descripción:</label>
-        <textarea id="descripcion" name="descripcion" placeholder="Escribe la descripción de tu denuncia"><?= htmlspecialchars($descripcion ?? '') ?></textarea>
-        <small id="contadorDescripcion">0/3000</small>
-      </div>
-
-      <div class="campo">
-        <label for="fecha_evento" class="requerido">Fecha del evento denunciado:</label>
-        <input type="date" id="fecha_evento" name="fecha_evento" value="<?= htmlspecialchars($fecha_evento ?? '') ?>">
-      </div>
-
-      <div class="campo">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <label for="imagenes" class="fw-semibold">Carga una imagen (Opcional)</label>
-          <span class="text-muted">Puedes cargar hasta 3 imágenes en formato (.jpeg).</span>
-        </div>
-        <input type="file" id="imagenes" name="imagenes[]" accept="image/jpeg" multiple class="form-control custom-file-input">
-        <div id="preview-imagenes" style="display:flex; gap:10px; margin-top:10px;"></div>
-      </div>
-
-      <button class="boton-publicar" type="submit">Enviar denuncia</button>
-    </form>
-  </div>
-<?php if ($mensajeToast): ?>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    mostrarToast("<?php echo htmlspecialchars($mensajeToast); ?>", "<?php echo $tipoToast; ?>");
-    <?php if ($tipoToast === 'primary'):?>
-    setTimeout(() => {
-        window.location.href = 'denuncia_anonima.php';
-    }, 4000);
-    <?php endif; ?>
-});
-</script>
-<?php endif; ?>
+(function(){
+  const titulo = document.getElementById('titulo');
+  const descripcion = document.getElementById('descripcion');
+  const contadorTitulo = document.getElementById('contadorTitulo');
+  const contadorDescripcion = document.getElementById('contadorDescripcion');
+  const inputImagenes = document.getElementById('inputImagenes');
+  const preview = document.getElementById('preview-imagenes');
 
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const inputs = document.querySelectorAll('#titulo, #descripcion');
-
-    
-
-    inputs.forEach(input => {
-        input.addEventListener('input', function () { 
-            const valor = this.value.trim();
-            let errorMsg = this.parentNode.querySelector('.mensaje-error');
-
-            if (errorMsg) errorMsg.remove();
-            this.classList.remove('error-borde');
-
-            if (valor === '') {
-                mostrarError(this, 'Este campo es obligatorio');
-            } else if (this.id === 'titulo') {
-                if (valor.length < 10) {
-                    mostrarError(this, 'El título debe tener al menos 10 caracteres.');
-                } else if (valor.length > 150) {
-                    mostrarError(this, 'El título no debe exceder 150 caracteres.');
-                }
-            } else if (this.id === 'descripcion') {
-                if (valor.length < 300) {
-                    mostrarError(this, 'La descripción debe tener al menos 300 caracteres.');
-                } else if (valor.length > 3000) {
-                    mostrarError(this, 'La descripción no debe exceder 3000 caracteres.');
-                }
-            }
-        });
-    });
-
-    function mostrarError(input, mensaje) {
-        let errorMsg = document.createElement('div');
-        errorMsg.className = 'mensaje-error';
-        errorMsg.textContent = mensaje;
-        input.parentNode.appendChild(errorMsg);
-
-        //  borde rojo al input
-        input.classList.add('error-borde');
+  // Contadores en vivo
+  function actualizarContador(campo, contadorElem, max, min){
+    const len = campo.value.length;
+    contadorElem.textContent = len + "/" + max;
+    if(len < (min||0) || len > max){
+      contadorElem.classList.add('error');
+    } else {
+      contadorElem.classList.remove('error');
     }
+  }
+  titulo.addEventListener('input', ()=> actualizarContador(titulo, contadorTitulo, 150, 10));
+  descripcion.addEventListener('input', ()=> actualizarContador(descripcion, contadorDescripcion, 3000, 300));
 
-    // Validación de imagen
-    const fileInput = document.getElementById('imagenes');
-    const preview = document.getElementById('preview-imagenes');
-
-    fileInput.addEventListener('change', function () {
-        const file = this.files[0];
-        if (file) {
-            const allowedTypes = ['image/jpeg'];
-            const allowedExtensions = ['.jpg', '.jpeg'];
-            const fileName = file.name.toLowerCase();
-
-            if (!allowedTypes.includes(file.type) || !allowedExtensions.some(ext => fileName.endsWith(ext))) {
-                mostrarToast('Solo se permiten imágenes en formato JPEG.', 'danger');
-                this.value = '';
-                preview.style.display = 'none';
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                preview.src = event.target.result;
-                preview.style.display = 'block';
-            }
-            reader.readAsDataURL(file); 
-        } else {
-            preview.style.display = 'none';
-        }
-    });
-
-    // Validación al enviar el formulario
-    const form = document.querySelector('form');
-    const titulo = document.getElementById('titulo');
-    const descripcion = document.getElementById('descripcion');
-
-    form.addEventListener('submit', function (e) {
-    // Actualizamos input.files antes de enviar
-        const dataTransfer = new DataTransfer();
-        archivosSeleccionados.forEach(f => dataTransfer.items.add(f));
-        fileInput.files = dataTransfer.files;
-
-        const tituloVal = titulo.value.trim();
-        const descripcionVal = descripcion.value.trim();
-        const fechaVal = fecha_evento.value.trim();
-
-        if (tituloVal === '' || descripcionVal === '' || fechaVal === '') {
-            e.preventDefault();
-            mostrarToast('Debes completar todos los campos requeridos.', 'danger');
-            return;
-        }
-        if (tituloVal.length < 10) {
-            e.preventDefault();
-            mostrarToast('El título debe tener al menos 10 caracteres.', 'danger');
-            return;
-        }
-        if (tituloVal.length > 150) {
-            e.preventDefault();
-            mostrarToast('El título no debe exceder 150 caracteres.', 'danger');
-            return;
-        }
-        if (descripcionVal.length < 300) {
-            e.preventDefault();
-            mostrarToast('La descripción debe tener al menos 300 caracteres.', 'danger');
-            return;
-        }
-        if (descripcionVal.length > 3000) {
-            e.preventDefault();
-            mostrarToast('La descripción no debe exceder 3000 caracteres.', 'danger');
-            return;
-        }
-    });
-
-});
-
-// Toast centrado
-function mostrarToast(mensaje, tipo = 'danger') {
-    const toastContainer = document.createElement('div');
-    toastContainer.className = 'toast-personalizado text-bg-' + tipo;
-    toastContainer.setAttribute('role', 'alert');
-
-    toastContainer.innerHTML = `
-        <div class="contenido-toast">${mensaje}</div>
-    `;
-
-    document.body.appendChild(toastContainer);
-
-    setTimeout(() => {
-        toastContainer.remove();
-    }, 7000);
-}
-document.addEventListener('DOMContentLoaded', function() {
-    const input = document.getElementById('imagenes');
-    const estado = document.getElementById('estado-archivo');
-    const previewContainer = document.getElementById('preview-imagenes');
-    const form = document.querySelector('form');
-
-    let archivosSeleccionados = [];
-
-    input.addEventListener('change', function() {
-        const nuevosArchivos = Array.from(this.files);
-
-        // Validar tipo y extensión
-        const validos = nuevosArchivos.filter(file => {
-            const name = file.name.toLowerCase();
-            return file.type === 'image/jpeg' && (name.endsWith('.jpg') || name.endsWith('.jpeg'));
-        });
-
-        if (validos.length < nuevosArchivos.length) {
-            mostrarToast?.('Solo se permiten imágenes en formato JPEG.', 'danger');
-        }
-
-        archivosSeleccionados = archivosSeleccionados.concat(validos);
-
-        // Limitar a 3
-        if (archivosSeleccionados.length > 3) {
-            mostrarToast?.('Solo puedes seleccionar hasta 3 imágenes.', 'danger');
-            archivosSeleccionados = archivosSeleccionados.slice(0, 3);
-        }
-
-        // Refrescar preview
-        actualizarPreview();
-
-        // Limpiar input para poder volver a elegir
-        input.value = '';
-    });
-
-    function actualizarPreview() {
-    previewContainer.innerHTML = '';
-
-    archivosSeleccionados.forEach((file, index) => {
+  // Previsualización imágenes
+  inputImagenes.addEventListener('change', ()=>{
+    preview.innerHTML = "";
+    Array.from(inputImagenes.files).forEach(file=>{
+      if(file.type.startsWith("image/")){
         const reader = new FileReader();
-        reader.onload = function(e) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'imagen-preview';
-
-            // Imagen
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.alt = file.name;
-            wrapper.appendChild(img);
-
-            // Info (nombre + eliminar)
-            const info = document.createElement('div');
-            info.className = 'info';
-
-            const nombreSpan = document.createElement('span');
-            nombreSpan.className = 'nombre';
-            nombreSpan.textContent = file.name;
-            info.appendChild(nombreSpan);
-
-            const btnX = document.createElement('button');
-            btnX.type = 'button';
-            btnX.className = 'eliminar';
-            btnX.textContent = '×';
-            btnX.addEventListener('click', function() {
-                archivosSeleccionados.splice(index, 1);
-                actualizarPreview();
-            });
-            info.appendChild(btnX);
-
-            wrapper.appendChild(info);
-            previewContainer.appendChild(wrapper);
+        reader.onload = e=>{
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.style.width = "100px";
+          img.style.margin = "5px";
+          img.style.borderRadius = "8px";
+          preview.appendChild(img);
         };
         reader.readAsDataURL(file);
+      }
     });
-
-    // Actualizar estado
-    estado.textContent = archivosSeleccionados.length > 0
-        ? `${archivosSeleccionados.length} archivo(s) seleccionado(s)`
-        : 'Ningún archivo seleccionado';
-
-    // Sincronizar input.files
-    const dt = new DataTransfer();
-    archivosSeleccionados.forEach(f => dt.items.add(f));
-    input.files = dt.files;
-}
-
-    // Antes de enviar, aseguramos que se mantenga la selección
-    form?.addEventListener('submit', function() {
-        const dt = new DataTransfer();
-        archivosSeleccionados.forEach(f => dt.items.add(f));
-        input.files = dt.files;
-    });
-});
-
-
-    const inputTitulo = document.getElementById('titulo');
-  const contadorTitulo = document.getElementById('contadorTitulo');
-  const textareaDescripcion = document.getElementById('descripcion');
-  const contadorDescripcion = document.getElementById('contadorDescripcion');
-
-  inputTitulo.addEventListener('input', () => {
-    const longitud = inputTitulo.value.length;
-    contadorTitulo.textContent = `${longitud}/150`;
   });
 
-  textareaDescripcion.addEventListener('input', () => {
-    const longitud = textareaDescripcion.value.length;
-    contadorDescripcion.textContent = `${longitud}/3000`;
-  });
+  // Validación antes de enviar
+  document.getElementById('formEvento').addEventListener('submit', function(e){
+    let errores = [];
 
-  document.addEventListener('DOMContentLoaded', () => {
-    contadorTitulo.textContent = `${inputTitulo.value.length}/150`;
-    contadorDescripcion.textContent = `${textareaDescripcion.value.length}/3000`;
-  });
+    if(titulo.value.trim().length < 10 || titulo.value.trim().length > 150){
+      errores.push("El título debe tener entre 10 y 150 caracteres.");
+    }
+    if(descripcion.value.trim().length < 300 || descripcion.value.trim().length > 3000){
+      errores.push("La descripción debe tener entre 300 y 3000 caracteres.");
+    }
+    if(!document.getElementById('fecha_evento').value){
+      errores.push("La fecha del evento es obligatoria.");
+    }
+    if(inputImagenes.files.length === 0){
+      errores.push("Debes subir al menos una imagen.");
+    }
 
-function mostrarToast(mensaje, tipo = 'primary') {
-      const toastContainer = document.createElement('div');
-      toastContainer.className = 'toast-personalizado text-bg-' + tipo;
-      toastContainer.setAttribute('role', 'alert');
-      toastContainer.innerHTML = `<div class="contenido-toast">${mensaje}</div>`;
-      document.body.appendChild(toastContainer);
-      setTimeout(() => toastContainer.remove(), 7000);
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-  const form = document.querySelector('form');
-  const modal = document.getElementById('modal-confirmacion');
-  const btnCancelar = document.getElementById('btnCancelar');
-  const btnConfirmar = document.getElementById('btnConfirmar');
-
-  let formPendiente = null; // Guardamos el form temporalmente
-
-  form.addEventListener('submit', function (e) {
-    e.preventDefault(); // detenemos el envío
-    formPendiente = this;
-    modal.style.display = 'flex'; // mostramos modal
-  });
-
-  btnCancelar.addEventListener('click', () => {
-    modal.style.display = 'none'; // ocultar modal
-    formPendiente = null;
-  });
-
-  btnConfirmar.addEventListener('click', () => {
-    modal.style.display = 'none';
-    if (formPendiente) {
-      formPendiente.submit(); // ahora sí enviamos el form
+    if(errores.length > 0){
+      e.preventDefault();
+      alert("Corrige lo siguiente:\n\n" + errores.join("\n"));
     }
   });
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  const btnVolver = document.getElementById('btnVolver');
-  const modalVolver = document.getElementById('modal-volver');
-  const btnCancelarVolver = document.getElementById('btnCancelarVolver');
-  const btnConfirmarVolver = document.getElementById('btnConfirmarVolver');
-
-  btnVolver.addEventListener('click', function(e) {
-    e.preventDefault(); // evitamos irnos directamente
-    modalVolver.style.display = 'flex'; // mostramos modal
-  });
-
-  btnCancelarVolver.addEventListener('click', () => {
-    modalVolver.style.display = 'none'; // cerramos modal
-  });
-
-  btnConfirmarVolver.addEventListener('click', () => {
-    window.location.href = btnVolver.getAttribute('href'); // ahora sí volvemos
-  });
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-      // Modal para visualización de imágenes
-      const modalImagen = document.getElementById('modal-imagen');
-      const imagenAmpliada = document.getElementById('imagen-ampliada');
-      const nombreArchivoSpan = document.getElementById('nombre-archivo');
-      const tipoArchivoSpan = document.getElementById('tipo-archivo');
-      const tamañoArchivoSpan = document.getElementById('tamaño-archivo');
-      const cerrarModal = document.querySelector('.modal-imagen .cerrar');
-      
-      // Función para formatear el tamaño del archivo
-      function formatearTamaño(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-      }
-      
-      // Función para abrir el modal con la imagen seleccionada
-      function abrirModalImagen(src, file) {
-        imagenAmpliada.src = src;
-        nombreArchivoSpan.textContent = file.name;
-        tipoArchivoSpan.textContent = file.type || 'image/jpeg';
-        tamañoArchivoSpan.textContent = formatearTamaño(file.size);
-        
-        modalImagen.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Evitar scroll
-        
-        // Marcar la imagen como seleccionada
-        const todasImagenes = document.querySelectorAll('#preview-imagenes img');
-        todasImagenes.forEach(img => img.classList.remove('imagen-seleccionada'));
-        
-        // Encontrar y marcar la imagen correspondiente
-        for (let img of todasImagenes) {
-          if (img.src === src) {
-            img.classList.add('imagen-seleccionada');
-            break;
-          }
-        }
-      }
-      
-      // Cerrar modal al hacer clic en la X
-      cerrarModal.addEventListener('click', function() {
-        modalImagen.style.display = 'none';
-        document.body.style.overflow = 'auto'; // Restaurar scroll
-      });
-      
-      // Cerrar modal al hacer clic fuera del contenedor
-      modalImagen.addEventListener('click', function(e) {
-        if (e.target === modalImagen) {
-          modalImagen.style.display = 'none';
-          document.body.style.overflow = 'auto';
-        }
-      });
-      
-      // Cerrar modal con tecla Escape
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modalImagen.style.display === 'flex') {
-          modalImagen.style.display = 'none';
-          document.body.style.overflow = 'auto';
-        }
-      });
-      
-      // Delegación de eventos para las imágenes de vista previa
-      document.addEventListener('click', function(e) {
-        // Verificar si se hizo clic en una imagen de vista previa
-        if (e.target.tagName === 'IMG' && 
-            e.target.closest('#preview-imagenes') && 
-            !e.target.closest('.eliminar')) {
-          
-          // Obtener el archivo correspondiente a esta imagen
-          const index = Array.from(document.querySelectorAll('#preview-imagenes img')).indexOf(e.target);
-          if (index !== -1 && archivosSeleccionados[index]) {
-            abrirModalImagen(e.target.src, archivosSeleccionados[index]);
-          }
-        }
-      });
-});
+})();
 </script>
 </body>
 </html>
