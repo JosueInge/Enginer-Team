@@ -4,8 +4,8 @@ include 'conexion.php'; // debe definir $conexion (mysqli)
 
 // ------------------- FUNCIONES ------------------- //
 function guardarLog($mensaje) {
-    $rutaLog = DIR . '/logs/errores.log';
-    if (!is_dir(DIR . '/logs')) mkdir(DIR . '/logs', 0777, true);
+    $rutaLog = __DIR__ . '/logs/errores.log';
+    if (!is_dir(__DIR__ . '/logs')) mkdir(__DIR__ . '/logs', 0777, true);
     $fecha = date('Y-m-d H:i:s');
     file_put_contents($rutaLog, "[$fecha] $mensaje" . PHP_EOL, FILE_APPEND);
 }
@@ -224,6 +224,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     .contador.visible{display:block;}
     .contador.error{color:var(--rojo);}
 
+/* shake animation for error */
+    @keyframes shake{0%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}
+
 /* Descripción textarea */
     textarea{min-height:140px;resize:vertical;line-height:1.4;}
 
@@ -236,9 +239,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     .label-file-row .nota{font-family:'Inter';font-size:16px;color:var(--gris-oscuro);}
     .file-container{display:flex;align-items:center;gap:12px;}
     .btn-file{
-      background:#ADEBFF;border:1px solid #ADEBFF;border-radius:8px;padding:6px 12px;font-family:'Inter';font-size:16px;color:#061F3E;cursor:pointer;border-radius:8px;
+      background:#ADEBFF;border:1px solid #ADEBFF;border-radius:8px;padding:6px 12px;font-family:'Inter';font-size:16px;color:#061F3E;cursor:pointer;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
     }
-    .btn-file.disabled{background:var(--borde);border-color:var(--borde);cursor:not-allowed;color:#fff;}
+    .btn-file.disabled{background:var(--borde);border-color:var(--borde);cursor:not-allowed;color:#fff;pointer-events:none;}
     .estado-archivo{font-family:'Inter';font-size:14px;color:var(--gris-medio);}
 
 /* Preview */
@@ -451,14 +454,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
       const modalImagen = document.getElementById('modal-imagen');
 
       const linkVolver = document.getElementById('linkVolver');
+      const btnSeleccionar = document.getElementById('btnSeleccionar');
 
       // Estado archivos seleccionados (File objects)
       let archivosSeleccionados = [];
+      const MAX_FILES = 3;
+      const MAX_SIZE = 3 * 1024 * 1024; // 3MB
 
       // Inicializar contadores
       function actualizarContador(campo, contadorElem, maximo, min) {
         const len = campo.value.length;
-        contadorElem.textContent = ${len}/${maximo};
+        contadorElem.textContent = len + '/' + maximo;
         if (document.activeElement === campo) contadorElem.classList.add('visible'); else contadorElem.classList.remove('visible');
 
         if (len < (min || 0) || len > maximo) contadorElem.classList.add('error'); else contadorElem.classList.remove('error');
@@ -472,6 +478,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
       descripcion.addEventListener('focus', () => actualizarContador(descripcion, contadorDescripcion, 3000, 300));
       descripcion.addEventListener('blur', () => actualizarContador(descripcion, contadorDescripcion, 3000, 300));
       descripcion.addEventListener('input', () => actualizarContador(descripcion, contadorDescripcion, 3000, 300));
+
+      // Inicializar valores si vienen del servidor
+      document.addEventListener('DOMContentLoaded', function(){
+        actualizarContador(titulo, contadorTitulo, 150, 10);
+        actualizarContador(descripcion, contadorDescripcion, 3000, 300);
+      });
 
       // Validaciones en cliente (devuelven {ok:bool, msg:string})
       function validarTitulo() {
@@ -520,9 +532,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
       }
 
       // Manejo de archivos
-      document.getElementById('btnSeleccionar').addEventListener('click', (e) => {
+      btnSeleccionar.addEventListener('click', (e) => {
+        // si está deshabilitado, no abrir
+        if (btnSeleccionar.classList.contains('disabled')) return;
         inputImagenes.click();
       });
+
       inputImagenes.addEventListener('change', function(e){
         handleFiles(Array.from(this.files));
         // limpiar input para poder re-subir mismos archivos si se eliminan
@@ -538,11 +553,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
           return;
         }
 
+        // filtramos tamaños mayores a 3MB
+        const tooBig = files.filter(f => f.size > MAX_SIZE);
+        if (tooBig.length > 0) {
+          document.getElementById('error-imagen').textContent = 'Una de las imágenes excede el tamaño permitido (3MB).';
+          document.getElementById('error-imagen').style.display = 'block';
+          return;
+        } else {
+          document.getElementById('error-imagen').style.display = 'none';
+        }
+
         // agregar sin pasar 3
         archivosSeleccionados = archivosSeleccionados.concat(files);
-        if (archivosSeleccionados.length > 3) {
-          archivosSeleccionados = archivosSeleccionados.slice(0,3);
-          // indicar estado límite
+        if (archivosSeleccionados.length > MAX_FILES) {
+          archivosSeleccionados = archivosSeleccionados.slice(0,MAX_FILES);
         }
 
         actualizarEstadoYPreview();
@@ -553,7 +577,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         if (archivosSeleccionados.length === 0) {
           estadoArchivo.textContent = 'No se ha seleccionado ningún archivo';
         } else {
-          estadoArchivo.textContent = ${archivosSeleccionados.length} archivo(s) seleccionado(s);
+          estadoArchivo.textContent = archivosSeleccionados.length + ' archivo(s) seleccionado(s)';
         }
 
         archivosSeleccionados.forEach((file, idx) => {
@@ -573,7 +597,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             btn.type = 'button';
             btn.innerHTML = '&times;';
             btn.title = 'Eliminar';
-            btn.addEventListener('click', function(){
+            btn.addEventListener('click', function(e){
+              e.stopPropagation();
               archivosSeleccionados.splice(idx,1);
               actualizarEstadoYPreview();
             });
@@ -585,8 +610,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         });
 
         // cambiar apariencia de botón si límite alcanzado
-        const btnFile = document.querySelector('.btn-file');
-        if (archivosSeleccionados.length >= 3) btnFile.classList.add('disabled'); else btnFile.classList.remove('disabled');
+        if (archivosSeleccionados.length >= MAX_FILES) btnSeleccionar.classList.add('disabled'); else btnSeleccionar.classList.remove('disabled');
       }
 
       // Mostrar imagen ampliada
@@ -642,8 +666,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         const fd = new FormData(form);
         // anexar archivos seleccionados
         archivosSeleccionados.forEach((f, i) => fd.append('imagenes[]', f));
-        // acción submit por fetch (para mostrar toast sin reload) - pero el enunciado pedía php + funcionamiento; usaremos fetch que envía al mismo PHP
-        fetch('', { method: 'POST', body: fd })
+        // acción submit por fetch (para mostrar toast sin reload) - enviamos al mismo archivo PHP
+        fetch(window.location.href, { method: 'POST', body: fd })
           .then(resp => resp.text())
           .then(html => {
             // Reemplazamos el body por la respuesta del servidor para que el usuario vea el toast/redirect que produce PHP
@@ -669,7 +693,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
       });
 
       // Establecer comportamiento touch-friendly para file-container: clic abre file dialog
-      document.querySelector('.file-container').addEventListener('click', ()=> inputImagenes.click());
+      document.querySelector('.file-container').addEventListener('click', ()=> { if (!btnSeleccionar.classList.contains('disabled')) inputImagenes.click(); });
+
     })();
   </script>
 </body>
