@@ -1,0 +1,31 @@
+# Dependency management
+/vendor/
+composer.lock
+
+# Environment specific files
+.env
+.env.local
+.env.*.local
+
+# Cache and logs
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
+/storage/logs/
+*.log
+
+# IDE and OS generated files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Build artifacts (if applicable)
+/public/build/
+/public/hot
+
+# Specific frameworks/CMS if used (e.g., Laravel)
+/bootstrap/cache/
+
+# Vendor
+vendor/
