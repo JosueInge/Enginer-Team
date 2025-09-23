@@ -1,768 +1,676 @@
 <?php
-// -------------------- BACKEND PHP --------------------
 session_start();
+include 'conexion.php'; // debe definir $conexion (mysqli)
 
-// Conexión a base de datos (ajusta credenciales)
-$conexion = new mysqli("localhost", "root", "", "tu_base");
-if ($conexion->connect_error) {
-    die("Error en conexión: " . $conexion->connect_error);
+// ------------------- FUNCIONES ------------------- //
+function guardarLog($mensaje) {
+    $rutaLog = DIR . '/logs/errores.log';
+    if (!is_dir(DIR . '/logs')) mkdir(DIR . '/logs', 0777, true);
+    $fecha = date('Y-m-d H:i:s');
+    file_put_contents($rutaLog, "[$fecha] $mensaje" . PHP_EOL, FILE_APPEND);
 }
 
-$mensaje = "";
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $titulo = trim($_POST['titulo'] ?? "");
-    $descripcion = trim($_POST['descripcion'] ?? "");
-    $fecha_evento = trim($_POST['fecha_evento'] ?? "");
+$mensajeToast = null;
+$tipoToast = null;
+
+// Valores por defecto (para re-renderizar el formulario si hay error)
+$titulo = $_POST['titulo'] ?? '';
+$descripcion = $_POST['descripcion'] ?? '';
+$fecha_evento = $_POST['fecha_evento'] ?? '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'submit_denuncia') {
+    // Limpieza
+    $titulo = trim($_POST['titulo'] ?? '');
+    $descripcion = trim($_POST['descripcion'] ?? '');
+    $fecha_evento = trim($_POST['fecha_evento'] ?? '');
+
+    // Validaciones backend
     $errores = [];
 
-    // Validaciones servidor
-    if (strlen($titulo) < 10 || strlen($titulo) > 150) {
-        $errores[] = "El título debe tener entre 10 y 150 caracteres.";
-    }
-    if (strlen($descripcion) < 300 || strlen($descripcion) > 3000) {
-        $errores[] = "La descripción debe tener entre 300 y 3000 caracteres.";
-    }
-    if (empty($fecha_evento)) {
-        $errores[] = "La fecha del evento es obligatoria.";
-    }
-    if (!isset($_FILES['imagenes']) || $_FILES['imagenes']['error'][0] !== UPLOAD_ERR_OK) {
-        $errores[] = "Debes subir al menos una imagen.";
+    if ($titulo === '') {
+        $errores['titulo'] = "El titulo es obligatorio.";
+    } elseif (mb_strlen($titulo) < 10) {
+        $errores['titulo'] = "La descripción debe tener al menos 10 caracteres.";
+    } elseif (mb_strlen($titulo) > 150) {
+        $errores['titulo'] = "Haz alcanzado el límite de 150 caracteres.";
     }
 
-    if (empty($errores)) {
-        // Guardar en base
-        $stmt = $conexion->prepare("INSERT INTO eventos (titulo, descripcion, fecha_evento) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $titulo, $descripcion, $fecha_evento);
-        if ($stmt->execute()) {
-            $mensaje = "Evento publicado correctamente ✅";
-        } else {
-            $mensaje = "Error al guardar: " . $conexion->error;
+    if ($descripcion === '') {
+        $errores['descripcion'] = "La descripción es obligatoria.";
+    } elseif (mb_strlen($descripcion) < 300) {
+        $errores['descripcion'] = "La descripción debe tener al menos 300 caracteres.";
+    } elseif (mb_strlen($descripcion) > 3000) {
+        $errores['descripcion'] = "Haz alcanzado el límite de 3000 caracteres.";
+    }
+
+    if ($fecha_evento === '') {
+        $errores['fecha_evento'] = "La fecha es obligatoria";
+    } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_evento)) {
+        $errores['fecha_evento'] = "La fecha es inválida.";
+    } elseif (strtotime($fecha_evento) > time()) {
+        // opcional: evitar fechas futuras
+        $errores['fecha_evento'] = "La fecha no puede ser futura.";
+    }
+
+    // Manejo de imágenes (.jpeg solamente), máximo 3, tamaño máx 3MB cada una
+    $imagenes_nombres = [null, null, null];
+    $imagenes_guardadas = [];
+    $upload_dir = DIR . '/imagenes/denuncias/';
+    if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+
+    if (isset($_FILES['imagenes']) && is_array($_FILES['imagenes']['name']) && count(array_filter($_FILES['imagenes']['name'])) > 0) {
+        $archivos = $_FILES['imagenes'];
+        $numFiles = count($archivos['name']);
+        $contadorValidos = 0;
+
+        for ($i = 0; $i < $numFiles && $contadorValidos < 3; $i++) {
+            if ($archivos['error'][$i] !== UPLOAD_ERR_OK) continue;
+
+            $tmp = $archivos['tmp_name'][$i];
+            $name = $archivos['name'][$i];
+            $size = $archivos['size'][$i];
+            $mime = mime_content_type($tmp);
+            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            $imgInfo = @getimagesize($tmp);
+
+            // Validar JPEG solo (.jpg or .jpeg)
+            if (!in_array($mime, ['image/jpeg']) || !in_array($ext, ['jpg', 'jpeg']) || !$imgInfo || $imgInfo['mime'] !== 'image/jpeg') {
+                guardarLog("Formato inválido al intentar subir: $name (mime: $mime ext: $ext)");
+                $errores['imagen_formato'] = true;
+                break;
+            }
+
+            // Tamaño max 3MB
+            if ($size > 3 * 1024 * 1024) {
+                guardarLog("Imagen demasiado grande: $name ($size bytes)");
+                $errores['imagen_tamano'] = true;
+                break;
+            }
+
+            $nombreUnico = uniqid('den_') . '.' . 'jpg';
+            $destino = $upload_dir . $nombreUnico;
+
+            if (!move_uploaded_file($tmp, $destino)) {
+                guardarLog("Error moviendo archivo: $name");
+                $errores['imagen_guardar'] = true;
+                break;
+            }
+
+            $imagenes_guardadas[] = $nombreUnico;
+            $contadorValidos++;
         }
-    } else {
-        $mensaje = implode("<br>", $errores);
+    }
+
+    // Si hubo error de imágenes de formato, lo manejamos (no guardamos en BD)
+    if (isset($errores['imagen_formato'])) {
+        $mensajeToast = "El formato de tu archivo no es admitido. Intenta cargar un archivo (.jpeg).";
+        $tipoToast = "danger";
+    } elseif (isset($errores['imagen_tamano'])) {
+        $mensajeToast = "Una de las imágenes excede el tamaño permitido (3MB).";
+        $tipoToast = "danger";
+    } elseif (isset($errores['imagen_guardar'])) {
+        $mensajeToast = "Error al procesar las imágenes.";
+        $tipoToast = "danger";
+    }
+
+    // Si no hay errores, insertar en BD
+    if (empty($errores) && !$mensajeToast) {
+        $img1 = $imagenes_guardadas[0] ?? null;
+        $img2 = $imagenes_guardadas[1] ?? null;
+        $img3 = $imagenes_guardadas[2] ?? null;
+
+        // Ajusta el nombre de la tabla/conn si tu conexion.php usa otra variable
+        $stmt = $conexion->prepare("INSERT INTO propuestas_denuncias_anonima (titulo, descripcion, imagen, imagen2, imagen3, fecha_evento, estado) VALUES (?, ?, ?, ?, ?, ?, 'pendiente')");
+        if (!$stmt) {
+            guardarLog("Error prepare BD: " . $conexion->error);
+            $mensajeToast = "Error interno al preparar la consulta.";
+            $tipoToast = "danger";
+        } else {
+            $stmt->bind_param("ssssss", $titulo, $descripcion, $img1, $img2, $img3, $fecha_evento);
+            if ($stmt->execute()) {
+                $mensajeToast = "¡Tu denuncia fue enviada a los administradores!";
+                $tipoToast = "success";
+                // Limpiar campos para el render
+                $titulo = $descripcion = $fecha_evento = '';
+            } else {
+                guardarLog("Error execute BD: " . $stmt->error);
+                $mensajeToast = "Error al guardar la denuncia en la base de datos.";
+                $tipoToast = "danger";
+            }
+            $stmt->close();
+        }
     }
 }
 ?>
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<<<<<<< HEAD
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enviar Denuncia - Comunicado Digital</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Enviar denuncia anónima - Comunicado Digital</title>
+
+  <!-- Fuentes -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #fff;
-    }
-
-    header {
-      background-color: #061F3E;
-      color: #fff;
-      padding: 12px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    :root{
+      --azul-oscuro: #1661AC;
+      --header-bg: #061F3E;
+      --gris-oscuro: #403F48;
+      --gris-medio: #74737C;
+      --borde: #B1B1B1;
+      --celeste: #2D8EFF;
+      --verde: #61C9A8;
+      --verde-hover: #4CA88C;
+      --rojo: #E33629;
+      --rojo-borde: #F5C2C7;
+      --fondo-rojo: #F8D7DA;
+      --toast-success: #2BAF7F;
     }
 
-    header .logo img {
-      height: 45px;
+    *{box-sizing:border-box}
+    body{font-family:"Inter",system-ui,Arial;background:#ffffff;color:var(--gris-oscuro);margin:0;}
+
+/* --------------- ENCABEZADO --------------- */
+    header{
+      background:var(--header-bg);
+      color:#fff;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:16px 28px;
+    }
+    .header-left img{height:44px;}
+    .header-right a{
+      color:#fff;
+      font-family:'Poppins';
+      font-size:20px;
+      font-weight:600;
+      text-decoration:none;
+    }
+    .header-right a:hover{text-decoration:underline;color:var(--azul-oscuro);}
+
+/* --------------- CONTENEDOR PRINCIPAL --------------- */
+    .contenedor{max-width:920px;margin:36px auto;padding:0 16px;}
+    .card-form{background:#fff;border-radius:12px;padding:28px 36px;box-shadow:0 6px 18px rgba(6,31,62,0.06);}
+
+/* TITULO */
+    .titulo-principal{font-family:'Poppins';font-size:32px;font-weight:700;color:var(--azul-oscuro);text-align:center;margin-bottom:6px;}
+    .subtitulo{font-family:'Inter';font-size:20px;color:var(--gris-oscuro);text-align:center;margin-bottom:18px;}
+
+/* ALERT INFORMATIVO */
+    .alert-informacion{
+      display:flex;gap:12px;align-items:flex-start;
+      background:#ADEBFF;padding:12px 16px;border-radius:12px;margin:12px auto 22px;max-width:820px;
+      color:var(--gris-oscuro);font-family:'Inter';font-size:16px;
+    }
+    .alert-informacion i{font-size:20px;color:var(--gris-oscuro);margin-top:2px;}
+
+/* FORM ELEMENTS */
+    form .campo{margin-bottom:20px;position:relative;}
+    form label{display:block;margin-bottom:8px;font-family:'Poppins';font-size:16px;font-weight:600;color:var(--gris-oscuro);}
+    form input[type="text"], form input[type="date"], form textarea, .file-container{
+      width:100%;padding:12px 16px;border:1px solid var(--borde);border-radius:12px;font-family:'Inter';font-size:16px;color:#061F3E;transition:all .18s ease;outline:none;
+    }
+    form input[type="text"]::placeholder, form textarea::placeholder, form input[type="date"]::placeholder{color:var(--borde);font-family:'Inter';}
+    form input[type="text"]:hover, form textarea:hover, form input[type="date"]:hover, .file-container:hover{box-shadow:0 6px 18px rgba(45,142,255,0.06);transform:scale(1.01);border-color:var(--celeste);}
+    form input[type="text"]:focus, form textarea:focus, form input[type="date"]:focus, .file-container:focus-within{border-color:var(--celeste);box-shadow:0 6px 18px rgba(45,142,255,0.12);transform:scale(1.01);}
+
+/* Contador (hidden until active) */
+    .contador{position:absolute;right:16px;bottom:8px;font-family:'Inter';font-size:16px;color:var(--borde);display:none;}
+    .contador.visible{display:block;}
+    .contador.error{color:var(--rojo);}
+
+/* Descripción textarea */
+    textarea{min-height:140px;resize:vertical;line-height:1.4;}
+
+/* Fecha: icono a la derecha */
+    .campo-fecha{position:relative;}
+    .campo-fecha .fa-calendar-alt{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--borde);pointer-events:none;font-size:18px;}
+
+/* Archivo */
+    .label-file-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;}
+    .label-file-row .nota{font-family:'Inter';font-size:16px;color:var(--gris-oscuro);}
+    .file-container{display:flex;align-items:center;gap:12px;}
+    .btn-file{
+      background:#ADEBFF;border:1px solid #ADEBFF;border-radius:8px;padding:6px 12px;font-family:'Inter';font-size:16px;color:#061F3E;cursor:pointer;border-radius:8px;
+    }
+    .btn-file.disabled{background:var(--borde);border-color:var(--borde);cursor:not-allowed;color:#fff;}
+    .estado-archivo{font-family:'Inter';font-size:14px;color:var(--gris-medio);}
+
+/* Preview */
+    #preview-imagenes{display:flex;flex-wrap:wrap;gap:15px;margin-top:12px;}
+    .imagen-preview{width:350px;position:relative;}
+    .imagen-preview img{width:100%;height:200px;object-fit:cover;border-radius:12px;border:1px solid var(--borde);cursor:pointer;transition:all .18s ease;}
+    .imagen-preview img:hover{transform:scale(1.03);box-shadow:0 8px 20px rgba(0,0,0,0.12);border-color:var(--celeste);}
+    .imagen-preview .eliminar{
+      position:absolute;right:10px;top:10px;background:var(--rojo);color:#fff;border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;
     }
 
-    header a {
-      color: #fff;
-      font-weight: 600;
-      text-decoration: none;
+/* Botón publicar */
+    .boton-publicar{width:200px;height:50px;background:var(--verde);color:#1B314B;border:none;border-radius:12px;font-family:'Poppins';font-weight:700;font-size:20px;cursor:pointer;min-height:48px;transition:all .18s ease;display:block;margin:18px auto 0;}
+    .boton-publicar:hover{background:var(--verde-hover);box-shadow:0 8px 18px rgba(76,168,140,0.18);transform:translateY(-3px);}
+
+/* Mensaje de error debajo del campo */
+    .mensaje-error{
+      display:block;margin-top:8px;padding:8px 10px;background:var(--fondo-rojo);border:1px solid var(--rojo-borde);border-radius:6px;color:#842029;font-family:'Inter';font-size:16px;
     }
 
-    .contenedor-principal {
-      max-width: 650px;
-      margin: 40px auto;
-      padding: 5px;
-      text-align: center;
-    }
+/* Modales genéricos (usamos simple overlay con display) */
+    .modal-overlay{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:9999;}
+    .modal-contenido{background:#fff;border-radius:12px;max-width:560px;width:92%;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,0.25);text-align:center;}
+    .modal-contenido h2{font-family:'Poppins';font-size:16px;color:var(--gris-oscuro);font-weight:700;margin-bottom:10px;}
+    .modal-contenido p{font-family:'Inter';font-size:16px;color:var(--gris-oscuro);margin-bottom:20px;}
+    .modal-botones{display:flex;gap:16px;justify-content:space-between;}
+    .modal-btn-cancel{background:#EB7373;border:none;color:#061F3E;padding:10px;border-radius:8px;font-family:'Inter';font-size:16px;cursor:pointer;flex:1;}
+    .modal-btn-confirm{background:var(--verde);border:none;color:#061F3E;padding:10px;border-radius:8px;font-family:'Inter';font-size:16px;cursor:pointer;flex:1;}
 
-    .contenedor-principal h1 {
-      color: #0072ce;
-      font-size: 1.6rem;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
+/* Modal imagen */
+    .modal-imagen{display:none;position:fixed;z-index:10000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;padding:20px;}
+    .contenedor-modal{background:#fff;border-radius:12px;max-width:820px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,0.3);overflow:hidden;}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:var(--header-bg);color:#fff;}
+    .modal-imagen-content{width:800px;height:600px;max-width:100%;max-height:80vh;object-fit:contain;border-radius:8px;margin:8px auto;display:block;}
+    .modal-header .cerrar{background:none;border:none;color:#ff5252;font-size:22px;cursor:pointer;padding:4px 8px;border-radius:6px;}
 
-    .contenedor-principal p {
-      color: #555;
-      margin-bottom: 25px;
-      font-size: 0.95rem;
+/* Responsive */
+    @media(max-width:900px){
+      .imagen-preview{width:48%}
+      .titulo-principal{font-size:28px}
+      .card-form{padding:22px}
     }
-
-    .campo {
-      text-align: left;
-      margin-bottom: 20px;
+    @media(max-width:600px){
+      header{flex-direction:row;gap:8px;padding:12px}
+      .imagen-preview{width:100%}
+      .contenedor{margin:18px auto}
     }
-
-    .campo label {
-      font-weight: 600;
-      margin-bottom: 6px;
-      display: block;
-    }
-
-    .campo input[type="text"],
-    .campo input[type="date"],
-    .campo textarea,
-    .campo input[type="file"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-
-    .campo textarea {
-      min-height: 120px;
-      resize: none;
-    }
-
-    .text-muted {
-      font-size: 0.8rem;
-      color: #888 !important;
-      display: inline;
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-    }
-
-    .btn-seleccionar {
-      background-color: #0d5c9b;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .btn-seleccionar:hover {
-      background-color: #094574;
-    }
-
-    .boton-publicar {
-      background-color: #61C9A8;
-      color: #1B314B;
-      border: none;
-      padding: 12px;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: bold;
-      width: 25%;
-      margin-top: 15px;
-      transition: background 0.3s;
-    }
-
-    .boton-publicar:hover {
-      background-color: #16a085;
-    }
-
-    .requerido:after {
-      content: " *";
-      color: red;
-    }
-
-    /* es donde se cargan las imagenes de files */
-    #preview-imagenes {
-    display: flex !important;
-    gap: 10px;        
-    flex-wrap: wrap;    
-    align-items: flex-start; 
-}
-
-.imagen-preview {
-    display: flex;
-    flex-direction: column; 
-    align-items: center;
-    width: 320px;    
-}
-
-.imagen-preview img {
-    width: 360px;
-    height: 203px;
-    object-fit: cover;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.imagen-preview .info {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-top: 5px;
-}
-
-.imagen-preview .nombre {
-    font-size: 0.8rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.imagen-preview .eliminar {
-    background: red;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    width: 20px;
-    height: 20px;
-    line-height: 18px;
-    text-align: center;
-    font-weight: bold;
-}
-
-    .error {
-      color: red;
-      margin-bottom: 15px;
-      padding: 10px;
-      background-color: #ffeeee;
-      border: 1px solid #ffcccc;
-      border-radius: 4px;
-    }
-
-    .mensaje-error {
-      background-color: #f8d7da;
-      color: #842029;
-      border: 1px solid #f5c2c7;
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-size: 14px;
-      margin-top: 5px;
-      animation: aparecer 0.3s ease-in-out;
-    }
-
-    .toast-personalizado {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #0d6efd;
-      color: #fff;
-      padding: 15px 20px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 9999;
-      text-align: center;
-      min-width: 280px;
-      animation: fadeIn 0.3s ease-in-out;
-    }
-
-    .toast-personalizado.text-bg-danger {
-      background: #dc3545;
-    }
-
-    .toast-personalizado.text-bg-primary {
-      background: #0d6efd;
-    }
-
-        /* Animaciones */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translate(-50%, -60%); }
-      to { opacity: 1; transform: translate(-50%, -50%); }
-    }
-
-    .error-borde {
-      border: 2px solid red !important;
-    }
-
-    /* Botón del input file */
-    .custom-file-input::file-selector-button {
-      background-color:  #ADEBFFD9;   /* azul */
-      color: #061F3E;
-      border: 1px solid #ADEBFFD9;
-      border-radius: 6px;
-      margin-left: 0px;
-      padding: 6px 14px;
-      margin-right: 10px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: background 0.3s, border-color 0.3s, color 0.3s;
-    }
-
-    .custom-file-input:hover::file-selector-button {
-      background-color: #94E3FFD9 !important; 
-      color: #061F3E !important;
-      border-color: #94E3FFD9 !important;
-    }
-
-/* Focus (cuando haces clic y queda seleccionado) */
-    .custom-file-input:focus::file-selector-button {
-      background-color: #94E3FFD9 !important;
-      color: #061F3E !important;
-      border-color: #94E3FFD9 !important;
-      box-shadow: none !important;
-    }
-
-    .campo {
-      position: relative;
-      width: 650px;
-      margin-bottom: 20px;
-      font-family: 'Poppins', sans-serif;
-      font-size: 16px;
-    }
-
-    .campo input,
-    .campo textarea {
-      width: 100%;
-      padding-right: 60px;
-      box-sizing: border-box;
-    }
-
-    .campo small {
-      position: absolute;
-      right: 10px;
-      top: 85%;
-      transform: translateY(-50%);
-      color: gray;
-      pointer-events: none;
-      font-size: 12px;
-    }
-
-    .campo textarea + small {
-      top: auto;
-      bottom: 5px;
-      transform: none;
-    }
-
-    .volver {
-      font-family: poppins; 
-    }
-
-    .parrafo {
-      color: #403F48;
-      font-family: 'Inter', sans-serif;
-    }
-
-    h1 {
-      font-family: 'Poppins', sans-serif;
-      color: #1661AC;
-    }
-
-    .alert {
-      background: #ADEBFFD9;
-      padding: 10px 15px;
-      margin-bottom: 20px;
-      border-radius: 5px;
-      font-size: 14px;
-      color: #004080;
-    }
-
-    .modal-confirmacion {
-      display: none; 
-      position: fixed;
-      z-index: 99999;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-contenido {
-      background: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      width: 520px;
-      text-align: center;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-      font-family: 'Poppins', sans-serif;
-      animation: fadeIn 0.3s ease;
-    }
-
-    .modal-contenido h2 {
-      font-size: 20px;
-      margin-bottom: 10px;
-      color: #0d2740;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .modal-contenido p {
-      font-size: 15px;
-      margin-bottom: 30px;
-      color: #444;
-    }
-
-    .modal-botones {
-      display: flex;
-      justify-content: space-between;
-      gap: 30px;
-    }
-
-    .btn-cancelar {
-      flex: 1;
-      background: #EB7373;
-      border: none;
-      color: #061F3E;
-      padding: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .btn-confirmar {
-      flex: 1;
-      background: #61C9A8;
-      border: none;
-      color: #061F3E;
-      padding: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .btn-cancelar:hover { background: #c45858ff; }
-    .btn-confirmar:hover { background: #16a085; }
-
-    .volverdenuncias {
-      font-family: 'Poppins', sans-serif;
-      font-size: 24px;
-      color: FFFFF;
-    }
-
-    .campo select,
-    .campo input[type="text"],
-    .campo input[type="date"],
-    .campo textarea {
-      width: 100%;
-      padding: 10px;
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      border: 1px solid #B1B1B1;
-      border-radius: 12px;
-      color: #061F3E;
-      outline: none;
-      transition: 0.3s;
-    }
-
-    .campo input::placeholder,
-    .campo textarea:: ::placeholder { crolo: #B1B1B1; }
-
-    .campo input:hover, .campo textarea:hover, .campo select:hover {
-      border-color: #2D8EFF;
-      transform: scale(1.01);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .campo input:focus, .campo textarea:focus, .campo select:focus {
-      border-color: #2D8EFF;
-      transform: scale(1.01);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    .card-formulario {
-      background: #fff;
-      padding: 25px 30px;
-      border-radius: 16px;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-      margin-top: 20px;
-  }
-
-  .imagen-preview {
-  width: 180px;
-  position: relative;
-}
-.imagen-preview img {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 10px;
-}
-.imagen-preview .eliminar {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  background: rgba(220,53,69,0.9);
-  border: none;
-  border-radius: 50%;
-  color: white;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 20px;
-}
-.toast-personalizado {
-  top: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: slideDown 0.4s ease;
-}
-@keyframes slideDown {
-  from { opacity: 0; transform: translate(-50%, -40px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
-}
-
-.modal-imagen {
-      display: none;
-      position: fixed;
-      z-index: 10000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.85);
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-    
-    .modal-contenido-imagen {
-      max-width: 650px;
-      max-height: 80vh;
-      width: auto;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-      animation: zoomIn 0.3s ease;
-    }
-    
-    @keyframes zoomIn {
-      from {transform: scale(0.9); opacity: 0;}
-      to {transform: scale(1); opacity: 1;}
-    }
-    
-    .modal-imagen {
-      display: none;
-      position: fixed;
-      z-index: 10000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.85);
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-    
-    .contenedor-modal {
-      background-color: #fff;
-      border-radius: 12px;
-      max-width: 650px;
-      width: 100%;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      overflow: hidden;
-      animation: zoomIn 0.3s ease;
-    }
-    
-    @keyframes zoomIn {
-      from {transform: scale(0.9); opacity: 0;}
-      to {transform: scale(1); opacity: 1;}
-    }
-    
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 20px;
-      background-color: #061F3E;
-      color: white;
-    }
-    
-    .modal-header h2 {
-      font-size: 18px;
-      margin: 0;
-      font-weight: 600;
-      font-family: 'Poppins', sans-serif;
-    }
-    
-    .modal-header .cerrar {
-      color: white;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-      background: none;
-      border: none;
-      padding: 0;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .modal-header .cerrar:hover {
-      color: #ff5252;
-    }
-    
-    .modal-body {
-      padding: 20px;
-      text-align: center;
-    }
-    
-    .modal-imagen-content {
-      max-width: 100%;
-      max-height: 400px;
-      width: auto;
-      height: auto;
-      border-radius: 8px;
-      margin-bottom: 15px;
-    }
-    
-    .modal-info {
-      text-align: left;
-      margin-top: 15px;
-      padding: 15px;
-      background-color: #f8f9fa;
-      border-radius: 8px;
-    }
-    
-    .modal-info h3 {
-      font-size: 16px;
-      margin-bottom: 10px;
-      color: #061F3E;
-      font-family: 'Poppins', sans-serif;
-    }
-    
-    .modal-info p {
-      margin: 5px 0;
-      color: #555;
-      font-family: 'Inter', sans-serif;
-    }
-    
-    .imagen-preview img {
-      cursor: pointer;
-      transition: transform 0.2s;
-      border: 2px solid transparent;
-    }
-    
-    .imagen-preview img:hover {
-      transform: scale(1.03);
-      border-color: #2D8EFF;
-    }
-    
-    /* Indicador de imagen seleccionada */
-    .imagen-seleccionada {
-      border: 2px solid #2D8EFF !important;
-      box-shadow: 0 0 8px rgba(45, 142, 255, 0.5);
-    }  
-
   </style>
-=======
-<meta charset="UTF-8">
-<title>Publicar Evento</title>
-<style>
-    body { font-family: Poppins, sans-serif; background:#f8f9fa; margin:0; padding:20px; }
-    .contenedor { max-width:600px; margin:auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.1);}
-    h2 { text-align:center; color:#1661AC; }
-    label { display:block; margin-top:15px; font-weight:600; }
-    input[type=text], textarea, input[type=date] {
-        width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-size:14px;
-    }
-    textarea { min-height:120px; resize:vertical; }
-    .contador { font-size:12px; color:#666; float:right; }
-    .contador.error { color:red; }
-    .btn { margin-top:20px; width:100%; height:48px; background:#61C9A8; border:none; border-radius:12px;
-           font-size:20px; font-weight:bold; color:#1B314B; cursor:pointer; }
-    .btn:hover { background:#4CA88C; }
-    .mensaje { margin-top:15px; padding:10px; background:#eee; border-radius:8px; color:#333; }
-    #preview-imagenes img { width:100px; margin:5px; border-radius:8px; }
-</style>
->>>>>>> 1c32133142b1ba498ce7a5b04b68cb7f13433626
 </head>
 <body>
-<div class="contenedor">
-    <h2>Publicar Evento</h2>
-    <?php if ($mensaje): ?>
-        <div class="mensaje"><?= $mensaje ?></div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <img src="imagenes/logo_blanco.png" alt="Logo Comunicado Digital"> <!-- añade tu logo blanco en esta ruta -->
+    </div>
+    <div class="header-right">
+      <a href="denuncia_anonima.php" id="linkVolver">Volver a Denuncias</a>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <div class="card-form">
+      <h1 class="titulo-principal">Enviar denuncia anónima</h1>
+      <p class="subtitulo">Tu denuncia será revisada por los administradores</p>
+
+      <div class="alert-informacion" role="status">
+        <i class="fas fa-shield-alt"></i>
+        <div>Tu denuncia es 100 % anónima. No pediremos datos personales ni podremos rastrear tu identidad.</div>
+      </div>
+
+      <form id="formDenuncia" method="POST" enctype="multipart/form-data" novalidate>
+        <input type="hidden" name="action" value="submit_denuncia">
+
+        <!-- TÍTULO -->
+        <div class="campo">
+          <label for="titulo">Título: <span style="color:var(--rojo)">*</span></label>
+          <input id="titulo" name="titulo" type="text" placeholder="Escribe el título de la denuncia" value="<?= htmlspecialchars($titulo) ?>">
+          <small id="contadorTitulo" class="contador">0/150</small>
+          <div id="error-titulo" class="mensaje-error" style="display: <?= isset($errores['titulo']) ? 'block' : 'none' ?>;">
+            <?= htmlspecialchars($errores['titulo'] ?? '') ?>
+          </div>
+        </div>
+
+        <!-- DESCRIPCION -->
+        <div class="campo">
+          <label for="descripcion">Descripción: <span style="color:var(--rojo)">*</span></label>
+          <textarea id="descripcion" name="descripcion" placeholder="Escribe la descripción de la denuncia"><?= htmlspecialchars($descripcion) ?></textarea>
+          <small id="contadorDescripcion" class="contador">0/3000</small>
+          <div id="error-descripcion" class="mensaje-error" style="display: <?= isset($errores['descripcion']) ? 'block' : 'none' ?>;">
+            <?= htmlspecialchars($errores['descripcion'] ?? '') ?>
+          </div>
+        </div>
+
+        <!-- FECHA -->
+        <div class="campo">
+          <label for="fecha_evento">Fecha del evento denunciado: <span style="color:var(--rojo)">*</span></label>
+          <div class="campo-fecha">
+            <input id="fecha_evento" name="fecha_evento" type="date" value="<?= htmlspecialchars($fecha_evento) ?>" placeholder="Selecciona la fecha">
+            <i class="fas fa-calendar-alt"></i>
+          </div>
+          <div id="error-fecha" class="mensaje-error" style="display: <?= isset($errores['fecha_evento']) ? 'block' : 'none' ?>;">
+            <?= htmlspecialchars($errores['fecha_evento'] ?? '') ?>
+          </div>
+        </div>
+
+        <!-- ARCHIVO -->
+        <div class="campo">
+          <div class="label-file-row">
+            <label for="imagenes">Carga una imagen (Opcional)</label>
+            <div class="nota">Puedes cargar hasta 3 imágenes en formato (.jpeg).</div>
+          </div>
+
+          <div class="file-container" tabindex="0">
+            <label class="btn-file" id="btnSeleccionar">
+              Elegir archivo
+              <input id="inputImagenes" name="imagenes[]" type="file" accept=".jpg,.jpeg,image/jpeg" multiple style="display:none;">
+            </label>
+            <div class="estado-archivo" id="estado-archivo">No se ha seleccionado ningún archivo</div>
+          </div>
+
+          <div id="preview-imagenes"></div>
+          <div id="error-imagen" class="mensaje-error" style="display: none;"></div>
+        </div>
+
+        <div class="boton-enviar-container">
+          <button type="button" id="btnEnviar" class="boton-publicar">Enviar denuncia</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- MODAL: Confirmar Volver -->
+  <div class="modal-overlay" id="modal-volver">
+    <div class="modal-contenido">
+      <h2>¿Estás seguro de volver a la vista de denuncias?</h2>
+      <p>Esta acción cancelará los cambios hechos en el formulario.</p>
+      <div class="modal-botones">
+        <button class="modal-btn-cancel" id="cancelarVolver">Cancelar</button>
+        <button class="modal-btn-confirm" id="confirmarVolver">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Confirmar Envío -->
+  <div class="modal-overlay" id="modal-confirmar">
+    <div class="modal-contenido">
+      <h2>¿Estás seguro de enviar tu denuncia?</h2>
+      <p style="font-weight:600">Un administrador la revisará y publicará posteriormente.</p>
+      <div class="modal-botones" style="margin-top:18px;">
+        <button class="modal-btn-cancel" id="cancelarEnviar">Cancelar</button>
+        <button class="modal-btn-confirm" id="confirmarEnviar">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Formato inválido -->
+  <div class="modal-overlay" id="modal-formato">
+    <div class="modal-contenido">
+      <p style="font-family:Inter;font-size:20px;color:var(--gris-oscuro)">El formato de tu archivo no es admitido. Intenta cargar un archivo (.jpeg).</p>
+      <button class="modal-btn-confirm" id="btnAcuerdo">De acuerdo</button>
+    </div>
+  </div>
+
+  <!-- MODAL IMAGEN AMPLIADA -->
+  <div class="modal-imagen" id="modal-imagen">
+    <div class="contenedor-modal">
+      <div class="modal-header">
+        <h2>Imagen adjunta</h2>
+        <button class="cerrar" id="cerrarModalImagen">&times;</button>
+      </div>
+      <div style="padding:18px;text-align:center;">
+        <img id="imagen-ampliada" class="modal-imagen-content" src="#" alt="Imagen ampliada">
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST (éxito/aviso) -->
+  <?php if ($mensajeToast): ?>
+    <div style="position:fixed;top:28px;left:50%;transform:translateX(-50%);z-index:11000">
+      <div style="background:<?= $tipoToast === 'success' ? '#61C98F' : '#dc3545' ?>;color:#fff;padding:12px 18px;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.18);font-weight:700;">
+        <?= htmlspecialchars($mensajeToast) ?>
+      </div>
+    </div>
+    <?php if ($tipoToast === 'success'): ?>
+      <script>
+        // redirigir luego de 2.5s a vista de denuncias
+        setTimeout(function(){ window.location.href = 'denuncia_anonima.php'; }, 2500);
+      </script>
     <?php endif; ?>
-    <form method="post" enctype="multipart/form-data" id="formEvento">
-        <label for="titulo">Título</label>
-        <span id="contadorTitulo" class="contador">0/150</span>
-        <input type="text" id="titulo" name="titulo" maxlength="150" required>
+  <?php endif; ?>
 
-        <label for="descripcion">Descripción</label>
-        <span id="contadorDescripcion" class="contador">0/3000</span>
-        <textarea id="descripcion" name="descripcion" maxlength="3000" required></textarea>
+  <script>
+    (function(){
+      // Elements
+      const titulo = document.getElementById('titulo');
+      const descripcion = document.getElementById('descripcion');
+      const fecha = document.getElementById('fecha_evento');
+      const contadorTitulo = document.getElementById('contadorTitulo');
+      const contadorDescripcion = document.getElementById('contadorDescripcion');
+      const inputImagenes = document.getElementById('inputImagenes');
+      const estadoArchivo = document.getElementById('estado-archivo');
+      const preview = document.getElementById('preview-imagenes');
+      const errorImagen = document.getElementById('error-imagen');
 
-        <label for="fecha_evento">Fecha del evento</label>
-        <input type="date" id="fecha_evento" name="fecha_evento" required>
+      const btnEnviar = document.getElementById('btnEnviar');
+      const modalConfirmar = document.getElementById('modal-confirmar');
+      const modalVolver = document.getElementById('modal-volver');
+      const modalFormato = document.getElementById('modal-formato');
+      const modalImagen = document.getElementById('modal-imagen');
 
-        <label for="inputImagenes">Imágenes</label>
-        <input type="file" id="inputImagenes" name="imagenes[]" accept="image/*" multiple required>
-        <div id="preview-imagenes"></div>
+      const linkVolver = document.getElementById('linkVolver');
 
-        <button type="submit" class="btn" id="btnEnviar">Publicar</button>
-    </form>
-</div>
+      // Estado archivos seleccionados (File objects)
+      let archivosSeleccionados = [];
 
-<script>
-(function(){
-  const titulo = document.getElementById('titulo');
-  const descripcion = document.getElementById('descripcion');
-  const contadorTitulo = document.getElementById('contadorTitulo');
-  const contadorDescripcion = document.getElementById('contadorDescripcion');
-  const inputImagenes = document.getElementById('inputImagenes');
-  const preview = document.getElementById('preview-imagenes');
+      // Inicializar contadores
+      function actualizarContador(campo, contadorElem, maximo, min) {
+        const len = campo.value.length;
+        contadorElem.textContent = ${len}/${maximo};
+        if (document.activeElement === campo) contadorElem.classList.add('visible'); else contadorElem.classList.remove('visible');
 
-  // Contadores en vivo
-  function actualizarContador(campo, contadorElem, max, min){
-    const len = campo.value.length;
-    contadorElem.textContent = len + "/" + max;
-    if(len < (min||0) || len > max){
-      contadorElem.classList.add('error');
-    } else {
-      contadorElem.classList.remove('error');
-    }
-  }
-  titulo.addEventListener('input', ()=> actualizarContador(titulo, contadorTitulo, 150, 10));
-  descripcion.addEventListener('input', ()=> actualizarContador(descripcion, contadorDescripcion, 3000, 300));
-
-  // Previsualización imágenes
-  inputImagenes.addEventListener('change', ()=>{
-    preview.innerHTML = "";
-    Array.from(inputImagenes.files).forEach(file=>{
-      if(file.type.startsWith("image/")){
-        const reader = new FileReader();
-        reader.onload = e=>{
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          img.style.width = "100px";
-          img.style.margin = "5px";
-          img.style.borderRadius = "8px";
-          preview.appendChild(img);
-        };
-        reader.readAsDataURL(file);
+        if (len < (min || 0) || len > maximo) contadorElem.classList.add('error'); else contadorElem.classList.remove('error');
       }
-    });
-  });
 
-  // Validación antes de enviar
-  document.getElementById('formEvento').addEventListener('submit', function(e){
-    let errores = [];
+      // Mostrar contador solo al enfocarse
+      titulo.addEventListener('focus', () => actualizarContador(titulo, contadorTitulo, 150, 10));
+      titulo.addEventListener('blur', () => actualizarContador(titulo, contadorTitulo, 150, 10));
+      titulo.addEventListener('input', () => actualizarContador(titulo, contadorTitulo, 150, 10));
 
-    if(titulo.value.trim().length < 10 || titulo.value.trim().length > 150){
-      errores.push("El título debe tener entre 10 y 150 caracteres.");
-    }
-    if(descripcion.value.trim().length < 300 || descripcion.value.trim().length > 3000){
-      errores.push("La descripción debe tener entre 300 y 3000 caracteres.");
-    }
-    if(!document.getElementById('fecha_evento').value){
-      errores.push("La fecha del evento es obligatoria.");
-    }
-    if(inputImagenes.files.length === 0){
-      errores.push("Debes subir al menos una imagen.");
-    }
+      descripcion.addEventListener('focus', () => actualizarContador(descripcion, contadorDescripcion, 3000, 300));
+      descripcion.addEventListener('blur', () => actualizarContador(descripcion, contadorDescripcion, 3000, 300));
+      descripcion.addEventListener('input', () => actualizarContador(descripcion, contadorDescripcion, 3000, 300));
 
-    if(errores.length > 0){
-      e.preventDefault();
-      alert("Corrige lo siguiente:\n\n" + errores.join("\n"));
-    }
-  });
-})();
-</script>
+      // Validaciones en cliente (devuelven {ok:bool, msg:string})
+      function validarTitulo() {
+        const v = titulo.value.trim();
+        if (!v) return {ok:false, msg:'El titulo es obligatorio'};
+        if (v.length < 10) return {ok:false, msg:'La descripción debe tener al menos 10 caracteres.'};
+        if (v.length > 150) return {ok:false, msg:'Haz alcanzado el límite de 150 caracteres.'};
+        return {ok:true};
+      }
+
+      function validarDescripcion() {
+        const v = descripcion.value.trim();
+        if (!v) return {ok:false, msg:'La descripción es obligatoria.'};
+        if (v.length < 300) return {ok:false, msg:'La descripción debe tener al menos 300 caracteres.'};
+        if (v.length > 3000) return {ok:false, msg:'Haz alcanzado el límite de 3000 caracteres.'};
+        return {ok:true};
+      }
+
+      function validarFecha() {
+        const v = fecha.value.trim();
+        if (!v) return {ok:false, msg:'La fecha es obligatoria'};
+        // opcional: no permitir fecha futura
+        const sel = new Date(v);
+        const hoy = new Date(); hoy.setHours(0,0,0,0);
+        if (sel > hoy) return {ok:false, msg:'La fecha no puede ser futura.'};
+        return {ok:true};
+      }
+
+      // Mostrar mensaje debajo del campo
+      function mostrarError(idElemento, mensaje) {
+        const el = document.getElementById(idElemento);
+        el.textContent = mensaje;
+        el.style.display = 'block';
+        const campo = idElemento === 'error-titulo' ? titulo : idElemento === 'error-descripcion' ? descripcion : document.getElementById('fecha_evento');
+        campo.classList.add('error-borde');
+        campo.style.borderColor = 'var(--rojo)';
+        campo.style.animation = 'shake .4s';
+        setTimeout(()=> campo.style.animation = '', 400);
+      }
+      function ocultarError(idElemento) {
+        const el = document.getElementById(idElemento);
+        el.style.display = 'none';
+        const campo = idElemento === 'error-titulo' ? titulo : idElemento === 'error-descripcion' ? descripcion : document.getElementById('fecha_evento');
+        campo.classList.remove('error-borde');
+        campo.style.borderColor = '';
+      }
+
+      // Manejo de archivos
+      document.getElementById('btnSeleccionar').addEventListener('click', (e) => {
+        inputImagenes.click();
+      });
+      inputImagenes.addEventListener('change', function(e){
+        handleFiles(Array.from(this.files));
+        // limpiar input para poder re-subir mismos archivos si se eliminan
+        inputImagenes.value = '';
+      });
+
+      function handleFiles(files) {
+        // filtramos JPEG
+        const invalid = files.filter(f => !(f.type === 'image/jpeg' || f.type === 'image/jpg' || f.name.toLowerCase().endsWith('.jpg') || f.name.toLowerCase().endsWith('.jpeg')));
+        if (invalid.length > 0) {
+          // abrir modal formato
+          modalFormato.style.display = 'flex';
+          return;
+        }
+
+        // agregar sin pasar 3
+        archivosSeleccionados = archivosSeleccionados.concat(files);
+        if (archivosSeleccionados.length > 3) {
+          archivosSeleccionados = archivosSeleccionados.slice(0,3);
+          // indicar estado límite
+        }
+
+        actualizarEstadoYPreview();
+      }
+
+      function actualizarEstadoYPreview(){
+        preview.innerHTML = '';
+        if (archivosSeleccionados.length === 0) {
+          estadoArchivo.textContent = 'No se ha seleccionado ningún archivo';
+        } else {
+          estadoArchivo.textContent = ${archivosSeleccionados.length} archivo(s) seleccionado(s);
+        }
+
+        archivosSeleccionados.forEach((file, idx) => {
+          const reader = new FileReader();
+          reader.onload = function(ev) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'imagen-preview';
+
+            const img = document.createElement('img');
+            img.src = ev.target.result;
+            img.alt = file.name;
+            img.addEventListener('click', () => mostrarImagenAmpliada(ev.target.result));
+            wrapper.appendChild(img);
+
+            const btn = document.createElement('button');
+            btn.className = 'eliminar';
+            btn.type = 'button';
+            btn.innerHTML = '&times;';
+            btn.title = 'Eliminar';
+            btn.addEventListener('click', function(){
+              archivosSeleccionados.splice(idx,1);
+              actualizarEstadoYPreview();
+            });
+            wrapper.appendChild(btn);
+
+            preview.appendChild(wrapper);
+          };
+          reader.readAsDataURL(file);
+        });
+
+        // cambiar apariencia de botón si límite alcanzado
+        const btnFile = document.querySelector('.btn-file');
+        if (archivosSeleccionados.length >= 3) btnFile.classList.add('disabled'); else btnFile.classList.remove('disabled');
+      }
+
+      // Mostrar imagen ampliada
+      function mostrarImagenAmpliada(src) {
+        document.getElementById('imagen-ampliada').src = src;
+        modalImagen.style.display = 'flex';
+      }
+      document.getElementById('cerrarModalImagen').addEventListener('click', ()=> modalImagen.style.display = 'none');
+      modalImagen.addEventListener('click', (e)=> { if (e.target === modalImagen) modalImagen.style.display = 'none'; });
+
+      // Modal formato
+      document.getElementById('btnAcuerdo').addEventListener('click', () => { modalFormato.style.display = 'none'; });
+
+      // Volver a denuncias (modal)
+      linkVolver.addEventListener('click', function(e){
+        e.preventDefault();
+        modalVolver.style.display = 'flex';
+      });
+      document.getElementById('cancelarVolver').addEventListener('click', ()=> modalVolver.style.display = 'none');
+      document.getElementById('confirmarVolver').addEventListener('click', ()=> { window.location.href = linkVolver.getAttribute('href'); });
+
+      // Enviar denuncia (abrir modal de confirmación)
+      btnEnviar.addEventListener('click', function(){
+        // Validar cliente
+        // limpiar errores previos
+        ocultarError('error-titulo'); ocultarError('error-descripcion'); document.getElementById('error-fecha').style.display='none';
+
+        const vT = validarTitulo();
+        const vD = validarDescripcion();
+        const vF = validarFecha();
+        let hayError = false;
+
+        if (!vT.ok) { mostrarError('error-titulo', vT.msg); hayError = true; }
+        if (!vD.ok) { mostrarError('error-descripcion', vD.msg); hayError = true; }
+        if (!vF.ok) { document.getElementById('error-fecha').textContent = vF.msg; document.getElementById('error-fecha').style.display='block'; document.getElementById('fecha_evento').style.borderColor='var(--rojo)'; hayError = true; }
+
+        if (hayError) {
+          // desplazar vista al primer error
+          const primerError = document.querySelector('.mensaje-error[style*="display: block"]');
+          if (primerError) primerError.scrollIntoView({behavior:'smooth', block:'center'});
+          return;
+        }
+
+        // Si todo OK, abrir modal confirmar
+        modalConfirmar.style.display = 'flex';
+      });
+
+      // Cancelar/Confirmar enviar
+      document.getElementById('cancelarEnviar').addEventListener('click', ()=> modalConfirmar.style.display = 'none');
+      document.getElementById('confirmarEnviar').addEventListener('click', function(){
+        // Construir FormData para enviar con archivos seleccionados
+        const form = document.getElementById('formDenuncia');
+        const fd = new FormData(form);
+        // anexar archivos seleccionados
+        archivosSeleccionados.forEach((f, i) => fd.append('imagenes[]', f));
+        // acción submit por fetch (para mostrar toast sin reload) - pero el enunciado pedía php + funcionamiento; usaremos fetch que envía al mismo PHP
+        fetch('', { method: 'POST', body: fd })
+          .then(resp => resp.text())
+          .then(html => {
+            // Reemplazamos el body por la respuesta del servidor para que el usuario vea el toast/redirect que produce PHP
+            document.open();
+            document.write(html);
+            document.close();
+          }).catch(err => {
+            alert('Error al enviar la denuncia. Intenta de nuevo.');
+            console.error(err);
+          });
+      });
+
+      // Cerrar modales con ESC
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          [modalConfirmar, modalVolver, modalFormato, modalImagen].forEach(m => { if (m.style.display === 'flex') m.style.display = 'none'; });
+        }
+      });
+
+      // Click fuera para cerrar modales
+      [modalConfirmar, modalVolver, modalFormato].forEach(m => {
+        m.addEventListener('click', (ev)=> { if (ev.target === m) m.style.display = 'none'; });
+      });
+
+      // Establecer comportamiento touch-friendly para file-container: clic abre file dialog
+      document.querySelector('.file-container').addEventListener('click', ()=> inputImagenes.click());
+    })();
+  </script>
 </body>
 </html>
