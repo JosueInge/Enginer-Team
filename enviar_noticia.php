@@ -849,7 +849,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- FECHA EVENTO -->
 
       <div class="Camposdelformulario">
-        <label for="fecha_evento" class="requerido">Fecha del evento denunciado:</label>
+        <label for="fecha_evento" class="requerido">Fecha del hecho:</label>
         <div class="input-con-icono">
           <input type="text" id="fecha_evento" name="fecha_evento" placeholder="Selecciona la fecha" class="fechacampo" value="<?= htmlspecialchars($fecha_evento ?? '') ?>">
           <span class="icono-calendario">
