@@ -293,7 +293,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
   <!-- HEADER -->
   <header>
     <div class="header-left">
-      <img src="imagenes/logo_blanco.png" alt="Logo Comunicado Digital"> <!-- añade tu logo blanco en esta ruta -->
+      <img src="imagenes/logo.png" alt="Logo Comunicado Digital"> <!-- añade tu logo blanco en esta ruta -->
     </div>
     <div class="header-right">
       <a href="denuncia_anonima.php" id="linkVolver">Volver a Denuncias</a>
