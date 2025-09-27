@@ -316,7 +316,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
       <form id="formDenuncia" method="POST" enctype="multipart/form-data" novalidate>
         <input type="hidden" name="action" value="submit_denuncia">
 
-        <!-- TÍTULO -->
+        <!-- TÍTULO -->/
         <div class="campo">
           <label for="titulo">Título: <span style="color:var(--rojo)">*</span></label>
           <input id="titulo" name="titulo" type="text" placeholder="Escribe el título de la denuncia" value="<?= htmlspecialchars($titulo) ?>">
