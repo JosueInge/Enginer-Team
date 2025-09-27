@@ -18,9 +18,13 @@ $mensajeToast = null;
 $tipoToast = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $categoria = trim($_POST['categoria'] ?? '');
     $titulo = trim($_POST['titulo'] ?? '');
     $descripcion = trim($_POST['descripcion'] ?? '');
     $fecha_evento = trim($_POST['fecha_evento'] ?? '');
+    $usuario_id = $_SESSION['usuario_id'];
+    $autor = $_SESSION['usuario_nombre'] ?? 'Anónimo';
+    $bloquear_comentarios = isset($_POST['bloquear_comentarios']) ? 1 : 0;
 
     // se inicia array para nombres de imágenes
     $imagenes_nombres = [null, null, null];
@@ -41,18 +45,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (!file_exists('imagenes/denuncias')) {
                         mkdir('imagenes/denuncias', 0755, true);
                     }
-
                     // Guardar imagen temporalmente, se moverá al enviar correctamente
-                    move_uploaded_file($archivos['tmp_name'][$i], $ruta_destino);
-                    $imagenes_nombres[$i] = $nombreUnico;
+
+                    if (move_uploaded_file($archivos['tmp_name'][$i], $ruta_destino)) {
+                      $imagenes_nombres[$i] = $nombreUnico;
+                    }
                 }
             }
         }
     }
 
     // Validaciones de campos
-    if ($titulo === '' || $descripcion === '' || $fecha_evento === '') {
-    guardarLog("Error Denuncia: campos vacíos al enviar los datos.");
+    if ($categoria === ''||  $titulo === '' || $descripcion === '' || $fecha_evento === '') {
+    guardarLog("Error Noticia: campos vacíos al enviar los datos.");
     $mensajeToast = "Debes completar todos los campos requeridos.";
     $tipoToast = "danger";
 
@@ -80,12 +85,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mensajeToast = "La fecha del evento es inválida.";
         $tipoToast = "danger";
     } else {
-      error_log("DEBUG SQL: Titulo=$titulo, Descripcion=$descripcion, Imagen0={$imagenes_nombres[0]}, Imagen1={$imagenes_nombres[1]}, Imagen2={$imagenes_nombres[2]}, Fecha=$fecha_evento");
+      error_log("DEBUG SQL: Categoria=$categoria, Titulo=$titulo, Descripcion=$descripcion, Imagen0={$imagenes_nombres[0]}, Imagen1={$imagenes_nombres[1]}, Imagen2={$imagenes_nombres[2]}, Fecha=$fecha_evento, Bloquear_comentarios{$bloquear_comentarios}");
         // Inserción en Base de Datos 
-        $stmt = $conexion->prepare("INSERT INTO propuestas_denuncias 
-            (titulo, descripcion, imagen, imagen2, imagen3, fecha_evento, estado)
-            VALUES (?, ?, ?, ?, ?, ?, 'pendiente')");
-        $stmt->bind_param("ssssss", $titulo, $descripcion, $imagenes_nombres[0], $imagenes_nombres[1], $imagenes_nombres[2], $fecha_evento);
+
+        $stmt = $conexion->prepare("INSERT INTO propuestas_noticias 
+            (categoria, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, usuario_id, estado, bloquear_comentarios)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+        $estado = "pendiente";
+
+        $stmt->bind_param("ssssssssisi", 
+        $categoria, 
+        $titulo, 
+          $descripcion, 
+          $imagenes_nombres[0], 
+          $imagenes_nombres[1], 
+          $imagenes_nombres[2], 
+          $autor,
+          $fecha_evento,
+          $usuario_id,
+          $estado,
+          $bloquear_comentarios
+      );
         if ($stmt->execute()) {
             $mensajeToast = "Tu noticia fue enviada a los administradores!";
                 $tipoToast = "success";
@@ -259,6 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       color: #403F48;
       font-family: 'Inter', sans-serif;
       font-size: 20px;
+      padding: 15px;
     }
 
     /* Mensaje de modal, al volver a denuncias */
@@ -339,6 +361,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       font-size: 32px;
       font-weight: bold;
       color: #1661AC;
+      padding: 15px;
     }
 
     /* Todos los campos */
@@ -766,6 +789,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     text-align: left;
       margin-bottom:18px; 
       position:relative; 
+      
     }
     .campo label { 
       font-family: "Poppins", sans-serif;
@@ -781,7 +805,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .campo textarea {
       width:100%; 
       padding:10px 12px; 
-      border:1px solid #B1B1B1; 
+      border:1px solid #ADEBFF; 
+      background-color: #ADEBFF;
       border-radius:10px; 
       font-size:15px; 
       outline:none;
@@ -798,6 +823,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .campo select:focus { 
       border-color:#2D8EFF; 
       box-shadow: 0 4px 14px rgba(45,142,255,0.08); 
+    }
+    .campo-bloquear {
+      padding: 15px;
     }
 
 
@@ -972,6 +1000,19 @@ document.addEventListener('DOMContentLoaded', function () {
             input.classList.add('shake'); // <--- animación
             setTimeout(() => input.classList.remove('shake'), 500);
         }
+
+        setTimeout(() => {
+          if (errorMsg && errorMsg.parentNode) {
+            errorMsg.remove();
+          }
+          if (input.id === 'fecha_evento') {
+            if (flatpickrFecha.altInput) {
+                flatpickrFecha.altIput.classList.remove('error-borde');
+            }
+          } else {
+            input.classList.remove('error-borde');
+          }
+        }, 5000);
     }
 
     // --- Manejo de input de imágenes ---
@@ -1212,7 +1253,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <?php if ($mensajeToast): ?>
         mostrarToast("<?php echo htmlspecialchars($mensajeToast); ?>", "<?php echo $tipoToast; ?>");
         <?php if ($tipoToast === 'success'): ?>
-        setTimeout(()=>{ window.location.href = 'denuncia.php'; }, 4000);
+        setTimeout(()=>{ window.location.href = 'noticias.php'; }, 4000);
         <?php endif; ?>
     <?php endif; ?>
 });

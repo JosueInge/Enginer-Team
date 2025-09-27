@@ -901,6 +901,18 @@ document.addEventListener('DOMContentLoaded', function () {
             input.classList.add('shake'); // <--- animación
             setTimeout(() => input.classList.remove('shake'), 500);
         }
+        setTimeout(() => {
+          if (errorMsg && errorMsg.parentNode) {
+            errorMsg.remove();
+          }
+          if (input.id === 'fecha_evento') {
+            if (flatpickrFecha.altInput) {
+                flatpickrFecha.altIput.classList.remove('error-borde');
+            }
+          } else {
+            input.classList.remove('error-borde');
+          }
+        }, 5000);
     }
 
     // --- Manejo de input de imágenes ---
