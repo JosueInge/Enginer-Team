@@ -538,189 +538,194 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('registerForm');
-            const passwordInput = document.getElementById('contraseña');
-            const confirmPasswordInput = document.getElementById('repetir');
-            const togglePasswordButton = document.getElementById('togglePassword');
-            const toggleConfirmPasswordButton = document.getElementById('toggleConfirmPassword');
-            const passwordRequirements = document.getElementById('passwordRequirements');
-            const terminosCheckbox = document.getElementById('terminos');
-            const politicasCheckbox = document.getElementById('politicas');
-            
-            // Mostrar/ocultar contraseña
-            togglePasswordButton.addEventListener('click', function() {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                this.querySelector('i').classList.toggle('fa-eye');
-                this.querySelector('i').classList.toggle('fa-eye-slash');
-            });
-            
-            // Mostrar/ocultar confirmación de contraseña
-            toggleConfirmPasswordButton.addEventListener('click', function() {
-                const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                confirmPasswordInput.setAttribute('type', type);
-                this.querySelector('i').classList.toggle('fa-eye');
-                this.querySelector('i').classList.toggle('fa-eye-slash');
-            });
-            
-            // Mostrar requisitos de contraseña al enfocar
-            passwordInput.addEventListener('focus', function() {
-                passwordRequirements.style.display = 'block';
-            });
-            
-            // Ocultar requisitos de contraseña al quitar el foco (si no hay contenido)
-            passwordInput.addEventListener('blur', function() {
-                if (!this.value) {
-                    passwordRequirements.style.display = 'none';
-                }
-            });
-            
-            // Validar contraseña en tiempo real
-            passwordInput.addEventListener('input', function() {
-                validatePassword(this.value);
-            });
-            
-            // Validar formulario al enviar
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                if (validateForm()) {
-                    form.submit();
-                }
-            });
-            
-            function validatePassword(password) {
-                // Validar longitud
-                const lengthValid = password.length >= 8;
-                toggleRequirement('lengthReq', lengthValid);
-                
-                // Validar mayúsculas
-                const uppercaseValid = /[A-Z]/.test(password);
-                toggleRequirement('uppercaseReq', uppercaseValid);
-                
-                // Validar minúsculas
-                const lowercaseValid = /[a-z]/.test(password);
-                toggleRequirement('lowercaseReq', lowercaseValid);
-                
-                // Validar números
-                const numberValid = /[0-9]/.test(password);
-                toggleRequirement('numberReq', numberValid);
-                
-                // Validar caracteres especiales
-                const specialCharValid = /[^A-Za-z0-9]/.test(password);
-                toggleRequirement('specialcharReq', specialCharValid);
-                
-                return lengthValid && uppercaseValid && lowercaseValid && numberValid && specialCharValid;
-            }
-            
-            function toggleRequirement(elementId, isValid) {
-                const element = document.getElementById(elementId);
-                const icon = element.querySelector('i');
-                
-                if (isValid) {
-                    element.classList.add('valid');
-                    icon.classList.remove('fa-times');
-                    icon.classList.add('fa-check');
-                } else {
-                    element.classList.remove('valid');
-                    icon.classList.remove('fa-check');
-                    icon.classList.add('fa-times');
-                }
-            }
-            
-            function validateForm() {
-                let isValid = true;
-                const name = document.getElementById('nombre').value.trim();
-                const email = document.getElementById('correo').value.trim();
-                const password = document.getElementById('contraseña').value;
-                const confirmPassword = document.getElementById('repetir').value;
-                const terms = document.getElementById('terminos').checked;
-                const privacy = document.getElementById('politicas').checked;
-                
-                // Validar nombre
-                if (name === '') {
-                    showError('nameError', 'El nombre es obligatorio');
-                    document.getElementById('nombre').classList.add('error');
-                    isValid = false;
-                } else {
-                    hideError('nameError');
-                    document.getElementById('nombre').classList.remove('error');
-                }
-                
-                // Validar email
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (email === '') {
-                    showError('emailError', 'El correo electrónico es obligatorio');
-                    document.getElementById('correo').classList.add('error');
-                    isValid = false;
-                } else if (!emailRegex.test(email)) {
-                    showError('emailError', 'Formato de correo incorrecto');
-                    document.getElementById('correo').classList.add('error');
-                    isValid = false;
-                } else {
-                    hideError('emailError');
-                    document.getElementById('correo').classList.remove('error');
-                }
-                
-                // Validar contraseña
-                if (password === '') {
-                    showError('passwordError', 'La contraseña es obligatoria');
-                    document.getElementById('contraseña').classList.add('error');
-                    isValid = false;
-                } else if (!validatePassword(password)) {
-                    showError('passwordError', 'La contraseña no cumple con los requisitos');
-                    document.getElementById('contraseña').classList.add('error');
-                    isValid = false;
-                } else {
-                    hideError('passwordError');
-                    document.getElementById('contraseña').classList.remove('error');
-                }
-                
-                // Validar confirmación de contraseña
-                if (confirmPassword === '') {
-                    showError('confirmPasswordError', 'La confirmación de contraseña es obligatoria');
-                    document.getElementById('repetir').classList.add('error');
-                    isValid = false;
-                } else if (password !== confirmPassword) {
-                    showError('confirmPasswordError', 'Las contraseñas no coinciden');
-                    document.getElementById('repetir').classList.add('error');
-                    isValid = false;
-                } else {
-                    hideError('confirmPasswordError');
-                    document.getElementById('repetir').classList.remove('error');
-                }
-                
-                // Validar términos y condiciones
-                if (!terms) {
-                    showError('termsError', 'Debes aceptar nuestros Términos y condiciones');
-                    isValid = false;
-                } else {
-                    hideError('termsError');
-                }
-                
-                // Validar políticas de privacidad
-                if (!privacy) {
-                    showError('privacyError', 'Debes aceptar nuestras Políticas de privacidad');
-                    isValid = false;
-                } else {
-                    hideError('privacyError');
-                }
-                
-                return isValid;
-            }
-            
-            function showError(elementId, message) {
-                const errorElement = document.getElementById(elementId);
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
-            }
-            
-            function hideError(elementId) {
-                const errorElement = document.getElementById(elementId);
-                errorElement.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('registerForm');
+        const passwordInput = document.getElementById('contraseña');
+        const confirmPasswordInput = document.getElementById('repetir');
+        const togglePasswordButton = document.getElementById('togglePassword');
+        const toggleConfirmPasswordButton = document.getElementById('toggleConfirmPassword');
+        const passwordRequirements = document.getElementById('passwordRequirements');
+        const terminosCheckbox = document.getElementById('terminos');
+        const politicasCheckbox = document.getElementById('politicas');
+
+        // Mostrar/ocultar contraseña
+        togglePasswordButton.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+
+        // Mostrar/ocultar confirmación de contraseña
+        toggleConfirmPasswordButton.addEventListener('click', function() {
+            const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirmPasswordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+
+        // Mostrar requisitos de contraseña al enfocar
+        passwordInput.addEventListener('focus', function() {
+            passwordRequirements.style.display = 'block';
+        });
+
+        // Ocultar requisitos de contraseña al quitar el foco (si no hay contenido)
+        passwordInput.addEventListener('blur', function() {
+            if (!this.value) {
+                passwordRequirements.style.display = 'none';
             }
         });
-    </script>
+
+        // Validar contraseña en tiempo real
+        passwordInput.addEventListener('input', function() {
+            validatePassword(this.value);
+        });
+
+        // Validar formulario al enviar
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (validateForm()) {
+                form.submit();
+            }
+        });
+
+        function validatePassword(password) {
+            const lengthValid = password.length >= 8;
+            toggleRequirement('lengthReq', lengthValid);
+
+            const uppercaseValid = /[A-Z]/.test(password);
+            toggleRequirement('uppercaseReq', uppercaseValid);
+
+            const lowercaseValid = /[a-z]/.test(password);
+            toggleRequirement('lowercaseReq', lowercaseValid);
+
+            const numberValid = /[0-9]/.test(password);
+            toggleRequirement('numberReq', numberValid);
+
+            const specialCharValid = /[^A-Za-z0-9]/.test(password);
+            toggleRequirement('specialcharReq', specialCharValid);
+
+            return lengthValid && uppercaseValid && lowercaseValid && numberValid && specialCharValid;
+        }
+
+        function toggleRequirement(elementId, isValid) {
+            const element = document.getElementById(elementId);
+            const icon = element.querySelector('i');
+
+            if (isValid) {
+                element.classList.add('valid');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-check');
+            } else {
+                element.classList.remove('valid');
+                icon.classList.remove('fa-check');
+                icon.classList.add('fa-times');
+            }
+        }
+
+        function validateForm() {
+            let isValid = true;
+            const name = document.getElementById('nombre').value.trim();
+            const email = document.getElementById('correo').value.trim();
+            const password = document.getElementById('contraseña').value;
+            const confirmPassword = document.getElementById('repetir').value;
+            const terms = document.getElementById('terminos').checked;
+            const privacy = document.getElementById('politicas').checked;
+
+            // Validar nombre
+            if (name === '') {
+                showError('nameError', 'El nombre es obligatorio');
+                document.getElementById('nombre').classList.add('error');
+                isValid = false;
+            } else {
+                hideError('nameError');
+                document.getElementById('nombre').classList.remove('error');
+            }
+
+            // Validar email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email === '') {
+                showError('emailError', 'El correo electrónico es obligatorio');
+                document.getElementById('correo').classList.add('error');
+                isValid = false;
+            } else if (!emailRegex.test(email)) {
+                showError('emailError', 'Formato de correo incorrecto');
+                document.getElementById('correo').classList.add('error');
+                isValid = false;
+            } else {
+                hideError('emailError');
+                document.getElementById('correo').classList.remove('error');
+            }
+
+            // Validar contraseña
+            if (password === '') {
+                showError('passwordError', 'La contraseña es obligatoria');
+                document.getElementById('contraseña').classList.add('error');
+                isValid = false;
+            } else if (!validatePassword(password)) {
+                showError('passwordError', 'La contraseña no cumple con los requisitos');
+                document.getElementById('contraseña').classList.add('error');
+                isValid = false;
+            } else {
+                hideError('passwordError');
+                document.getElementById('contraseña').classList.remove('error');
+            }
+
+            // Validar confirmación de contraseña
+            if (confirmPassword === '') {
+                showError('confirmPasswordError', 'La confirmación de contraseña es obligatoria');
+                document.getElementById('repetir').classList.add('error');
+                isValid = false;
+            } else if (password !== confirmPassword) {
+                showError('confirmPasswordError', 'Las contraseñas no coinciden');
+                document.getElementById('repetir').classList.add('error');
+                isValid = false;
+            } else {
+                hideError('confirmPasswordError');
+                document.getElementById('repetir').classList.remove('error');
+            }
+
+            // Validar términos y condiciones
+            if (!terms) {
+                showError('termsError', 'Debes aceptar nuestros Términos y condiciones');
+                isValid = false;
+            } else {
+                hideError('termsError');
+            }
+
+            // Validar políticas de privacidad
+            if (!privacy) {
+                showError('privacyError', 'Debes aceptar nuestras Políticas de privacidad');
+                isValid = false;
+            } else {
+                hideError('privacyError');
+            }
+
+            return isValid;
+        }
+
+        // 🔥 Mostrar error con autodesaparición a los 5s
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+
+            setTimeout(() => {
+                if (errorElement && errorElement.style.display === 'block') {
+                    errorElement.style.display = 'none';
+                }
+            }, 5000);
+        }
+
+        function hideError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+        }
+    });
+</script>
+
 </body>
 </html>

@@ -862,7 +862,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <div class="Camposdelformulario">
         <label for="titulo" class="requerido">Título:</label>
-        <input class="titulocampo" type="text" id="titulo" name="titulo" placeholder="Escribe el título de tu denuncia" value="<?= htmlspecialchars($titulo ?? '') ?>">
+        <input class="titulocampo" type="text" id="titulo" name="titulo" placeholder="Escribe el título de tu noticia" value="<?= htmlspecialchars($titulo ?? '') ?>">
         <small class="contadorDelTitulo" id="contadorTitulo">0/150</small>
       </div>
 
@@ -870,7 +870,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <div class="Camposdelformulario">
         <label for="descripcion" class="requerido">Descripción:</label>
-        <textarea class="descripcioncampo" id="descripcion" name="descripcion" placeholder="Escribe la descripción de tu denuncia"><?= htmlspecialchars($descripcion ?? '') ?></textarea>
+        <textarea class="descripcioncampo" id="descripcion" name="descripcion" placeholder="Escribe la descripción de tu noticia"><?= htmlspecialchars($descripcion ?? '') ?></textarea>
         <small class="contadorDeDescripcion" id="contadorDescripcion">0/3000</small>
       </div>
 

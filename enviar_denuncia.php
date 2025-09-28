@@ -735,7 +735,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       color: #1B314B;
       border: none;
       padding: 12px;
-      border-radius: 12px;
+      border-radius: 25px;
       font-size: 20px;
       font-weight: bold;
       width: 200px;

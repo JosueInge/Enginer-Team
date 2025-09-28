@@ -142,560 +142,1159 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Enviar denuncia anónima - Comunicado Digital</title>
-
-  <!-- Fuentes -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Iconos -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enviar Denuncia - Comunicado Digital</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <style>
-    :root{
-      --azul-oscuro: #1661AC;
-      --header-bg: #061F3E;
-      --gris-oscuro: #403F48;
-      --gris-medio: #74737C;
-      --borde: #B1B1B1;
-      --celeste: #2D8EFF;
-      --verde: #61C9A8;
-      --verde-hover: #4CA88C;
-      --rojo: #E33629;
-      --rojo-borde: #F5C2C7;
-      --fondo-rojo: #F8D7DA;
-      --toast-success: #2BAF7F;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
     }
 
-    *{box-sizing:border-box}
-    body{font-family:"Inter",system-ui,Arial;background:#ffffff;color:var(--gris-oscuro);margin:0;}
-
-/* --------------- ENCABEZADO --------------- */
-    header{
-      background:var(--header-bg);
-      color:#fff;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:16px 28px;
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-2px); }
+      40% { transform: translateX(2px); }
+      60% { transform: translateX(-2px); }
+      80% { transform: translateX(2px); }
+      100% { transform: translateX(0); }
     }
-    .header-left img{height:44px;}
-    .header-right a{
-      color:#fff;
-      font-family:'Poppins';
-      font-size:20px;
-      font-weight:600;
-      text-decoration:none;
+
+    .shake {
+      animation: shake 0.35s ease; /* más corto y suave */
     }
-    .header-right a:hover{text-decoration:underline;color:var(--azul-oscuro);}
 
-/* --------------- CONTENEDOR PRINCIPAL --------------- */
-    .contenedor{max-width:920px;margin:36px auto;padding:0 16px;}
-    .card-form{background:#fff;border-radius:12px;padding:28px 36px;box-shadow:0 6px 18px rgba(6,31,62,0.06);}
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        transform: scale(0);
+        animation: ripple-effect 0.6s linear;
+        background: rgba(255, 255, 255, 0.6);
+    }
 
-/* TITULO */
-    .titulo-principal{font-family:'Poppins';font-size:32px;font-weight:700;color:var(--azul-oscuro);text-align:center;margin-bottom:6px;}
-    .subtitulo{font-family:'Inter';font-size:20px;color:var(--gris-oscuro);text-align:center;margin-bottom:18px;}
+    @keyframes ripple-effect {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
 
+    header {
+      background-color: #0d2740;
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header .logo img {
+      height: 45px;
+    }
+
+    .contenedor-principal {
+      max-width: 750px;
+      margin: 40px auto;
+      padding: 5px;
+      text-align: center;
+    }
+
+    .requerido:after {
+      content: " *";
+      color: red;
+    }
+
+    .error {
+      color: red;
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #ffeeee;
+      border: 1px solid #ffcccc;
+      border-radius: 4px;
+    }
+
+    .mensaje-error {
+      background-color: #F8D7DA;   /* Fondo */
+      border: 1px solid #F5C2C7;   /* Color de borde */
+      color: #842029;              /* Texto */
+      font-family: 'Inter', sans-serif; /* Tipografía */
+      font-size: 16px;             /* Tamaño */
+      text-align: left;            /* Alineación */
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-top: 6px;
+      display: block;
+    }
+
+    /* mensajes toast */
+    .toast-personalizado {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #0d6efd;
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 9999;
+      text-align: center;
+      min-width: 280px;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .toast-personalizado.text-bg-danger {
+      background: #dc3545;
+    }
+
+    .toast-personalizado.text-bg-primary {
+      background: #0d6efd;
+    }
+
+        /* Animaciones */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -60%); }
+      to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+
+    .error-borde {
+      border: 2px solid red !important;
+      outline: none;
+    }
+
+    .fechacampo.error-borde {
+      border: 2px solid red !important;
+      outline: none;
+      border-radius: 12px;
+    }
+    /* Boton de volver a denuncias */
+
+    .volverDenuncias {
+      display: block;            
+      font-family: "Poppins", sans-serif;
+      font-size: 24px;      
+      font-weight: 600;      
+      color: #FFFFFF;         
+      background-color: #061F3E;  
+      padding: 10px 15px;        
+      text-decoration: none;      
+    }
+
+    .volverDenuncias:hover {
+      color: #1661AC;           
+      text-decoration: underline;  
+    }
+
+    .Subtítuloinformativo {
+      color: #403F48;
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+    }
+
+    /* Mensaje de modal, al volver a denuncias */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none; /* oculto por defecto */
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    /* Caja del modal */
+    .modal-contenido {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      width: 400px;
+      text-align: center;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Título */
+    .modal-contenido h2 {
+      font-size: 16px;
+      color: #403F48;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    /* Texto */
+    .modal-contenido p {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: #403F48;
+      margin-bottom: 20px;
+    }
+
+    /* Contenedor de botones */
+    .modal-botones {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Botón cancelar */
+    .btn-cancelar {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      background: #EB7373;
+      color: #061F3E;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 133px;
+      height: 36px;
+
+    }
+
+    /* Botón confirmar */
+    .btn-confirmar {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      background: #61C9A8;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 133px;
+      height: 36px;
+    }
+
+    .tituloPrincipal {
+      font-family: 'Poppins', sans-serif;
+      font-size: 32px;
+      font-weight: bold;
+      color: #1661AC;
+    }
+
+    /* Todos los campos */
+    .Camposdelformulario {
+      text-align: left;
+      margin-bottom: 25px;
+    }
+
+    /* etiqueta de los campos */
+    .Camposdelformulario label {
+      font-family: "Poppins", sans-serif;
+      font-size: 16px;
+      font-weight: 600;  
+      color: #403F48;
+      margin-bottom: 6px;
+      display: block;  
+    }
+
+    /* campo de titulo */
+    .titulocampo {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      border: 1px solid #B1B1B1; 
+      border-radius: 12px;   
+      padding: 12px;     
+      outline: none;
+      width: 100%;     
+    }
+
+    .titulocampo:hover {
+      border-color: #2D8EFF;
+      transform: scale(1.01);    
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+      transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .titulocampo:focus {
+      border-color: #2D8EFF;
+      transform: scale(1.01);      
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+      transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    /* campo de descripcion */
+    .descripcioncampo {
+      font-family: "Inter", sans-serif;
+      font-size: 16px;
+      border: 1px solid #B1B1B1;
+      border-radius: 12px;    
+      padding: 12px;  
+      outline: none;
+      width: 100%;
+      left: 20px;
+    }
+
+    .descripcioncampo:hover {
+      border-color: #2D8EFF;
+      transform: scale(1.01);    
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+      transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .descripcioncampo:focus {
+      border-color: #2D8EFF;
+      transform: scale(1.01);      
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+      transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    /* contador de los dos campos*/
+    .contadorDelTitulo, .contadorDeDescripcion { 
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: #B1B1B1;
+      float: right;
+      margin-top: -30px;
+      position: relative; 
+      z-index: 9999; 
+      margin-right: 15px;
+      display: none;
+    }
+
+    .contador-activo {
+      display: inline !important; /* contador */
+    }
+
+    .contador-error {
+      color: #E33639 !important; /* contador */
+    }
+
+    .input-con-icono {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-con-icono input {
+      padding-right: 40px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: #B1B1B1;
+      border: 1px solid #B1B1B1;
+      border-radius: 12px;
+      padding: 12px;
+      outline: none;
+      transition: border-color 0.3s ease;
+      width: 100%; 
+      box-sizing: border-box; 
+    }
+
+    .icono-calendario {
+      position: absolute;
+      right: 12px;       /* distancia desde el borde derecho */
+      top: 50%;          /* centrar verticalmente */
+      transform: translateY(-50%);
+      pointer-events: none; /* la imagen no bloquea el input */
+    }
+
+    .icono-calendario img {
+      width: 24px;  /* tamaño del icono, puedes ajustar */
+      height: 24px;
+      align-items: center;
+    }
+
+    .input-con-icono input:hover {
+      border-color: #2D8EFF;
+      transform: scale(1.01);    
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+      transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .input-con-icono input:focus {
+      border-color: #2D8EFF;
+      transform: scale(1.01);      
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+      transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    /* Estilo para el calendario */
+    .flatpickr-calendar {
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        border: 2px solid #ADEBFF !important; /* borde celeste del calendario */
+        border-radius: 8px !important;
+    }
+
+    /* se quita el circulo por defecto y se implementa un cuadro */
+    .flatpickr-day {
+        border-radius: 4px !important;  /* cuadrado en lugar de círculo */
+        border: 1px solid transparent;  /* por defecto sin borde */
+        background: transparent !important;
+    }
+
+    /* Estilo para el cuadro selector */
+    .flatpickr-day.today {
+        background: #ADEBFF !important; /* fondo celeste */
+        color: #061F3E !important;      /* número oscuro */
+        font-weight: bold;
+        border: 1px solid #ADEBFF !important; /* borde del mismo color */
+    }
+
+    /* Estilo para el dia de hoy */
+    .flatpickr-day.selected:not(.today) {
+        background: transparent !important; 
+        border: 2px solid #ADEBFF !important; /* borde celeste */
+        color: #061F3E !important;
+    }
+
+    .flatpickr-day:hover {
+        background: #D7F2FF !important; /* celeste claro al pasar mouse */
+        border-radius: 4px !important;
+    }
+
+    .flatpickr-day.selected.today {
+        background: #61C3E6 !important; /* celeste más intenso si hoy está seleccionado */
+        color: #fff !important;
+        border: 2px solid #ADEBFF !important;
+    }
+
+      /*texto Puedes cargar hasta 3 imágenes en formato (.jpeg).*/
+    .text-muted {
+      color: #403F48 !important;
+      display: inline;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+    }
+    
+     /* campo de imagenes */
+    .contenedor-archivo {
+      border: 1px solid #B1B1B1;
+      border-radius: 12px;
+      display: flex;
+      padding: 0;
+      flex-direction: column;
+    }
+
+    /* Input file como parte del mismo bloque */
+    .contenedor-archivo input[type="file"] {
+      border: none !important;      
+      box-shadow: none !important;  
+      padding: 0;
+      display: flex;
+    }
+
+    .btn-subir {
+      position: relative;
+      overflow: hidden;
+      background-color: #ADEBFF; 
+      color: #061F3E;               
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.2s ease;
+      display: inline-block; 
+      margin-left: 9px;       
+      text-align: left;
+      margin-top: 9px;    
+      width: 150px;
+      z-index: 1;
+    }
+
+    .btn-subir.disabled {
+      background-color: #B1B1B1 !important;
+      color: #061F3E !important;
+      cursor: not-allowed;
+      pointer-events: none; /* evita que se pueda volver a abrir */
+    }
+
+    .fila-boton-estado {
+      display: flex;
+      align-items: center;
+      gap: 10px;          
+    }
+
+    /* mensaje "No se ha seleccionado ningun archivo" */
+    #estado-archivo {
+      color: #B1B1B1;
+      font-size: 14px;
+      line-height: normal;
+    }
+
+    .textoInfimag {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #74737C;
+    }
+
+    .btn-subir:hover {
+      background-color: #4CA88C;
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .btn-subir:focus {
+      outline: 2px solid #2D8EFF;
+      transform: scale(1.01);      
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+      transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .contenedor-archivo:hover {
+      border-color: #2D8EFF;
+      transform: scale(1.01);    
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+      transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .contenedor-archivo:focus {
+      border-color: #2D8EFF;
+      transform: scale(1.01);      
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+      transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease; 
+    }
+    
+    /* visualizacion de las imagenes dentro del mismo contenedor */
+    #preview-imagenes {
+      display: flex!important;
+      gap: 15px;
+      flex-wrap: wrap;
+      padding-bottom: 5px;
+      align-items: flex-start;
+      margin-top: 3px;
+    }
+    /* contenedor de las imagenes, nombre y "x" */
+    .imagen-preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 350px;   /* todas las tarjetas del mismo ancho */
+      margin-left: 5px;
+    }
+
+    /* imagenes */
+    .imagen-preview img {
+      border: 1px solid #B1B1B1;
+      border-radius: 8px;
+      padding: 8px;
+      width: 100%;      /* ancho fijo del contenedor */
+      height: 200px;    /* altura uniforme */
+      object-fit: cover; 
+      background: #f9f9f9;
+      display: block;
+    }
+
+    .imagen-preview img:hover {
+      border-color: #2D8EFF; 
+    }
+
+    .imagen-preview img:focus {
+      border-color: #2D8EFF; 
+    }
+
+    .imagen-preview .info { 
+      display: flex; 
+      justify-content: space-between; 
+      width: 100%;
+      margin-top: 5px; 
+    } 
+  
+    .imagen-preview .nombre { font-size: 0.8rem; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      white-space: nowrap; 
+    } 
+  
+    .imagen-preview .eliminar { 
+      background: red; 
+      color: white; 
+      border: none; 
+      border-radius: 50%; 
+      cursor: pointer; 
+      width: 20px; 
+      height: 20px; 
+      line-height: 18px; 
+      text-align: center; 
+      font-weight: bold; 
+    }
+
+    /* Modal para ver imagen ampliada */
+    .modal-imagen-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      display: none; /* oculto por defecto */
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+
+    .modal-imagen-contenido {
+      background: #fff;
+      width: 800px;   /* tamaño fijo */
+      height: 600px;  /* tamaño fijo */
+      border-radius: 12px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .modal-imagen-contenido img {
+      width: 550px;   
+      height: 550px; 
+      object-fit: contain;  
+      border-radius: 8px;
+    }
+
+    .modal-imagen-cerrar {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #E33639;
+      color: #fff;
+      border: none;
+      font-size: 24px;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+    }
+
+    .boton-publicar {
+      position: relative;
+      overflow: hidden;
+      font-family: "Poppins", sans-serif;
+      background-color: #61C9A8;
+      color: #1B314B;
+      border: none;
+      padding: 12px;
+      border-radius: 25px;
+      font-size: 20px;
+      font-weight: bold;
+      width: 200px;
+      height: 50px;
+      margin-top: 15px;
+      transition: background 0.3s;
+    }
+
+    .boton-publicar:hover {
+      background-color: #4CA88C;
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .boton-publicar:focus {
+      outline: 2px solid #2D8EFF;
+      transform: scale(1.01);      
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+      transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+    }
 /* ALERT INFORMATIVO */
-    .alert-informacion{
-      display:flex;gap:12px;align-items:flex-start;
-      background:#ADEBFF;padding:12px 16px;border-radius:12px;margin:12px auto 22px;max-width:820px;
-      color:var(--gris-oscuro);font-family:'Inter';font-size:16px;
+     .alert-informacion{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      background:#ADEBFF;
+      padding:12px 16px;
+      border-radius:12px;
+      margin:12px auto 22px;
+      max-width:820px;
+      color:var(--gris-oscuro);
+      font-family:'Inter';
+      font-size:16px;
     }
-    .alert-informacion i{font-size:20px;color:var(--gris-oscuro);margin-top:2px;}
-
-/* FORM ELEMENTS */
-    form .campo{margin-bottom:20px;position:relative;}
-    form label{display:block;margin-bottom:8px;font-family:'Poppins';font-size:16px;font-weight:600;color:var(--gris-oscuro);}
-    form input[type="text"], form input[type="date"], form textarea, .file-container{
-      width:100%;padding:12px 16px;border:1px solid var(--borde);border-radius:12px;font-family:'Inter';font-size:16px;color:#061F3E;transition:all .18s ease;outline:none;
-    }
-    form input[type="text"]::placeholder, form textarea::placeholder, form input[type="date"]::placeholder{color:var(--borde);font-family:'Inter';}
-    form input[type="text"]:hover, form textarea:hover, form input[type="date"]:hover, .file-container:hover{box-shadow:0 6px 18px rgba(45,142,255,0.06);transform:scale(1.01);border-color:var(--celeste);}
-    form input[type="text"]:focus, form textarea:focus, form input[type="date"]:focus, .file-container:focus-within{border-color:var(--celeste);box-shadow:0 6px 18px rgba(45,142,255,0.12);transform:scale(1.01);}
-
-/* Contador (hidden until active) */
-    .contador{position:absolute;right:16px;bottom:8px;font-family:'Inter';font-size:16px;color:var(--borde);display:none;}
-    .contador.visible{display:block;}
-    .contador.error{color:var(--rojo);}
-
-/* shake animation for error */
-    @keyframes shake{0%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}
-
-/* Descripción textarea */
-    textarea{min-height:140px;resize:vertical;line-height:1.4;}
-
-/* Fecha: icono a la derecha */
-    .campo-fecha{position:relative;}
-    .campo-fecha .fa-calendar-alt{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--borde);pointer-events:none;font-size:18px;}
-
-/* Archivo */
-    .label-file-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;}
-    .label-file-row .nota{font-family:'Inter';font-size:16px;color:var(--gris-oscuro);}
-    .file-container{display:flex;align-items:center;gap:12px;}
-    .btn-file{
-      background:#ADEBFF;border:1px solid #ADEBFF;border-radius:8px;padding:6px 12px;font-family:'Inter';font-size:16px;color:#061F3E;cursor:pointer;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
-    }
-    .btn-file.disabled{background:var(--borde);border-color:var(--borde);cursor:not-allowed;color:#fff;pointer-events:none;}
-    .estado-archivo{font-family:'Inter';font-size:14px;color:var(--gris-medio);}
-
-/* Preview */
-    #preview-imagenes{display:flex;flex-wrap:wrap;gap:15px;margin-top:12px;}
-    .imagen-preview{width:350px;position:relative;}
-    .imagen-preview img{width:100%;height:200px;object-fit:cover;border-radius:12px;border:1px solid var(--borde);cursor:pointer;transition:all .18s ease;}
-    .imagen-preview img:hover{transform:scale(1.03);box-shadow:0 8px 20px rgba(0,0,0,0.12);border-color:var(--celeste);}
-    .imagen-preview .eliminar{
-      position:absolute;right:10px;top:10px;background:var(--rojo);color:#fff;border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;
+    .alert-informacion i{
+      font-size:20px;
+      color:var(--gris-oscuro);
+      margin-top:2px;
     }
 
-/* Botón publicar */
-    .boton-publicar{width:200px;height:50px;background:var(--verde);color:#1B314B;border:none;border-radius:12px;font-family:'Poppins';font-weight:700;font-size:20px;cursor:pointer;min-height:48px;transition:all .18s ease;display:block;margin:18px auto 0;}
-    .boton-publicar:hover{background:var(--verde-hover);box-shadow:0 8px 18px rgba(76,168,140,0.18);transform:translateY(-3px);}
 
-/* Mensaje de error debajo del campo */
-    .mensaje-error{
-      display:block;margin-top:8px;padding:8px 10px;background:var(--fondo-rojo);border:1px solid var(--rojo-borde);border-radius:6px;color:#842029;font-family:'Inter';font-size:16px;
-    }
-
-/* Modales genéricos (usamos simple overlay con display) */
-    .modal-overlay{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:9999;}
-    .modal-contenido{background:#fff;border-radius:12px;max-width:560px;width:92%;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,0.25);text-align:center;}
-    .modal-contenido h2{font-family:'Poppins';font-size:16px;color:var(--gris-oscuro);font-weight:700;margin-bottom:10px;}
-    .modal-contenido p{font-family:'Inter';font-size:16px;color:var(--gris-oscuro);margin-bottom:20px;}
-    .modal-botones{display:flex;gap:16px;justify-content:space-between;}
-    .modal-btn-cancel{background:#EB7373;border:none;color:#061F3E;padding:10px;border-radius:8px;font-family:'Inter';font-size:16px;cursor:pointer;flex:1;}
-    .modal-btn-confirm{background:var(--verde);border:none;color:#061F3E;padding:10px;border-radius:8px;font-family:'Inter';font-size:16px;cursor:pointer;flex:1;}
-
-/* Modal imagen */
-    .modal-imagen{display:none;position:fixed;z-index:10000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;padding:20px;}
-    .contenedor-modal{background:#fff;border-radius:12px;max-width:820px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,0.3);overflow:hidden;}
-    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:var(--header-bg);color:#fff;}
-    .modal-imagen-content{width:800px;height:600px;max-width:100%;max-height:80vh;object-fit:contain;border-radius:8px;margin:8px auto;display:block;}
-    .modal-header .cerrar{background:none;border:none;color:#ff5252;font-size:22px;cursor:pointer;padding:4px 8px;border-radius:6px;}
-
-/* Responsive */
-    @media(max-width:900px){
-      .imagen-preview{width:48%}
-      .titulo-principal{font-size:28px}
-      .card-form{padding:22px}
-    }
-    @media(max-width:600px){
-      header{flex-direction:row;gap:8px;padding:12px}
-      .imagen-preview{width:100%}
-      .contenedor{margin:18px auto}
-    }
   </style>
 </head>
 <body>
-
-  <!-- HEADER -->
   <header>
-    <div class="header-left">
-      <img src="imagenes/logo.png" alt="Logo Comunicado Digital"> <!-- añade tu logo blanco en esta ruta -->
+    <div class="logo">
+      <img src="imagenes/logo.png" alt="logo">
     </div>
-    <div class="header-right">
-      <a href="denuncia_anonima.php" id="linkVolver">Volver a Denuncias</a>
-    </div>
+    <h3><a class="volverDenuncias" href="denuncia.php">Volver a Denuncias</a></h3>
   </header>
 
-  <main class="contenedor">
-    <div class="card-form">
-      <h1 class="titulo-principal">Enviar denuncia anónima</h1>
-      <p class="subtitulo">Tu denuncia será revisada por los administradores</p>
-
-      <div class="alert-informacion" role="status">
+  <div class="contenedor-principal">
+    <h1 class="tituloPrincipal" >Enviar denuncia anonima</h1>
+    <p class="Subtítuloinformativo">Tu denuncia será revisada por los administradores</p>
+    
+    <div class="alert-informacion" role="status">
         <i class="fas fa-shield-alt"></i>
         <div>Tu denuncia es 100 % anónima. No pediremos datos personales ni podremos rastrear tu identidad.</div>
       </div>
 
-      <form id="formDenuncia" method="POST" enctype="multipart/form-data" novalidate>
-        <input type="hidden" name="action" value="submit_denuncia">
+    <form action="enviar_denuncia.php" method="POST" enctype="multipart/form-data">
 
-        <!-- TÍTULO -->/
-        <div class="campo">
-          <label for="titulo">Título: <span style="color:var(--rojo)">*</span></label>
-          <input id="titulo" name="titulo" type="text" placeholder="Escribe el título de la denuncia" value="<?= htmlspecialchars($titulo) ?>">
-          <small id="contadorTitulo" class="contador">0/150</small>
-          <div id="error-titulo" class="mensaje-error" style="display: <?= isset($errores['titulo']) ? 'block' : 'none' ?>;">
-            <?= htmlspecialchars($errores['titulo'] ?? '') ?>
-          </div>
+      <div class="Camposdelformulario">
+        <label for="titulo" class="requerido">Título:</label>
+        <input class="titulocampo" type="text" id="titulo" name="titulo" placeholder="Escribe el título de tu denuncia" value="<?= htmlspecialchars($titulo ?? '') ?>">
+        <small class="contadorDelTitulo" id="contadorTitulo">0/150</small>
+      </div>
+
+      <div class="Camposdelformulario">
+        <label for="descripcion" class="requerido">Descripción:</label>
+        <textarea class="descripcioncampo" id="descripcion" name="descripcion" placeholder="Escribe la descripción de tu denuncia"><?= htmlspecialchars($descripcion ?? '') ?></textarea>
+        <small class="contadorDeDescripcion" id="contadorDescripcion">0/3000</small>
+      </div>
+
+      <div class="Camposdelformulario">
+        <label for="fecha_evento" class="requerido">Fecha del evento denunciado:</label>
+        <div class="input-con-icono">
+          <input type="text" id="fecha_evento" name="fecha_evento" placeholder="Selecciona la fecha" class="fechacampo" value="<?= htmlspecialchars($fecha_evento ?? '') ?>">
+          <span class="icono-calendario">
+            <img src="imagenes/calendario.png" alt="Calendario">
+          </span>
+        </div>
         </div>
 
-        <!-- DESCRIPCION -->
-        <div class="campo">
-          <label for="descripcion">Descripción: <span style="color:var(--rojo)">*</span></label>
-          <textarea id="descripcion" name="descripcion" placeholder="Escribe la descripción de la denuncia"><?= htmlspecialchars($descripcion) ?></textarea>
-          <small id="contadorDescripcion" class="contador">0/3000</small>
-          <div id="error-descripcion" class="mensaje-error" style="display: <?= isset($errores['descripcion']) ? 'block' : 'none' ?>;">
-            <?= htmlspecialchars($errores['descripcion'] ?? '') ?>
-          </div>
+      <div class="Camposdelformulario">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label for="imagenes" class="fw-semibold">Carga una imagen (Opcional)</label>
+          <span class="text-muted">Puedes cargar hasta 3 imágenes en formato (.jpeg).</span>
         </div>
 
-        <!-- FECHA -->
-        <div class="campo">
-          <label for="fecha_evento">Fecha del evento denunciado: <span style="color:var(--rojo)">*</span></label>
-          <div class="campo-fecha">
-            <input id="fecha_evento" name="fecha_evento" type="date" value="<?= htmlspecialchars($fecha_evento) ?>" placeholder="Selecciona la fecha">
-            <i class="fas fa-calendar-alt"></i>
-          </div>
-          <div id="error-fecha" class="mensaje-error" style="display: <?= isset($errores['fecha_evento']) ? 'block' : 'none' ?>;">
-            <?= htmlspecialchars($errores['fecha_evento'] ?? '') ?>
-          </div>
-        </div>
+        <div class="contenedor-archivo">
+          <input type="file" id="imagenes" name="imagenes[]" accept="image/jpeg" multiple class="form-control custom-file-input" style="display: none;">
 
-        <!-- ARCHIVO -->
-        <div class="campo">
-          <div class="label-file-row">
-            <label for="imagenes">Carga una imagen (Opcional)</label>
-            <div class="nota">Puedes cargar hasta 3 imágenes en formato (.jpeg).</div>
-          </div>
-
-          <div class="file-container" tabindex="0">
-            <label class="btn-file" id="btnSeleccionar">
-              Elegir archivo
-              <input id="inputImagenes" name="imagenes[]" type="file" accept=".jpg,.jpeg,image/jpeg" multiple style="display:none;">
-            </label>
-            <div class="estado-archivo" id="estado-archivo">No se ha seleccionado ningún archivo</div>
+          <div class="fila-boton-estado">
+            <label for="imagenes" class="btn-subir">Elegir archivos</label>
+            <span class="textoInfimag" id="estado-archivo">No se ha seleccionado ningún archivo</span>
           </div>
 
           <div id="preview-imagenes"></div>
-          <div id="error-imagen" class="mensaje-error" style="display: none;"></div>
         </div>
-
-        <div class="boton-enviar-container">
-          <button type="button" id="btnEnviar" class="boton-publicar">Enviar denuncia</button>
-        </div>
-      </form>
-    </div>
-  </main>
-
-  <!-- MODAL: Confirmar Volver -->
-  <div class="modal-overlay" id="modal-volver">
-    <div class="modal-contenido">
-      <h2>¿Estás seguro de volver a la vista de denuncias?</h2>
-      <p>Esta acción cancelará los cambios hechos en el formulario.</p>
-      <div class="modal-botones">
-        <button class="modal-btn-cancel" id="cancelarVolver">Cancelar</button>
-        <button class="modal-btn-confirm" id="confirmarVolver">Confirmar</button>
       </div>
-    </div>
+
+      <button class="boton-publicar" type="submit">Enviar denuncia</button>
+    </form>
   </div>
-
-  <!-- MODAL: Confirmar Envío -->
-  <div class="modal-overlay" id="modal-confirmar">
-    <div class="modal-contenido">
-      <h2>¿Estás seguro de enviar tu denuncia?</h2>
-      <p style="font-weight:600">Un administrador la revisará y publicará posteriormente.</p>
-      <div class="modal-botones" style="margin-top:18px;">
-        <button class="modal-btn-cancel" id="cancelarEnviar">Cancelar</button>
-        <button class="modal-btn-confirm" id="confirmarEnviar">Confirmar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Formato inválido -->
-  <div class="modal-overlay" id="modal-formato">
-    <div class="modal-contenido">
-      <p style="font-family:Inter;font-size:20px;color:var(--gris-oscuro)">El formato de tu archivo no es admitido. Intenta cargar un archivo (.jpeg).</p>
-      <button class="modal-btn-confirm" id="btnAcuerdo">De acuerdo</button>
-    </div>
-  </div>
-
-  <!-- MODAL IMAGEN AMPLIADA -->
-  <div class="modal-imagen" id="modal-imagen">
-    <div class="contenedor-modal">
-      <div class="modal-header">
-        <h2>Imagen adjunta</h2>
-        <button class="cerrar" id="cerrarModalImagen">&times;</button>
-      </div>
-      <div style="padding:18px;text-align:center;">
-        <img id="imagen-ampliada" class="modal-imagen-content" src="#" alt="Imagen ampliada">
-      </div>
-    </div>
-  </div>
-
-  <!-- TOAST (éxito/aviso) -->
-  <?php if ($mensajeToast): ?>
-    <div style="position:fixed;top:28px;left:50%;transform:translateX(-50%);z-index:11000">
-      <div style="background:<?= $tipoToast === 'success' ? '#61C98F' : '#dc3545' ?>;color:#fff;padding:12px 18px;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.18);font-weight:700;">
-        <?= htmlspecialchars($mensajeToast) ?>
-      </div>
-    </div>
-    <?php if ($tipoToast === 'success'): ?>
-      <script>
-        // redirigir luego de 2.5s a vista de denuncias
-        setTimeout(function(){ window.location.href = 'denuncia_anonima.php'; }, 2500);
-      </script>
+<?php if ($mensajeToast): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    mostrarToast("<?php echo htmlspecialchars($mensajeToast); ?>", "<?php echo $tipoToast; ?>");
+    <?php if ($tipoToast === 'success'):?>
+    setTimeout(() => {
+        window.location.href = 'denuncia.php';
+    }, 4000);
     <?php endif; ?>
-  <?php endif; ?>
+});
+</script>
+<?php endif; ?>
 
-  <script>
-    (function(){
-      // Elements
-      const titulo = document.getElementById('titulo');
-      const descripcion = document.getElementById('descripcion');
-      const fecha = document.getElementById('fecha_evento');
-      const contadorTitulo = document.getElementById('contadorTitulo');
-      const contadorDescripcion = document.getElementById('contadorDescripcion');
-      const inputImagenes = document.getElementById('inputImagenes');
-      const estadoArchivo = document.getElementById('estado-archivo');
-      const preview = document.getElementById('preview-imagenes');
-      const errorImagen = document.getElementById('error-imagen');
+<script>
+let archivosSeleccionados = []; // Global para todo el script
 
-      const btnEnviar = document.getElementById('btnEnviar');
-      const modalConfirmar = document.getElementById('modal-confirmar');
-      const modalVolver = document.getElementById('modal-volver');
-      const modalFormato = document.getElementById('modal-formato');
-      const modalImagen = document.getElementById('modal-imagen');
+document.addEventListener('DOMContentLoaded', function () {
 
-      const linkVolver = document.getElementById('linkVolver');
-      const btnSeleccionar = document.getElementById('btnSeleccionar');
+    // --- Contadores de título y descripción ---
+    const inputTitulo = document.getElementById('titulo');
+    const contadorTitulo = document.getElementById('contadorTitulo');
+    const textareaDescripcion = document.getElementById('descripcion');
+    const contadorDescripcion = document.getElementById('contadorDescripcion');
 
-      // Estado archivos seleccionados (File objects)
-      let archivosSeleccionados = [];
-      const MAX_FILES = 3;
-      const MAX_SIZE = 3 * 1024 * 1024; // 3MB
-
-      // Inicializar contadores
-      function actualizarContador(campo, contadorElem, maximo, min) {
-        const len = campo.value.length;
-        contadorElem.textContent = len + '/' + maximo;
-        if (document.activeElement === campo) contadorElem.classList.add('visible'); else contadorElem.classList.remove('visible');
-
-        if (len < (min || 0) || len > maximo) contadorElem.classList.add('error'); else contadorElem.classList.remove('error');
-      }
-
-      // Mostrar contador solo al enfocarse
-      titulo.addEventListener('focus', () => actualizarContador(titulo, contadorTitulo, 150, 10));
-      titulo.addEventListener('blur', () => actualizarContador(titulo, contadorTitulo, 150, 10));
-      titulo.addEventListener('input', () => actualizarContador(titulo, contadorTitulo, 150, 10));
-
-      descripcion.addEventListener('focus', () => actualizarContador(descripcion, contadorDescripcion, 3000, 300));
-      descripcion.addEventListener('blur', () => actualizarContador(descripcion, contadorDescripcion, 3000, 300));
-      descripcion.addEventListener('input', () => actualizarContador(descripcion, contadorDescripcion, 3000, 300));
-
-      // Inicializar valores si vienen del servidor
-      document.addEventListener('DOMContentLoaded', function(){
-        actualizarContador(titulo, contadorTitulo, 150, 10);
-        actualizarContador(descripcion, contadorDescripcion, 3000, 300);
-      });
-
-      // Validaciones en cliente (devuelven {ok:bool, msg:string})
-      function validarTitulo() {
-        const v = titulo.value.trim();
-        if (!v) return {ok:false, msg:'El titulo es obligatorio'};
-        if (v.length < 10) return {ok:false, msg:'La descripción debe tener al menos 10 caracteres.'};
-        if (v.length > 150) return {ok:false, msg:'Haz alcanzado el límite de 150 caracteres.'};
-        return {ok:true};
-      }
-
-      function validarDescripcion() {
-        const v = descripcion.value.trim();
-        if (!v) return {ok:false, msg:'La descripción es obligatoria.'};
-        if (v.length < 300) return {ok:false, msg:'La descripción debe tener al menos 300 caracteres.'};
-        if (v.length > 3000) return {ok:false, msg:'Haz alcanzado el límite de 3000 caracteres.'};
-        return {ok:true};
-      }
-
-      function validarFecha() {
-        const v = fecha.value.trim();
-        if (!v) return {ok:false, msg:'La fecha es obligatoria'};
-        // opcional: no permitir fecha futura
-        const sel = new Date(v);
-        const hoy = new Date(); hoy.setHours(0,0,0,0);
-        if (sel > hoy) return {ok:false, msg:'La fecha no puede ser futura.'};
-        return {ok:true};
-      }
-
-      // Mostrar mensaje debajo del campo
-      function mostrarError(idElemento, mensaje) {
-        const el = document.getElementById(idElemento);
-        el.textContent = mensaje;
-        el.style.display = 'block';
-        const campo = idElemento === 'error-titulo' ? titulo : idElemento === 'error-descripcion' ? descripcion : document.getElementById('fecha_evento');
-        campo.classList.add('error-borde');
-        campo.style.borderColor = 'var(--rojo)';
-        campo.style.animation = 'shake .4s';
-        setTimeout(()=> campo.style.animation = '', 400);
-      }
-      function ocultarError(idElemento) {
-        const el = document.getElementById(idElemento);
-        el.style.display = 'none';
-        const campo = idElemento === 'error-titulo' ? titulo : idElemento === 'error-descripcion' ? descripcion : document.getElementById('fecha_evento');
-        campo.classList.remove('error-borde');
-        campo.style.borderColor = '';
-      }
-
-      // Manejo de archivos
-      btnSeleccionar.addEventListener('click', (e) => {
-        // si está deshabilitado, no abrir
-        if (btnSeleccionar.classList.contains('disabled')) return;
-        inputImagenes.click();
-      });
-
-      inputImagenes.addEventListener('change', function(e){
-        handleFiles(Array.from(this.files));
-        // limpiar input para poder re-subir mismos archivos si se eliminan
-        inputImagenes.value = '';
-      });
-
-      function handleFiles(files) {
-        // filtramos JPEG
-        const invalid = files.filter(f => !(f.type === 'image/jpeg' || f.type === 'image/jpg' || f.name.toLowerCase().endsWith('.jpg') || f.name.toLowerCase().endsWith('.jpeg')));
-        if (invalid.length > 0) {
-          // abrir modal formato
-          modalFormato.style.display = 'flex';
-          return;
-        }
-
-        // filtramos tamaños mayores a 3MB
-        const tooBig = files.filter(f => f.size > MAX_SIZE);
-        if (tooBig.length > 0) {
-          document.getElementById('error-imagen').textContent = 'Una de las imágenes excede el tamaño permitido (3MB).';
-          document.getElementById('error-imagen').style.display = 'block';
-          return;
+    function actualizarContador(input, contador, min, max) {
+        const longitud = input.value.length;
+        contador.textContent = `${longitud}/${max}`;
+        if (longitud < min || longitud > max) {
+            contador.classList.add('contador-error');
         } else {
-          document.getElementById('error-imagen').style.display = 'none';
+            contador.classList.remove('contador-error');
         }
+    }
 
-        // agregar sin pasar 3
-        archivosSeleccionados = archivosSeleccionados.concat(files);
-        if (archivosSeleccionados.length > MAX_FILES) {
-          archivosSeleccionados = archivosSeleccionados.slice(0,MAX_FILES);
-        }
+    inputTitulo.addEventListener('focus', () => { contadorTitulo.classList.add('contador-activo'); actualizarContador(inputTitulo, contadorTitulo, 10, 150); });
+    inputTitulo.addEventListener('blur', () => { contadorTitulo.classList.remove('contador-activo'); });
+    inputTitulo.addEventListener('input', () => { actualizarContador(inputTitulo, contadorTitulo, 10, 150); });
 
-        actualizarEstadoYPreview();
-      }
+    textareaDescripcion.addEventListener('focus', () => { contadorDescripcion.classList.add('contador-activo'); actualizarContador(textareaDescripcion, contadorDescripcion, 300, 3000); });
+    textareaDescripcion.addEventListener('blur', () => { contadorDescripcion.classList.remove('contador-activo'); });
+    textareaDescripcion.addEventListener('input', () => { actualizarContador(textareaDescripcion, contadorDescripcion, 300, 3000); });
 
-      function actualizarEstadoYPreview(){
-        preview.innerHTML = '';
-        if (archivosSeleccionados.length === 0) {
-          estadoArchivo.textContent = 'No se ha seleccionado ningún archivo';
+    // --- Validaciones de inputs título y descripción en tiempo real ---
+    const inputs = [inputTitulo, textareaDescripcion];
+    inputs.forEach(input => {
+        input.addEventListener('input', function () { 
+            const valor = this.value.trim();
+            let errorMsg = this.parentNode.querySelector('.mensaje-error');
+            if (errorMsg) errorMsg.remove();
+            this.classList.remove('error-borde');
+
+            if (valor === '') {
+                mostrarError(this, 'Complete este campo');
+            } else if (this.id === 'titulo') {
+                if (valor.length < 10) mostrarError(this, 'El título debe tener al menos 10 caracteres.');
+                else if (valor.length > 150) mostrarError(this, 'El título no debe exceder 150 caracteres.');
+            } else if (this.id === 'descripcion') {
+                if (valor.length < 300) mostrarError(this, 'La descripción debe tener al menos 300 caracteres.');
+                else if (valor.length > 3000) mostrarError(this, 'La descripción no debe exceder 3000 caracteres.');
+            }
+        });
+    });
+
+    function mostrarError(input, mensaje) {
+        let contenedor = input.closest('.Camposdelformulario');
+
+        // Evitar mensajes duplicados
+        if (contenedor.querySelector('.mensaje-error')) return;
+
+        let errorMsg = document.createElement('div');
+        errorMsg.className = 'mensaje-error';
+        errorMsg.textContent = mensaje;
+        contenedor.appendChild(errorMsg);
+
+        if (input.id === 'fecha_evento') {
+            if (flatpickrFecha.altInput) flatpickrFecha.altInput.classList.add('error-borde');
+            flatpickrFecha.altInput.classList.add('shake'); // <--- animación
+            setTimeout(() => flatpickrFecha.altInput.classList.remove('shake'), 500);
         } else {
-          estadoArchivo.textContent = archivosSeleccionados.length + ' archivo(s) seleccionado(s)';
+            input.classList.add('error-borde');
+            input.classList.add('shake'); // <--- animación
+            setTimeout(() => input.classList.remove('shake'), 500);
+        }
+        setTimeout(() => {
+          if (errorMsg && errorMsg.parentNode) {
+            errorMsg.remove();
+          }
+          if (input.id === 'fecha_evento') {
+            if (flatpickrFecha.altInput) {
+                flatpickrFecha.altIput.classList.remove('error-borde');
+            }
+          } else {
+            input.classList.remove('error-borde');
+          }
+        }, 5000);
+    }
+
+    // --- Manejo de input de imágenes ---
+    const fileInput = document.getElementById('imagenes');
+    const previewContainer = document.getElementById('preview-imagenes');
+    const estado = document.getElementById('estado-archivo');
+
+    fileInput.addEventListener('change', function() {
+        const nuevosArchivos = Array.from(this.files);
+        const validos = nuevosArchivos.filter(file => {
+            const name = file.name.toLowerCase();
+            return file.type === 'image/jpeg' && (name.endsWith('.jpg') || name.endsWith('.jpeg'));
+        });
+        if (validos.length < nuevosArchivos.length) {
+            const modalFormato = document.getElementById('modalFormato');
+            modalFormato.style.display = 'flex';
+            modalFormato.classList.add('shake'); // <--- animación
+            setTimeout(() => modalFormato.classList.remove('shake'), 500);
+
+            const btnCerrarModalFormato = document.getElementById('btnCerrarModalFormato');
+            btnCerrarModalFormato.onclick = () => {
+                modalFormato.style.display = 'none';
+            };
         }
 
-        archivosSeleccionados.forEach((file, idx) => {
-          const reader = new FileReader();
-          reader.onload = function(ev) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'imagen-preview';
+        archivosSeleccionados = archivosSeleccionados.concat(validos);
 
-            const img = document.createElement('img');
-            img.src = ev.target.result;
-            img.alt = file.name;
-            img.addEventListener('click', () => mostrarImagenAmpliada(ev.target.result));
-            wrapper.appendChild(img);
+        if (archivosSeleccionados.length > 3) {
+            mostrarToast('Solo puedes seleccionar hasta 3 imágenes.', 'danger');
+            archivosSeleccionados = archivosSeleccionados.slice(0,3);
+        }
 
-            const btn = document.createElement('button');
-            btn.className = 'eliminar';
-            btn.type = 'button';
-            btn.innerHTML = '&times;';
-            btn.title = 'Eliminar';
-            btn.addEventListener('click', function(e){
-              e.stopPropagation();
-              archivosSeleccionados.splice(idx,1);
-              actualizarEstadoYPreview();
-            });
-            wrapper.appendChild(btn);
+        actualizarPreview();
+        fileInput.value = ''; // limpiar input para volver a seleccionar
+    });
 
-            preview.appendChild(wrapper);
-          };
-          reader.readAsDataURL(file);
+    function actualizarPreview() {
+        previewContainer.innerHTML = '';
+        archivosSeleccionados.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'imagen-preview';
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = file.name;
+                wrapper.appendChild(img);
+
+                const info = document.createElement('div');
+                info.className = 'info';
+                const nombreSpan = document.createElement('span');
+                nombreSpan.className = 'nombre';
+                nombreSpan.textContent = file.name;
+                info.appendChild(nombreSpan);
+
+                const btnX = document.createElement('button');
+                btnX.type = 'button';
+                btnX.className = 'eliminar';
+                btnX.textContent = '×';
+                btnX.addEventListener('click', function() {
+                    archivosSeleccionados.splice(index,1);
+                    actualizarPreview();
+                });
+                info.appendChild(btnX);
+
+                wrapper.appendChild(info);
+                previewContainer.appendChild(wrapper);
+            }
+            reader.readAsDataURL(file);
         });
 
-        // cambiar apariencia de botón si límite alcanzado
-        if (archivosSeleccionados.length >= MAX_FILES) btnSeleccionar.classList.add('disabled'); else btnSeleccionar.classList.remove('disabled');
-      }
+        estado.textContent = archivosSeleccionados.length > 0
+            ? `${archivosSeleccionados.length} archivo(s) seleccionado(s)`
+            : 'No se ha seleccionado ningun archivo';
 
-      // Mostrar imagen ampliada
-      function mostrarImagenAmpliada(src) {
-        document.getElementById('imagen-ampliada').src = src;
-        modalImagen.style.display = 'flex';
-      }
-      document.getElementById('cerrarModalImagen').addEventListener('click', ()=> modalImagen.style.display = 'none');
-      modalImagen.addEventListener('click', (e)=> { if (e.target === modalImagen) modalImagen.style.display = 'none'; });
+        const dt = new DataTransfer();
+        archivosSeleccionados.forEach(f => dt.items.add(f));
+        fileInput.files = dt.files;
 
-      // Modal formato
-      document.getElementById('btnAcuerdo').addEventListener('click', () => { modalFormato.style.display = 'none'; });
-
-      // Volver a denuncias (modal)
-      linkVolver.addEventListener('click', function(e){
-        e.preventDefault();
-        modalVolver.style.display = 'flex';
-      });
-      document.getElementById('cancelarVolver').addEventListener('click', ()=> modalVolver.style.display = 'none');
-      document.getElementById('confirmarVolver').addEventListener('click', ()=> { window.location.href = linkVolver.getAttribute('href'); });
-
-      // Enviar denuncia (abrir modal de confirmación)
-      btnEnviar.addEventListener('click', function(){
-        // Validar cliente
-        // limpiar errores previos
-        ocultarError('error-titulo'); ocultarError('error-descripcion'); document.getElementById('error-fecha').style.display='none';
-
-        const vT = validarTitulo();
-        const vD = validarDescripcion();
-        const vF = validarFecha();
-        let hayError = false;
-
-        if (!vT.ok) { mostrarError('error-titulo', vT.msg); hayError = true; }
-        if (!vD.ok) { mostrarError('error-descripcion', vD.msg); hayError = true; }
-        if (!vF.ok) { document.getElementById('error-fecha').textContent = vF.msg; document.getElementById('error-fecha').style.display='block'; document.getElementById('fecha_evento').style.borderColor='var(--rojo)'; hayError = true; }
-
-        if (hayError) {
-          // desplazar vista al primer error
-          const primerError = document.querySelector('.mensaje-error[style*="display: block"]');
-          if (primerError) primerError.scrollIntoView({behavior:'smooth', block:'center'});
-          return;
+        const botonSubir = document.querySelector('.btn-subir');
+        if (archivosSeleccionados.length >= 3) {
+            mostrarToast('Has alcanzado el límite de 3 imágenes.', 'danger');
+            botonSubir.classList.add('disabled');
+        } else {
+            botonSubir.classList.remove('disabled');
         }
+    }
 
-        // Si todo OK, abrir modal confirmar
-        modalConfirmar.style.display = 'flex';
-      });
+    // --- Modal de confirmación de envío ---
+    const form = document.querySelector('form');
+    const modalEnvio = document.getElementById('modalConfirmarEnvio');
+    const btnCancelarEnvio = document.getElementById('btnCancelarEnvio');
+    const btnConfirmarEnvio = document.getElementById('btnConfirmarEnvio');
+    const fecha_evento = document.getElementById('fecha_evento');
 
-      // Cancelar/Confirmar enviar
-      document.getElementById('cancelarEnviar').addEventListener('click', ()=> modalConfirmar.style.display = 'none');
-      document.getElementById('confirmarEnviar').addEventListener('click', function(){
-        // Construir FormData para enviar con archivos seleccionados
-        const form = document.getElementById('formDenuncia');
-        const fd = new FormData(form);
-        // anexar archivos seleccionados
-        archivosSeleccionados.forEach((f, i) => fd.append('imagenes[]', f));
-        // acción submit por fetch (para mostrar toast sin reload) - enviamos al mismo archivo PHP
-        fetch(window.location.href, { method: 'POST', body: fd })
-          .then(resp => resp.text())
-          .then(html => {
-            // Reemplazamos el body por la respuesta del servidor para que el usuario vea el toast/redirect que produce PHP
-            document.open();
-            document.write(html);
-            document.close();
-          }).catch(err => {
-            alert('Error al enviar la denuncia. Intenta de nuevo.');
-            console.error(err);
+      form.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          // --- Limpiar errores previos debajo de los inputs ---
+          [inputTitulo, textareaDescripcion, fecha_evento].forEach(input => {
+              let contenedor = input.closest('.Camposdelformulario');
+              let errorMsg = contenedor.querySelector('.mensaje-error');
+              if (errorMsg) errorMsg.remove();
+
+              if (input.id === 'fecha_evento') {
+                  if (flatpickrFecha.altInput) {
+                      flatpickrFecha.altInput.classList.remove('error-borde');
+                  }
+              } else {
+                  input.classList.remove('error-borde');
+              }
           });
+
+          const tituloVal = inputTitulo.value.trim();
+          const descripcionVal = textareaDescripcion.value.trim();
+          const fechaVal = fecha_evento.value.trim();
+
+          // --- Validaciones campo por campo ---
+          if (tituloVal === '') {
+              mostrarError(inputTitulo, 'El titulo es obligatorio.');
+              return;
+          }
+          if (descripcionVal === '') {
+              mostrarError(textareaDescripcion, 'La descripción es obligatoria.');
+              return;
+          }
+          if (fechaVal === '') {
+              mostrarError(fecha_evento, 'La fecha es obligatoria.');
+              return;
+          }
+
+          // --- Validaciones ---
+          if (tituloVal.length < 10) { 
+              mostrarError(inputTitulo, 'El título debe tener al menos 10 caracteres.');
+              return; 
+          }
+          if (tituloVal.length > 150) { 
+              mostrarError(inputTitulo, 'El título no debe exceder 150 caracteres.');
+              return; 
+          }
+          if (descripcionVal.length < 300) { 
+              mostrarError(textareaDescripcion, 'La descripción debe tener al menos 300 caracteres.');
+              return; 
+          }
+          if (descripcionVal.length > 3000) { 
+              mostrarError(textareaDescripcion, 'La descripción no debe exceder 3000 caracteres.');
+              return; 
+          }
+
+          // --- Si todas las validaciones pasan, mostrar modal ---
+          modalEnvio.style.display = 'flex';
       });
 
-      // Cerrar modales con ESC
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          [modalConfirmar, modalVolver, modalFormato, modalImagen].forEach(m => { if (m.style.display === 'flex') m.style.display = 'none'; });
+    btnCancelarEnvio.addEventListener('click', () => { modalEnvio.style.display = 'none'; });
+    btnConfirmarEnvio.addEventListener('click', () => {
+        modalEnvio.style.display = 'none';
+
+        const dt = new DataTransfer();
+        archivosSeleccionados.forEach(f => dt.items.add(f));
+        fileInput.files = dt.files;
+
+        form.submit();
+    });
+
+    // --- Toast centrado ---
+    function mostrarToast(mensaje, tipo = 'danger') {
+        const toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-personalizado text-bg-' + tipo;
+        toastContainer.setAttribute('role','alert');
+        toastContainer.innerHTML = `<div class="contenido-toast">${mensaje}</div>`;
+        document.body.appendChild(toastContainer);
+        setTimeout(()=> toastContainer.remove(),7000);
+    }
+
+    // --- Volver a denuncias con modal ---
+    const linkVolver = document.querySelector(".volverDenuncias");
+    const modalVolver = document.getElementById("modalVolver");
+    const btnCancelar = document.getElementById("btnCancelar");
+    const btnConfirmar = document.getElementById("btnConfirmar");
+
+    linkVolver.addEventListener("click", function(e) {
+        e.preventDefault();
+        modalVolver.style.display = "flex";
+    });
+    btnCancelar.addEventListener("click", () => { modalVolver.style.display = "none"; });
+    btnConfirmar.addEventListener("click", () => { window.location.href = "denuncia.php"; });
+
+    // --- Modal de imagen ampliada ---
+    const modalImagen = document.getElementById('modalImagen');
+    const imagenAmpliada = document.getElementById('imagenAmpliada');
+    const btnCerrar = document.getElementById('cerrarModalImagen');
+    const nombreImagenAmpliada = document.getElementById('nombreImagenAmpliada');
+
+    previewContainer.addEventListener('click', function(e){
+        if(e.target.tagName==='IMG'){
+            imagenAmpliada.src = e.target.src;
+            nombreImagenAmpliada.textContent = e.target.alt; // <-- nombre de la imagen
+            modalImagen.style.display = 'flex';
         }
+    });
+
+    btnCerrar.addEventListener('click', ()=>{
+        modalImagen.style.display='none';
+        imagenAmpliada.src='';
+        nombreImagenAmpliada.textContent = '';
+    });
+
+    modalImagen.addEventListener('click', function(e){
+        if(e.target===modalImagen){
+            modalImagen.style.display='none';
+            imagenAmpliada.src='';
+            nombreImagenAmpliada.textContent = '';
+        }
+    });
+
+    // --- Flatpickr fecha ---
+    const flatpickrFecha = flatpickr("#fecha_evento", {
+        dateFormat: "Y-m-d",
+        allowInput: false,
+        altInput: true,
+        altFormat: "d-m-Y",
+        defaultDate: "<?= htmlspecialchars($fecha_evento ?? '') ?>",
+        onChange: function(selectedDates, dateStr, instance) {
+            // Si ya hay una fecha seleccionada, limpiar error
+            if (dateStr.trim() !== "") {
+                let contenedor = instance.input.closest('.Camposdelformulario');
+                let errorMsg = contenedor.querySelector('.mensaje-error');
+                if (errorMsg) errorMsg.remove();
+                if (instance.altInput) {
+                    instance.altInput.classList.remove('error-borde');
+                }
+            }
+        }
+    });
+
+    // --- Mostrar toast si backend envía mensaje ---
+    <?php if ($mensajeToast): ?>
+        mostrarToast("<?php echo htmlspecialchars($mensajeToast); ?>", "<?php echo $tipoToast; ?>");
+        <?php if ($tipoToast === 'success'): ?>
+        setTimeout(()=>{ window.location.href = 'denuncia.php'; }, 4000);
+        <?php endif; ?>
+    <?php endif; ?>
+});
+
+  document.querySelectorAll('.boton-publicar, .btn-subir').forEach(button => {
+      button.addEventListener('click', function(e) {
+          const circle = document.createElement('span');
+          circle.classList.add('ripple');
+          const rect = this.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height);
+          circle.style.width = circle.style.height = size + 'px';
+          circle.style.left = (e.clientX - rect.left - size/2) + 'px';
+          circle.style.top = (e.clientY - rect.top - size/2) + 'px';
+          this.appendChild(circle);
+
+          // Eliminar el span después de la animación
+          setTimeout(() => circle.remove(), 600);
       });
+  });
 
-      // Click fuera para cerrar modales
-      [modalConfirmar, modalVolver, modalFormato].forEach(m => {
-        m.addEventListener('click', (ev)=> { if (ev.target === m) m.style.display = 'none'; });
-      });
+</script>
 
-      // Establecer comportamiento touch-friendly para file-container: clic abre file dialog
-      document.querySelector('.file-container').addEventListener('click', ()=> { if (!btnSeleccionar.classList.contains('disabled')) inputImagenes.click(); });
+  <div id="modalVolver" class="modal-overlay">
+    <div class="modal-contenido">
+      <h2>¿Estás seguro de volver a la vista de denuncias?</h2>
+      <p>Esta acción cancelará los cambios hechos en el formulario</p>
+      <div class="modal-botones">
+        <button id="btnCancelar" class="btn-cancelar">No, volver</button>
+        <button id="btnConfirmar" class="btn-confirmar">Sí, confirmar</button>
+      </div>
+    </div>
+  </div>
 
-    })();
-  </script>
+  <div id="modalImagen" class="modal-imagen-overlay">
+    <div class="modal-imagen-contenido">
+      <button id="cerrarModalImagen" class="modal-imagen-cerrar">&times;</button>
+      <img src="" alt="Imagen ampliada" id="imagenAmpliada">
+      <!-- Contenedor del nombre de la imagen -->
+      <div id="nombreImagenAmpliada" style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+          background:rgba(0,0,0,0.6); color:#fff; padding:5px 10px; border-radius:5px; font-size:14px;">
+      </div>
+    </div>
+  </div>
+
+  <div id="modalConfirmarEnvio" class="modal-overlay">
+    <div class="modal-contenido">
+      <h2 style="font-family: 'Poppins', sans-serif; font-size:16px; color:#403F48; font-weight:bold; text-align:center;">
+        ¿Estas seguro de enviar tu denuncia?
+      </h2>
+      <p style="font-family: 'Inter', sans-serif; font-size:16px; color:#403F48; text-align:center; margin-top:10px;">
+        Un administrador la revisará y publicará posteriormente.
+      </p>
+      <div class="modal-botones" style="margin-top:20px;">
+        <button id="btnCancelarEnvio" class="btn-cancelar">Cancelar</button>
+        <button id="btnConfirmarEnvio" class="btn-confirmar">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal error formato -->
+  <div id="modalFormato" class="modal-overlay">
+    <div class="modal-contenido">
+      <p style="font-family: 'Inter', sans-serif; font-size:20px; color:#403F48;">
+        El formato de tu archivo no es admitido. Intenta cargar un archivo (.jpeg).
+      </p>
+      <div style="margin-top:20px;">
+        <button id="btnCerrarModalFormato" 
+          style="font-family:'Poppins', sans-serif; font-size:20px; color:#061F3E; background:#61C9A8; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">
+          De acuerdo
+        </button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
