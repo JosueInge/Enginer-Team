@@ -1,217 +1,276 @@
-<?php
-// Determina si el usuario ha iniciado sesión
-$usuarioLogueado = isset($_SESSION['usuario_nombre']);
-$currentPage = basename($_SERVER['PHP_SELF']); // Para resaltar el menú activo
-$noticias_pendientes = 0;
-if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'Administrador') {
-  include_once 'conexion.php';
-  $query = "SELECT COUNT(*) AS total FROM propuestas_noticias WHERE estado = 'pendiente'";
-  $result = $conexion->query($query);
-  if ($result && $row = $result->fetch_assoc()) {
-    $noticias_pendientes = $row['total'];
-  }
+<?php // menu.php ?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comunicado Digital</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Montserrat:wght@500;600;700&family=Inter&family=Open+Sans&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/3d3e3e3d3e.js" crossorigin="anonymous"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Poppins',sans-serif;background:#f9f9f9;}
 
-  $denuncias_pendientes = 0;
-  $query2 = "SELECT COUNT(*) AS total FROM propuestas_denuncias WHERE estado = 'pendiente'";
-  $result2 = $conexion->query($query2);
-  if ($result2 && $row2 = $result2->fetch_assoc()) {
-    $denuncias_pendientes = $row2['total'];
-  }
-  
-  $reportes_noticias = 0;
-  $reportes_denuncias = 0;
+    /* Encabezado */
+    header{
+      background:#061F3E;
+      padding:10px 30px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .logo img{height:50px;}
+    .botones{display:flex;gap:20px;}
+    .btn{
+      width:150px;height:40px;
+      border-radius:10px;
+      font-size:16px;font-weight:bold;
+      text-align:center;line-height:40px;
+      text-decoration:none;
+      color:#fff;transition:.3s;
+      position:relative;overflow:hidden;
+    }
+    .btn-login{background:#4C00DA;}
+    .btn-register{background:#4C00DA;}
+    .btn:hover{background:#3B00AD;}
+    .btn:active::after{
+      content:"";position:absolute;
+      width:300%;height:300%;
+      top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      background:rgba(255,255,255,0.3);
+      border-radius:50%;animation:ripple .6s linear;
+    }
+    @keyframes ripple{to{width:0;height:0;opacity:0;}}
 
-  $query1 = "SELECT COUNT(DISTINCT propuestas_noticias_id) AS total FROM reportes WHERE estado = 'pendiente'";
-  $result1 = $conexion->query($query1);
-  if ($result1 && $row1 = $result1->fetch_assoc()) {
-      $reportes_noticias = $row1['total'];
-  }
+    /* Barra navegación */
+    nav{
+      background:#fff;
+      border-bottom:2px solid #EFEFF0;
+      height:90px;
+      display:flex;align-items:center;
+      padding:0 20px;justify-content:space-between;
+    }
+    .nav-left{display:flex;align-items:center;gap:95px;}
+    .nav-links{display:flex;gap:20px;}
+    .nav-links a{
+      font-family:'Poppins',sans-serif;
+      font-size:20px;font-weight:bold;
+      color:#403F48;text-decoration:none;
+      padding:8px 12px;border-radius:8px;
+      transition:.3s;
+    }
+    .nav-links a:hover{
+      background:linear-gradient(90deg,#61C9A8,#61C9A880);
+      color:#061F3E;
+    }
 
-  $query2 = "SELECT COUNT(DISTINCT propuestas_denuncias_id) AS total FROM reportesdenuncias WHERE estado = 'pendiente'";
-  $result2 = $conexion->query($query2);
-  if ($result2 && $row2 = $result2->fetch_assoc()) {
-      $reportes_denuncias = $row2['total'];
-  }
+    /* Hamburguesa */
+    .menu-toggle{font-size:32px;cursor:pointer;color:#061F3E;}
 
-  $reportes_pendientes = $reportes_noticias + $reportes_denuncias;
+    /* Buscador */
+    .contenedor-buscador {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .icono-lupa-externo {
+      font-size: 20px;
+      color: #403F48;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .icono-lupa-externo:hover {
+      color: #2D8EFF;
+    }
+    /* Buscador */
+    .buscador{
+      display:flex;
+      align-items:center;
+      border:1px solid #438DCB;
+      border-radius:20px;
+      padding:8px 15px;
+      background:none;
+      transition:.2s;
+      min-width: 200px;
+    }
+    .buscador:hover{transform:scale(1.05);box-shadow:0 2px 6px rgba(0,0,0,0.15);}
+    .buscador i{font-size:20px;color:#403F48;margin-right:8px;}
+    .buscador input{
+      border:none;outline:none;font-size:16px;
+      font-family:'Open Sans',sans-serif;
+      color:#8A8991;background:none;
+    }
+    .buscador input::placeholder{color:#8A8991;}
 
-$total_notificaciones = $noticias_pendientes + $denuncias_pendientes + $reportes_pendientes;
-}
-?>
+    #no-results{
+      display:none;text-align:center;
+      margin-top:30px;font-family:'Poppins',sans-serif;
+      font-size:24px;color:#403F48;
+    }
 
-<?php if (!$usuarioLogueado): ?>
-<!-- Menu para usuarios no logueados -->
-<header class="encabezado1">
-  <div class="logo1">
-    <img src="imagenes/logo.png" alt="logo">
+    /* Menú lateral */
+    .menu-lateral{
+      position:fixed;top:0;right:-100%;
+      width:525px;max-width:100%;
+      height:100%;background:#fff;
+      transition:.4s ease;
+      z-index:999;
+      padding:20px;overflow-y:auto;
+      box-shadow:-2px 0 6px rgba(0,0,0,0.2);
+    }
+    .menu-lateral.open{left:0;}
+    .menu-header{display:flex;justify-content:space-between;align-items:center;}
+    .menu-header h2{
+      font-family:'Montserrat',sans-serif;
+      font-size:24px;font-weight:bold;
+      color:#061F3E;margin:0 auto;
+    }
+    .menu-close{font-size:32px;cursor:pointer;color:#061F3E;}
+
+    .menu-section h3{
+      font-family:'Montserrat',sans-serif;
+      font-size:20px;font-weight:bold;
+      color:#061F3E;margin:20px 0 10px;
+    }
+    .social-icons{display:flex;gap:12px;margin-bottom:20px;}
+    .social-icons a{font-size:24px;color:#061F3E;transition:.3s;}
+    .social-icons a:hover{color:#2D8EFF;}
+
+    .separator{border-bottom:2px solid #2F8EFF;margin:15px 0;}
+
+    .menu-links a{
+      display:block;text-align:center;
+      font-family:'Montserrat',sans-serif;
+      font-size:24px;font-weight:600;
+      color:#061F3E;padding:10px 0;
+      text-decoration:none;transition:.3s;
+    }
+    .menu-links a:hover{background:#C7F1FF;}
+
+    .menu-footer{
+      text-align:center;margin-top:20px;
+      font-family:'Inter',sans-serif;
+      font-size:20px;color:#2D8EFF;
+    }
+    
+    /* Responsive */
+    @media(max-width:768px){
+      .nav-links{display:none;} /* se ocultan enlaces en móvil */
+      .contenedor-buscador {
+        margin-left: auto;
+        gap: 5px;
+      }
+      .buscador {
+        min-width: 140px;
+        padding: 6px 12px; 
+      }
+    }
+
+    @media(max-width:480px){
+      .buscador {
+        min-width: 120px;
+      }
+      .buscador input {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Encabezado -->
+  <header>
+    <div class="logo"><img src="logo-blanco.png" alt="Logo"></div>
+    <div class="botones">
+      <a href="login.php" class="btn btn-login">Iniciar Sesión</a>
+      <a href="registro.php" class="btn btn-register">Regístrate</a>
+    </div>
+  </header>
+
+  <!-- Barra de navegación -->
+  <nav>
+    <div class="nav-left">
+      <span class="menu-toggle" onclick="openMenu()">&#9776;</span>
+     <div class="nav-links">
+    <a href="home.php">Inicio</a>
+    <a href="clima1.php">Clima</a>
+    <a href="deporte1.php">Deportes</a>
+    <a href="educacion1.php">Educación</a>
+    <a href="turismo1.php">Turismo</a>
+    <a href="denuncias1.php">Denuncias</a>
+</div>
+
+    </div>
+
+  <!-- Buscador -->
+    <div class="contenedor-buscador">
+      <i class="fas fa-search icono-lupa-externo" onclick="focusBuscador()"></i>
+      <div class="buscador">
+       <input type="text" id="search" placeholder="Buscar" onkeyup="buscar()">
+    </div>
   </div>
-  <div class="redes1">
-    <a target="_blank" href="https://www.instagram.com/"><img src="imagenes/instagram.png" height="35"/></a>
-    <a target="_blank" href="https://www.facebook.com/"><img src="imagenes/facebook.png" height="35" style="margin-left: 12px;"/></a>
-    <a target="_blank" href="https://x.com/?lang=es"><img src="imagenes/X.png" height="35" style="margin-left: 10px;"/></a>
-  </div> 
-  <div class="informacion1">
-    <a href="#" style="margin-left: 15px; color: #ffffff;">Contacto</a>
-    <a href="sobrenosotros.php" style="margin-left: 15px; color: #ffffff;">Sobre Nosotros</a>
-    <a id="linkSesion" href="login.php" style="margin-left: 15px; color: #ffffff;">Iniciar Sesión</a>
-  </div>
-</header>
-
-<nav class="barra1">
-  <a href="home.php" class="nav-link <?= ($currentPage == 'home.php') ? 'active' : '' ?>">Inicio</a>
-  <a href="clima1.php" class="nav-link <?= ($currentPage == 'clima1.php') ? 'active' : '' ?>">Clima</a>
-  <a href="deporte1.php" class="nav-link <?= ($currentPage == 'deporte1.php') ? 'active' : '' ?>">Deportes</a>
-  <a href="educacion1.php" class="nav-link <?= ($currentPage == 'educacion1.php') ? 'active' : '' ?>">Educación</a>
-  <a href="turismo1.php" class="nav-link <?= ($currentPage == 'turismo1.php') ? 'active' : '' ?>">Turismo</a>
-  <a href="denuncia_anonima.php" class="nav-link <?= ($currentPage == 'denuncia_anonima.php') ? 'active' : '' ?>">Denuncias</a>
-  <form id="formBuscador" action="javascript:void(0);">
-  <div class="Buscador">
-    <img src="imagenes/lupa.png" alt="Buscar">
-    <input  id="inputBusqueda"
-            type="text"
-            name="term"
-            autocomplete="off"
-            placeholder="Buscar título..."
-            data-categoria="<?= $categoria_actual ?? 'inicio' ?>">
-  </div>
-</form>
 </nav>
 
-<?php else: ?>
-<!-- Menu para usuarios logueados -->
-<header class="encabezado">
-  <div class="logo">
-    <img src="imagenes/logo.png" alt="logo">
-  </div>
-  <div class="redes">
-    <a target="_blank" href="https://www.instagram.com/"><img src="imagenes/instagram.png" height="35"/></a>
-    <a target="_blank" href="https://www.facebook.com/"><img src="imagenes/facebook.png" height="35" style="margin-left: 12px;"/></a>
-    <a target="_blank" href="https://x.com/?lang=es"><img src="imagenes/X.png" height="35" style="margin-left: 10px;"/></a>
-  </div> 
-  <div class="informacion">
-    <span style="margin-left: 15px; color: #ffffff;">
-      Bienvenido, <?= htmlspecialchars($_SESSION['usuario_nombre']) ?>
-    </span>
-    <a href="#" style="margin-left: 15px; color: #ffffff;">Contacto</a>
-    <a href="sobrenosotros.php" style="margin-left: 15px; color: #ffffff;">Sobre Nosotros</a>
-    <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
-      <div class="icono-noticias">
-        <img src="imagenes/notificacion.png" alt="Revision" class="icono-notificacion">
-        <?php if ($total_notificaciones > 0): ?>
-          <span class="badge-notificaciones"><?= $total_notificaciones ?></span>
-        <?php endif; ?>
-        <div class="menu-desplegable-noticias">
-          <a href="revision_noticias.php">
-            Noticias
-            <?php if ($noticias_pendientes > 0): ?>
-              <span class="badge-mini"><?= $noticias_pendientes ?></span>
-            <?php endif; ?>
-          </a>
-          <a href="revision_denuncias.php">
-            Denuncias
-            <?php if ($denuncias_pendientes > 0): ?>
-              <span class="badge-mini"><?= $denuncias_pendientes ?></span>
-            <?php endif; ?>
-          </a>
-          <a href="revision_reportes.php">
-            Reportes
-            <?php if ($reportes_pendientes > 0): ?>
-              <span class="badge-mini"><?= $reportes_pendientes ?></span>
-            <?php endif; ?>
-          </a>
-        </div>
+  <!-- Menú lateral desplegable -->
+  <div id="menuLateral" class="menu-lateral">
+    <div class="menu-header">
+      <h2>Comunicado digital</h2>
+      <span class="menu-close" onclick="closeMenu()">&times;</span>
+    </div>
+
+    <div class="menu-section">
+      <h3>Síguenos</h3>
+      <div class="social-icons">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-x-twitter"></i></a>
       </div>
+    </div>
 
-      <style>
-        .icono-noticias {
-          position: relative;
-          margin-left: 20px;
-          display: inline-block;
-          cursor: pointer;
-        }
+    <div class="separator"></div>
+    <div class="menu-links">
+      <a href="politica.php">Política</a>
+      <a href="cultura.php">Cultura</a>
+      <a href="entretenimiento.php">Entretenimiento</a>
+      <a href="social.php">Social</a>
+      <a href="salud.php">Salud</a>
+      <a href="medioambiente.php">Medio ambiente</a>
+      <a href="tendencia.php">Tendencia</a>
+    </div>
 
-        .icono-notificacion {
-          height: 25px;
-        }
+    <div class="separator"></div>
+    <div class="menu-links">
+      <a href="publicidad.php">Contratar publicidad</a>
+      <a href="terminos.php">Términos y condiciones</a>
+      <a href="privacidad.php">Políticas de privacidad</a>
+    </div>
 
-        .badge-notificaciones {
-          position: absolute;
-          top: -5px;
-          right: -5px;
-          background-color: red;
-          color: white;
-          font-size: 10px;
-          padding: 2px 6px;
-          border-radius: 50%;
-          font-weight: bold;
-        }
-
-        .menu-desplegable-noticias {
-          display: none;
-          position: absolute;
-          right: 0;
-          background-color: white;
-          min-width: 160px;
-          box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-          z-index: 1001;
-          border-radius: 4px;
-        }
-
-        .menu-desplegable-noticias a {
-          color: #333;
-          padding: 12px 16px;
-          text-decoration: none;
-          display: block;
-          transition: background-color 0.3s;
-        }
-
-        .menu-desplegable-noticias a:hover {
-          background-color: #f1f1f1;
-        }
-
-        .icono-noticias:hover .menu-desplegable-noticias {
-          display: block;
-        }
-        .badge-mini {
-          background-color: red;
-          color: white;
-          font-size: 10px;
-          padding: 2px 6px;
-          border-radius: 50%;
-          font-weight: bold;
-          margin-left: 8px;
-        }
-      </style>
-    <?php endif; ?>
-    <div class="menu-configuracion"> 
-      <img src="imagenes/configurar.png" class="icono-configuracion" alt="Configuracion">
-      <div class="menu-desplegable">        
-          <a href="actualizar_perfil.php">Configurar Perfil</a>
-          <a href="logout.php" id="btnSesion">Cerrar Sesión</a>
-      </div>
+    <div class="menu-footer">
+      © 2025 Comunicado Digital. Todos los derechos reservados
     </div>
   </div>
 
-</header>
+  <div id="no-results">No se encontraron coincidencias</div>
 
-<nav class="barra">
-  <a href="inicio.php" class="nav-link <?= ($currentPage == 'inicio.php') ? 'active' : '' ?>">Inicio</a>
-  <a href="clima.php" class="nav-link <?= ($currentPage == 'clima.php') ? 'active' : '' ?>">Clima</a>
-  <a href="noticias.php" class="nav-link <?= ($currentPage == 'noticias.php') ? 'active' : '' ?>">Deportes</a>
-  <a href="educacion.php" class="nav-link <?= ($currentPage == 'educacion.php') ? 'active' : '' ?>">Educación</a>
-  <a href="turismo.php" class="nav-link <?= ($currentPage == 'turismo.php') ? 'active' : '' ?>">Turismo</a>
-  <a href="denuncia.php" class="nav-link <?= ($currentPage == 'denuncia.php') ? 'active' : '' ?>">Denuncias</a>
-    </a> 
-  <form id="formBuscador" action="javascript:void(0);">
-  <div class="Buscador">
-    <img src="imagenes/lupa.png" alt="Buscar">
-    <input  id="inputBusqueda"
-            type="text"
-            name="term"
-            autocomplete="off"
-            placeholder="Buscar título..."
-            data-categoria="<?= $categoria_actual ?? 'inicio' ?>">
-  </div>
-</form>
-</nav>
-<?php endif; ?>
+  <script>
+    function openMenu(){
+      document.getElementById("menuLateral").classList.add("open");
+    }
+    function closeMenu(){
+      document.getElementById("menuLateral").classList.remove("open");
+    }
+
+    function buscar(){
+      let input=document.getElementById("search").value.toLowerCase();
+      let links=document.querySelectorAll(".nav-links a, .menu-links a");
+      let found=false;
+      links.forEach(l=>{
+        if(l.textContent.toLowerCase().includes(input)){l.style.display="block";found=true;}
+        else{l.style.display="none";}
+      });
+      document.getElementById("no-results").style.display=found?"none":"block";
+    }
+  </script>
+</body>
+</html>

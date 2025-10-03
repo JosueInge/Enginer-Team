@@ -2,35 +2,34 @@
 session_start();
 include 'conexion.php';
 
-if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login.php");
-    exit();
-}
-if ($_SESSION['usuario_rol'] !== 'Administrador') {
-    header("Location: noticias.php");
-    exit();
-}
-
 function guardarLog($mensaje) {
-    $rutaLog = __DIR__ . '/logs/errores.log';
-    $fecha = date('Y-m-d H:i:s');
-    $mensajeCompleto = "[$fecha] $mensaje" . PHP_EOL;
-    file_put_contents($rutaLog, $mensajeCompleto, FILE_APPEND);
+  $rutaLog = __DIR__ . '/logs/errores.log';
+  if (!file_exists(dirname($rutaLog))) {
+    mkdir(dirname($rutaLog), 0755, true);
+  }
+  $fecha = date('Y-m-d H:i:s');
+  $mensajeCompleto = "[$fecha] $mensaje" . PHP_EOL;
+  file_put_contents($rutaLog, $mensajeCompleto, FILE_APPEND);
 }
 
+if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] !== 'Administrador') {
+  header("Location: login.php");
+  exit();
+
+}
 $mensajeToast = null;
 $tipoToast = null;
 
+$autor = $_SESSION['usuario_nombre'] ?? 'Administrador';
+$usuario_id = $_SESSION['usuario_id'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $categoria = trim($_POST['categoria'] ?? '');
+    $categoria = ($_POST['categoria'] ?? '');
     $titulo = trim($_POST['titulo'] ?? '');
     $descripcion = trim($_POST['descripcion'] ?? '');
-    $fecha_evento = trim($_POST['fecha'] ?? '');
-    $usuario_id = $_SESSION['usuario_nombre'];
-    $fecha = date('Y-m-d H:i:s');    
-    $usuario_id = isset($_SESSION['usuario_id']) ? (int)$_SESSION['usuario_id'] : 0;
+    $fecha_evento = $_POST['fecha_evento'] ?? null;
     $bloquear_comentarios = isset($_POST['bloquear_comentarios']) ? 1 : 0;
-
+    
     // se inicia array para nombres de imágenes
     $imagenes_nombres = [null, null, null];
 
@@ -61,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Validaciones de campos
-    if ($categoria === ''||  $titulo === '' || $descripcion === '' || $fecha === '') {
+    if ($categoria === ''||  $titulo === '' || $descripcion === '' || $fecha_evento === '') {
     guardarLog("Error Noticia: campos vacíos al enviar los datos.");
     $mensajeToast = "Debes completar todos los campos requeridos.";
     $tipoToast = "danger";
@@ -90,27 +89,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mensajeToast = "La fecha del evento es inválida.";
         $tipoToast = "danger";
     } else {
-      error_log("DEBUG SQL: Categoria=$categoria, Titulo=$titulo, Descripcion=$descripcion, Imagen0={$imagenes_nombres[0]}, Imagen1={$imagenes_nombres[1]}, Imagen2={$imagenes_nombres[2]}, Fecha=$fecha_evento, Bloquear_comentarios{$bloquear_comentarios}");
-        // Inserción en Base de Datos 
-
+      error_log("DEBUG SQL: 
+      Categoria=$categoria, 
+      Titulo=$titulo, 
+      Descripcion=$descripcion, 
+      Autor=$autor,
+      FechaDelHecho=$fecha_del_hecho,
+      Imagen0={$imagenes_nombres[0]}, 
+      Imagen1={$imagenes_nombres[1]},
+      Imagen2={$imagenes_nombres[2]}, 
+      Bloquear_comentarios=$bloquear_comentarios");
+        
+      // Inserción en Base de Datos 
         $stmt = $conexion->prepare("INSERT INTO noticias
-            (titulo, categoria, descripcion, autor, fecha, fecha_del_hecho, imagen, imagen2, imagen3, bloquear_comentarios)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            (categoria, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha_del_hecho, bloquear_comentarios, fecha)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
 
-        $estado = "pendiente";
-
-        $stmt->bind_param("ssssssisi", 
-        $titulo,
-        $categoria,         
-          $descripcion, 
-          $autor,
-          $fecha,
-          $fecha_del_hecho,
-          $imagenes_nombres[0], 
-          $imagenes_nombres[1], 
-          $imagenes_nombres[2],           
-          $bloquear_comentarios
-      );
+        if ($stmt) {
+            $stmt->bind_param("ssssssiis", 
+          $categoria,
+          $titulo,
+              $descripcion, 
+              $imagenes_nombres[0], 
+              $imagenes_nombres[1], 
+              $imagenes_nombres[2], 
+              $autor,
+              $fecha_del_hecho,
+              $bloquear_comentarios
+            );
+            
         if ($stmt->execute()) {
             $mensajeToast = "Tu noticia fue publicada con exito!";
                 $tipoToast = "success";
@@ -119,7 +126,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $tipoToast = "danger";
                 guardarLog("Error Noticia: En BD al insertar noticia: " . $conexion->error);
             }
-      }
+            $stmt->close();
+        } else {
+          $mensajeToast = "Error al preparar la consulta: " . $conexion->error;
+          $tipoToast = "danger";
+          guardarLog("Error Noticia: Al preparar consulta: " . $conexion->error);
+        }
+    }
 }
 ?>
 
@@ -1200,8 +1213,16 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
         modalVolver.style.display = "flex";
     });
-    btnCancelar.addEventListener("click", () => { modalVolver.style.display = "none"; });
-    btnConfirmar.addEventListener("click", () => { window.location.href = "noticias.php"; });
+    btnCancelar.addEventListener("click", () => { 
+      modalVolver.style.display = "none";
+    });
+    btnConfirmar.addEventListener("click", () => { 
+      <?php if (isset($_SESSION['usuario_id'])): ?>
+        window.location.href = "inicio.php"; 
+      <?php else: ?>
+        window.location.href = "home.php";
+      <?php endif; ?>
+    });
 
     // --- Modal de imagen ampliada ---
     const modalImagen = document.getElementById('modalImagen');
@@ -1255,7 +1276,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <?php if ($mensajeToast): ?>
         mostrarToast("<?php echo htmlspecialchars($mensajeToast); ?>", "<?php echo $tipoToast; ?>");
         <?php if ($tipoToast === 'success'): ?>
-        setTimeout(()=>{ window.location.href = 'noticias.php'; }, 4000);
+        setTimeout(()=>{ window.location.href = 'inicio.php'; }, 4000);
         <?php endif; ?>
     <?php endif; ?>
 });
