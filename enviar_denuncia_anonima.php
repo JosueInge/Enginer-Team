@@ -1167,7 +1167,7 @@ document.addEventListener('DOMContentLoaded', function () {
         modalVolver.style.display = "flex";
     });
     btnCancelar.addEventListener("click", () => { modalVolver.style.display = "none"; });
-    btnConfirmar.addEventListener("click", () => { window.location.href = "denuncia.php"; });
+    btnConfirmar.addEventListener("click", () => { window.location.href = "denuncia_anonima.php"; });
 
     // --- Modal de imagen ampliada ---
     const modalImagen = document.getElementById('modalImagen');
@@ -1221,7 +1221,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <?php if ($mensajeToast): ?>
         mostrarToast("<?php echo htmlspecialchars($mensajeToast); ?>", "<?php echo $tipoToast; ?>");
         <?php if ($tipoToast === 'success'): ?>
-        setTimeout(()=>{ window.location.href = 'denuncia.php'; }, 4000);
+        setTimeout(()=>{ window.location.href = 'denuncia_anonima.php'; }, 4000);
         <?php endif; ?>
     <?php endif; ?>
 });

@@ -30,10 +30,6 @@ $stmt->close();
 $conexion->close();
 ?>
 
-<?php
-echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
-?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>

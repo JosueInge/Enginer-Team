@@ -1,4 +1,5 @@
-<?php // menu.php ?>
+<?php 
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -66,7 +67,11 @@
     }
 
     /* Hamburguesa */
-    .menu-toggle{font-size:32px;cursor:pointer;color:#061F3E;}
+    .menu-toggle {
+      font-size:32px;
+      cursor:pointer;
+      color:#061F3E;
+    }
 
     /* Buscador */
     .contenedor-buscador {
@@ -111,20 +116,83 @@
 
     /* Menú lateral */
     .menu-lateral{
-      position:fixed;top:0;right:-100%;
-      width:525px;max-width:100%;
-      height:100%;background:#fff;
-      transition:.4s ease;
-      z-index:999;
-      padding:20px;overflow-y:auto;
+      position:fixed;
+      top: 0;
+      left: -525px;
+      width: 525px;
+      max-width: 100%;
+      height: 100%;
+      background: #ffffff;
+      transition: left 0.3s ease;
+      z-index: 2000;
+      padding:25px 40px;
+      overflow-y: auto;
       box-shadow:-2px 0 6px rgba(0,0,0,0.2);
+      font-family: 'Montserrat', sans-serif;
     }
-    .menu-lateral.open{left:0;}
-    .menu-header{display:flex;justify-content:space-between;align-items:center;}
-    .menu-header h2{
-      font-family:'Montserrat',sans-serif;
-      font-size:24px;font-weight:bold;
-      color:#061F3E;margin:0 auto;
+
+    .menu-lateral.open {
+      left:0;
+    }
+    .menu-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    /* .session de redes sociales */
+    .menu-section.redes {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 25px;
+    }
+    .menu-section.redes h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #061F3E;
+      margin: 0;
+    }
+    .social-icons {
+      display: flex;
+      gap: 12px;
+    }
+    .social-icons a {
+      font-size: 24px;
+      color: #061F3E;
+      transition: color 0.3s;
+    }
+    .social-icons a:hover {
+      color: #2D8eFF;
+    }
+    
+    /* Divisores */
+    .divider {
+      border: none;
+      height: 2px;
+      background-color: #2F8EFF;
+      margin: 25px 0;
+    }
+
+    /* Categorias */
+    .menu.links.categorias a {
+      display: block;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 600;
+      color: #061F3E;
+      padding: 12px 0;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    
+
+    .menu-header h2 {
+      font-size:24px;
+      font-weight: 700;
+      color: #061F3E;
+      margin:0 auto;
+      text-align: center;
     }
     .menu-close{font-size:32px;cursor:pointer;color:#061F3E;}
 
@@ -140,7 +208,7 @@
     .separator{border-bottom:2px solid #2F8EFF;margin:15px 0;}
 
     .menu-links a{
-      display:block;text-align:center;
+      display:block;text-align:left;
       font-family:'Montserrat',sans-serif;
       font-size:24px;font-weight:600;
       color:#061F3E;padding:10px 0;
@@ -181,7 +249,7 @@
 
   <!-- Encabezado -->
   <header>
-    <div class="logo"><img src="logo-blanco.png" alt="Logo"></div>
+    <div class="logo"><img src="logo.png" alt="Logo"></div>
     <div class="botones">
       <a href="login.php" class="btn btn-login">Iniciar Sesión</a>
       <a href="registro.php" class="btn btn-register">Regístrate</a>
@@ -198,7 +266,7 @@
     <a href="deporte1.php">Deportes</a>
     <a href="educacion1.php">Educación</a>
     <a href="turismo1.php">Turismo</a>
-    <a href="denuncias1.php">Denuncias</a>
+    <a href="denuncia_anonima.php">Denuncias</a>
 </div>
 
     </div>
@@ -219,9 +287,9 @@
       <span class="menu-close" onclick="closeMenu()">&times;</span>
     </div>
 
-    <div class="menu-section">
-      <h3>Síguenos</h3>
-      <div class="social-icons">
+    <div class="menu-section" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
+      <h3 style="margin: 0; font-family:'Montserrat',sans-serif; font-size:20px; font-weight:bold; color:#061F3E;">Síguenos</h3>
+      <div class="social-icons" style="display: flex; gap: 10px; align-items: left;">
         <a href="#"><i class="fab fa-facebook-f"></i></a>
         <a href="#"><i class="fab fa-instagram"></i></a>
         <a href="#"><i class="fab fa-x-twitter"></i></a>
