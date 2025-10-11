@@ -1,0 +1,29 @@
+# === Archivos y carpetas de dependencias ===
+vendor/
+node_modules/
+
+# === Archivos de entorno (credenciales, configuraciones locales) ===
+.env
+
+# === Archivos del sistema o editor ===
+.idea/
+.vscode/
+*.log
+*.cache
+
+# === Archivos temporales o de respaldo ===
+*.bak
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+
+# === Archivos de Composer ===
+composer.lock
+
+# === Archivos generados por frameworks ===
+/storage/
+/bootstrap/cache/
+
+# === Archivos de despliegue ===
+/public/storage
