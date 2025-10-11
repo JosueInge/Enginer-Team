@@ -258,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       outline: none;
       border-radius: 12px;
     }
-    /* Boton de volver a denuncias */
+    /* Boton de volver a noticias */
 
     .volverNoticias {
       display: block;            
@@ -266,7 +266,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       font-size: 24px;      
       font-weight: 600;      
       color: #FFFFFF;         
-      background-color: #061F3E;  
       padding: 10px 15px;        
       text-decoration: none;      
     }
@@ -283,7 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       padding: 15px;
     }
 
-    /* Mensaje de modal, al volver a denuncias */
+    /* Mensaje de modal, al volver a noticias */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;

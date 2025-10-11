@@ -130,6 +130,8 @@
       overflow-y: auto;
       box-shadow:-2px 0 6px rgba(0,0,0,0.2);
       font-family: 'Montserrat', sans-serif;
+      border: 3px solid #2D8EFF;
+      border-radius: 15px;
     }
 
     .menu-lateral.open {

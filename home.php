@@ -4,6 +4,7 @@ include 'conexion.php';
 include 'chatbot.php';
 
 
+
 $noticia_id_destacada = $noticia_destacada['id'] ?? 0;
 
 // Obtener la noticia más reciente
@@ -509,6 +510,31 @@ function obtenerImagenNoticia($noticia) {
 
 .noticia-principal:hover {
     box-shadow: 0 0 15px rgba(0, 123, 225, 0.4);
+}
+
+.btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 24px;
+    height: 45px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    text-decoration: none;
+    color: #fff;
+    background-color: #4C00DA;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3 ease;
+    white-space: nowrap;
+    min-width: auto;
+    width: auto; 
+}
+
+.btn:hover {
+    
 }
     </style>
 </head>

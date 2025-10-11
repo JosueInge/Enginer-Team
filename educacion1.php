@@ -1,6 +1,5 @@
 <?php
 include 'conexion.php';
-include 'menu.php';
 
 $termino_busqueda = '';
 $where = '';
@@ -178,9 +177,37 @@ $conexion->close();
       transform: translateY(-130px);
       transition: transform 0.3s ease;
     }
+
+    .btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 24px;
+    height: 45px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    text-decoration: none;
+    color: #fff;
+    background-color: #4C00DA;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3 ease;
+    white-space: nowrap;
+    min-width: auto;
+    width: auto; 
+}
+
+.btn:hover {
+   
+}
+ 
   </style>
 </head>
 <body>
+
+<?php include 'menu.php'; ?>
     <div class="contenido-principal">
       <?php if (!empty($termino_busqueda)): ?>
         <div class="resultados-busqueda">

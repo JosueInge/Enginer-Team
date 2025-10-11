@@ -288,8 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
       font-family: "Poppins", sans-serif;
       font-size: 24px;      
       font-weight: 600;      
-      color: #FFFFFF;         
-      background-color: #061F3E;  
+      color: #FFFFFF;          
       padding: 10px 15px;        
       text-decoration: none;      
     }

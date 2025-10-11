@@ -245,7 +245,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       font-size: 24px;      
       font-weight: 600;      
       color: #FFFFFF;         
-      background-color: #061F3E;  
       padding: 10px 15px;        
       text-decoration: none;      
     }
