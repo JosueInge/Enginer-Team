@@ -1,0 +1,67 @@
+trigger:
+- main   # Cambia si tu rama principal tiene otro nombre
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  phpVersion: '8.2'
+
+steps:
+# 1️⃣ Descargar el código del repositorio
+- checkout: self
+
+# 2️⃣ Instalar PHP
+- task: UsePHPVersion@0
+  inputs:
+    versionSpec: '$(phpVersion)'
+  displayName: 'Instalar PHP $(phpVersion)'
+
+# 3️⃣ Instalar Composer
+- script: |
+    curl -sS https://getcomposer.org/installer | php
+    sudo mv composer.phar /usr/local/bin/composer
+    composer --version
+  displayName: 'Instalar Composer'
+
+# 4️⃣ Instalar dependencias del proyecto Laravel
+- script: |
+    composer install --no-interaction --prefer-dist --optimize-autoloader
+  displayName: 'Instalar dependencias Laravel'
+
+# 5️⃣ Configurar el entorno de Laravel (.env)
+- script: |
+    cp .env.example .env
+    php artisan key:generate
+  displayName: 'Configurar entorno de Laravel'
+
+# 6️⃣ Compilar assets front-end (si usas npm)
+- script: |
+    if [ -f package.json ]; then
+      npm install
+      npm run build || npm run dev
+    else
+      echo "No package.json found, skipping npm build"
+    fi
+  displayName: 'Compilar assets con NPM'
+
+# 7️⃣ Ejecutar migraciones (opcional)
+# Descomenta si tienes base de datos configurada
+# - script: php artisan migrate --force
+#   displayName: 'Ejecutar migraciones de base de datos'
+
+# 8️⃣ Copiar archivos del proyecto
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: '**/*'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  displayName: 'Copiar archivos del proyecto'
+
+# 9️⃣ Publicar artefactos del build
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'laravel-app'
+    publishLocation: 'Container'
+  displayName: 'Publicar artefactos'
