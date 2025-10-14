@@ -4,7 +4,7 @@ include 'conexion.php';
 
 if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] !== 'Administrador') {
     header("Location: login.php");
-    exit(); 
+    exit();
 }
 
 if (isset($_GET['id'])) {

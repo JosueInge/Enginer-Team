@@ -1,14 +1,8 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+session_start();
 
-// Mover las configuraciones de sesión ANTES de session_start()
-if (session_status() === PHP_SESSION_NONE) {
-    ini_set('session.cookie_lifetime', 3600);
-    ini_set('session.gc_maxlifetime', 3600);
-    session_start();
-}
+ini_set('session.cookie_lifetime', 3600);
+ini_set('session.gc_maxlifetime', 3600);
 
 function getEnvVariable($key, $default = null){
     $envFile = __DIR__ . '/.env';
@@ -38,7 +32,7 @@ define('MICROSOFT_REDIRECT_URI', getEnvVariable('MICROSOFT_REDIRECT_URI'));
 define('MICROSOFT_TENANT', getEnvVariable('MICROSOFT_TENANT', 'common'));
 
 if (MICROSOFT_CLIENT_ID === '') {
-    die("ERROR: Configura MICROSOFT_CLIENT_ID en el archivo .env");
+    die("ERROR: Configura MICROSOFT_CLIENT_ID en el archivo .env o en este archivo");
 }
 
 error_reporting(E_ALL);

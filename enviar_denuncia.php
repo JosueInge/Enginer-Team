@@ -237,6 +237,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       outline: none;
       border-radius: 12px;
     }
+    /* Boton de volver a denuncias */
 
     .volverDenuncias {
       display: block;            
@@ -244,7 +245,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       font-size: 24px;      
       font-weight: 600;      
       color: #FFFFFF;         
-      background-color: #061F3E;  
       padding: 10px 15px;        
       text-decoration: none;      
     }
@@ -734,7 +734,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       color: #1B314B;
       border: none;
       padding: 12px;
-      border-radius: 12px;
+      border-radius: 25px;
       font-size: 20px;
       font-weight: bold;
       width: 200px;
@@ -900,6 +900,18 @@ document.addEventListener('DOMContentLoaded', function () {
             input.classList.add('shake'); // <--- animación
             setTimeout(() => input.classList.remove('shake'), 500);
         }
+        setTimeout(() => {
+          if (errorMsg && errorMsg.parentNode) {
+            errorMsg.remove();
+          }
+          if (input.id === 'fecha_evento') {
+            if (flatpickrFecha.altInput) {
+                flatpickrFecha.altIput.classList.remove('error-borde');
+            }
+          } else {
+            input.classList.remove('error-borde');
+          }
+        }, 5000);
     }
 
     // --- Manejo de input de imágenes ---

@@ -1,7 +1,6 @@
 <?php
-  $categoria_actual = 'clima';
   include 'conexion.php';
-  include 'menu.php';
+  
 
   $termino_busqueda = '';
   $where = '';
@@ -27,7 +26,7 @@ $query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND catego
   $stmt->close();
   $conexion->close();
 ?>
-<script src="buscador.js" defer></script>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -178,11 +177,46 @@ $query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND catego
       transform: translateY(-130px);
       transition: transform 0.3s ease;
     }
+    .btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 24px;
+    height: 45px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    text-decoration: none;
+    color: #fff;
+    background-color: #4C00DA;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3 ease;
+    white-space: nowrap;
+    min-width: auto;
+    width: auto; 
+}
+
+.btn:hover {
+    
+}
+ 
   </style>
 </head>
 <body>
+
+<?php include 'menu.php'; ?>
+
   <div class="contenido-principal">
-    <div id="contenedor-noticias">
+      <?php if (!empty($termino_busqueda)): ?>
+        <div class="resultados-busqueda">
+          <p>Resultados de búsqueda para: <strong><?= htmlspecialchars($termino_busqueda) ?></strong></p>
+          <?php if (empty($noticias)): ?>
+            <p>No se encontraron noticias que coincidan con tu búsqueda.</p>
+          <?php endif; ?>
+        </div>
+      <?php endif; ?>
 
       <?php if (empty($noticias)): ?>
         <div class="sin-noticias">
@@ -212,7 +246,6 @@ $query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND catego
         <?php endforeach; ?>
       <?php endif; ?>
     </div>
-  </div>
 
     <script>
       let lastScroll = 0;
@@ -242,6 +275,10 @@ $query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND catego
 
           lastScroll = currentScroll <= 0 ? 0 : currentScroll;
         });
+
   </script>
+
+  <script src="https://kit.fontawesome.com/3d3e3e3d3e.js" crossorigin="anonymus"></script>
+  
 </body>
 </html>

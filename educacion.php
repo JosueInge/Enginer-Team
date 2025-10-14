@@ -1,7 +1,7 @@
 <?php
   $categoria_actual = 'educacion';
   session_start();
-  include 'menu.php';
+  include 'menu2.php';
   include 'conexion.php';
   if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.php");
@@ -389,5 +389,7 @@ echo "<pre>ROL ACTUAL: " . $_SESSION['usuario_rol'] . "</pre>";
         lastScroll = currentScroll <= 0 ? 0 : currentScroll;
       });
     </script>
+    <?php include 'footer.php' ?>
+
 </body>
 </html>

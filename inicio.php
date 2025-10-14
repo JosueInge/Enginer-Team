@@ -1,7 +1,7 @@
 <?php
   $categoria_actual = 'inicio';
   session_start();
-  include 'menu.php';
+  include 'menu2.php';
   include 'conexion.php';
   
   if (!isset($_SESSION['usuario_id'])) {

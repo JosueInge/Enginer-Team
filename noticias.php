@@ -1,7 +1,7 @@
 <?php
 $categoria_actual = 'deportes';
 session_start();
-include 'menu.php';
+include 'menu2.php';
 include 'conexion.php';
 
 if (!isset($_SESSION['usuario_id'])) {
@@ -36,6 +36,7 @@ $noticias = $resultado->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 $conexion->close();
 ?>
+
 <script src="buscador.js" defer></script>
 <!DOCTYPE html>
 <html lang="es">
@@ -312,11 +313,16 @@ $conexion->close();
     <a href="enviar_noticia.php" class="boton-publicar">Enviar una noticia</a>
   <?php endif; ?>
 
-  <script>
-    document.getElementById('btnSesion')?.addEventListener('click', function(e) {
-      e.preventDefault();
-      window.location.href = "login.php"
-    });
+  
+  <script> 
+
+  // ----- ESTO PROVoCABA EL CIERRE DE SESION INCORRECTO 
+    
+    // document.getElementById('btnSesion')?.addEventListener('click', function(e) {
+      // e.preventDefault();
+      // window.location.href = "login.php"
+    // });
+
   </script>
   
   <link rel="stylesheet" href="asistente_virtual.css">

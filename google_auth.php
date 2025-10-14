@@ -10,8 +10,4 @@ $client->addScope("profile");
 
 // Redirige al usuario al panel de Google
 header("Location: " . $client->createAuthUrl());
-<<<<<<< HEAD
 exit();
-=======
-exit();
->>>>>>> c60199f8949a31910c2ab0f2c6d3ad515029beed

@@ -232,7 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 name="descripcion"
                 required
                 autocomplete="off"
-            ><?php echo htmlspecialchars($noticia['descripcion']); ?></textarea>              
+            ><?php echo htmlspecialchars($noticia['descripcion']); ?></textarea>
         </div>
 
         <button class="boton-publicar" type="submit">Guardar Cambios</button>
