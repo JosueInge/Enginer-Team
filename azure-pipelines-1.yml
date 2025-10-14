@@ -1,0 +1,17 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- script: |
+    sudo apt update
+    sudo apt install -y php php-cli php-mbstring php-xml composer unzip
+    php -v
+    composer install
+  displayName: 'Instalar PHP y dependencias'
+
+- script: |
+    echo "Desplegando aplicación del periódico digital..."
+  displayName: 'Construir proyecto (sin análisis ni pruebas)'
