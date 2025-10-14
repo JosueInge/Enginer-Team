@@ -286,7 +286,7 @@
   <!-- Menú lateral desplegable -->
   <div id="menuLateral" class="menu-lateral">
     <div class="menu-header">
-      <h2>Comunicado digital</h2>
+      <h2>Comunicado Digital</h2>
       <span class="menu-close" onclick="closeMenu()">&times;</span>
     </div>
 

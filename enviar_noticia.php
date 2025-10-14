@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           $bloquear_comentarios
       );
         if ($stmt->execute()) {
-            $mensajeToast = "Tu noticia fue enviada a los administradores!";
+            $mensajeToast = "Tu noticia fue enviada a los administradores, primero será revisada y luego aprobada";
                 $tipoToast = "success";
             } else {
                 $mensajeToast = "Error al enviar la noticia: " . $conexion->error;
