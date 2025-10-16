@@ -1,5 +1,3 @@
-menu2
-
 <?php
 // Determina si el usuario ha iniciado sesión
 $usuarioLogueado = isset($_SESSION['usuario_nombre']);

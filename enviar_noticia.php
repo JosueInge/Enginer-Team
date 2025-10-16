@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           $bloquear_comentarios
       );
         if ($stmt->execute()) {
-            $mensajeToast = "Tu noticia fue enviada a los administradores!";
+            $mensajeToast = "Tu noticia fue enviada a los administradores, primero será revisada y luego aprobada";
                 $tipoToast = "success";
             } else {
                 $mensajeToast = "Error al enviar la noticia: " . $conexion->error;
@@ -258,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       outline: none;
       border-radius: 12px;
     }
-    /* Boton de volver a denuncias */
+    /* Boton de volver a noticias */
 
     .volverNoticias {
       display: block;            
@@ -266,7 +266,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       font-size: 24px;      
       font-weight: 600;      
       color: #FFFFFF;         
-      background-color: #061F3E;  
       padding: 10px 15px;        
       text-decoration: none;      
     }

@@ -186,9 +186,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       color:#1661AC; font-weight:600;
       text-decoration:none;
     }
+
+    /* Boton para volver a home */
+    .btn-volver-home {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: #1661AC;
+      color: white;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 24px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      z-index: 10000;
+    }
+
+    .btn-volver-home:hover {
+      background: #2D8EFF;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .btn-volver-home:active {
+      transform: translateY(0);
+    }
+
+   
   </style>
 </head>
 <body>
+
+  <!-- Boton volver a home -->
+   <a href="home.php" class="btn-volver-home" title="Volver al inicio">
+    <i class="bi bi-arrow-left"></i>
+  </a>
 
   <form method="POST" action="login.php" class="formulario">
     <h2>Inicia Sesión</h2>
@@ -234,6 +272,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="registro-text">
       ¿No tienes una cuenta? <a href="registro.php">Regístrate</a>
     </div>
+
+
   </form>
 
   <script>

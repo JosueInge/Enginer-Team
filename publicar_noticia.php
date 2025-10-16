@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoria = ($_POST['categoria'] ?? '');
     $titulo = trim($_POST['titulo'] ?? '');
     $descripcion = trim($_POST['descripcion'] ?? '');
-    $fecha_evento = $_POST['fecha_evento'] ?? null;
+    $fecha_del_hecho = $_POST['fecha_evento'] ?? null;
     $bloquear_comentarios = isset($_POST['bloquear_comentarios']) ? 1 : 0;
     
     // se inicia array para nombres de imágenes
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($mime === 'image/jpeg' && ($extension === 'jpg' || $extension === 'jpeg') && $info && $info['mime'] === 'image/jpeg') {
                     $nombreUnico = uniqid() . '.jpg';
-                    $ruta_destino = 'imagenes/denuncias/' . $nombreUnico;
+                    $ruta_destino = 'imagenes/noticias/' . $nombreUnico;
 
                     if (!file_exists('imagenes/noticias')) {
                         mkdir('imagenes/noticias', 0755, true);
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Validaciones de campos
-    if ($categoria === ''||  $titulo === '' || $descripcion === '' || $fecha_evento === '') {
+    if ($categoria === ''||  $titulo === '' || $descripcion === '' || $fecha_del_hecho === '') {
     guardarLog("Error Noticia: campos vacíos al enviar los datos.");
     $mensajeToast = "Debes completar todos los campos requeridos.";
     $tipoToast = "danger";
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     guardarLog("Error Noticia: descripción demasiado larga.");
     $mensajeToast = "La descripción no debe exceder 3000 caracteres.";
     $tipoToast = "danger";
-    } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_evento)) {
+    } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_del_hecho)) {
         guardarLog("Error Noticia: fecha inválida.");
         $mensajeToast = "La fecha del evento es inválida.";
         $tipoToast = "danger";
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
 
         if ($stmt) {
-            $stmt->bind_param("ssssssiis", 
+            $stmt->bind_param("sssssssis", 
           $categoria,
           $titulo,
               $descripcion, 
@@ -275,7 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       outline: none;
       border-radius: 12px;
     }
-    /* Boton de volver a denuncias */
+    /* Boton de volver a noticias */
 
     .volverNoticias {
       display: block;            
@@ -283,7 +283,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       font-size: 24px;      
       font-weight: 600;      
       color: #FFFFFF;         
-      background-color: #061F3E;  
       padding: 10px 15px;        
       text-decoration: none;      
     }
@@ -300,7 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       padding: 15px;
     }
 
-    /* Mensaje de modal, al volver a denuncias */
+    /* Mensaje de modal, al volver a noticias */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
