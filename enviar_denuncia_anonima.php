@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         } else {
             $stmt->bind_param("ssssss", $titulo, $descripcion, $img1, $img2, $img3, $fecha_evento);
             if ($stmt->execute()) {
-                $mensajeToast = "¡Tu denuncia fue enviada a los administradores!";
+                $mensajeToast = "Tu denuncia fue enviada a los administradores, primero será revisada y luego aprobada";
                 $tipoToast = "success";
                 // Limpiar campos para el render
                 $titulo = $descripcion = $fecha_evento = '';
@@ -288,8 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
       font-family: "Poppins", sans-serif;
       font-size: 24px;      
       font-weight: 600;      
-      color: #FFFFFF;         
-      background-color: #061F3E;  
+      color: #FFFFFF;          
       padding: 10px 15px;        
       text-decoration: none;      
     }
@@ -887,22 +886,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     </form>
   </div>
 <?php if ($mensajeToast): ?>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    mostrarToast("<?php echo htmlspecialchars($mensajeToast); ?>", "<?php echo $tipoToast; ?>");
-    <?php if ($tipoToast === 'success'):?>
-    setTimeout(() => {
-        window.location.href = 'denuncia.php';
-    }, 4000);
-    <?php endif; ?>
-});
-</script>
+
 <?php endif; ?>
 
 <script>
 let archivosSeleccionados = []; // Global para todo el script
 
 document.addEventListener('DOMContentLoaded', function () {
+  <?php if ($mensajeToast): ?>
+    mostrarToast("<?php echo htmlspecialchars($mensajeToast); ?>", "<?php echo $tipoToast; ?>");
+    <?php if ($tipoToast === 'success'): ?>
+    setTimeout(()=>{ window.location.href = 'denuncia_anonima.php'; }, 4000);
+    <?php endif; ?>
+<?php endif; ?>
 
     // --- Contadores de título y descripción ---
     const inputTitulo = document.getElementById('titulo');

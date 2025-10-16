@@ -1,3 +1,5 @@
+enviar denuncia
+
 <?php 
 session_start();
 include 'conexion.php';
@@ -87,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             VALUES (?, ?, ?, ?, ?, ?, 'pendiente')");
         $stmt->bind_param("ssssss", $titulo, $descripcion, $imagenes_nombres[0], $imagenes_nombres[1], $imagenes_nombres[2], $fecha_evento);
         if ($stmt->execute()) {
-            $mensajeToast = "Tu denuncia fue enviada a los administradores!";
+            $mensajeToast = "Tu denuncia fue enviada a los administradores, primero será revisada y luego aprobada";
                 $tipoToast = "success";
             } else {
                 $mensajeToast = "Error al enviar la denuncia: " . $conexion->error;
@@ -245,7 +247,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       font-size: 24px;      
       font-weight: 600;      
       color: #FFFFFF;         
-      background-color: #061F3E;  
       padding: 10px 15px;        
       text-decoration: none;      
     }
@@ -771,7 +772,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="contenedor-principal">
     <h1 class="tituloPrincipal" >Enviar denuncia</h1>
 
-    <p class="Subtítuloinformativo">Tu denuncia será revisada por los administradores</p>
+    <p class="Subtítuloinformativo">Tu denuncia será validada y publicada por un administrador</p>
 
     <form action="enviar_denuncia.php" method="POST" enctype="multipart/form-data">
 
