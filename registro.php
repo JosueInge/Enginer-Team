@@ -177,10 +177,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
             font-family:'Poppins',sans-serif;
             font-size:20px;
             font-weight:700;
-            color:#333333;
+            color:#1661AC;
             text-align:center;
             margin-bottom:8px;
         }
+
+
         .subtitle{
             font-family:'Inter',sans-serif;
             font-size:14px;
@@ -216,6 +218,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
             justify-content:center;
             pointer-events:none;
         }
+
+.separator {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #403F48;
+            font-size: 20px;
+        }
+
+        .separator::before,
+        .separator::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #B1B1B1;
+        }
+
+        .separator:not(:empty)::before {
+            margin-right: .25em;
+        }
+
+        .separator:not(:empty)::after {
+            margin-left: .25em;
+        }
+
 
         /* right icon (eye) - placed inside input */
         .input-icon-right{
@@ -417,21 +444,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
             <!-- Nombre -->
             <div class="input-group">
                 <span class="input-icon" aria-hidden="true"><i class="fas fa-user" style="color:var(--input-border); width:18px;"></i></span>
-                <input type="text" id="nombre" name="nombre" placeholder="Nombre" value="<?= isset($_POST['nombre']) ? htmlspecialchars($_POST['nombre']) : '' ?>" autocomplete="name" required>
+                <input type="text" id="nombre" name="nombre" placeholder="Nombre" value="<?= isset($_POST['nombre']) ? htmlspecialchars($_POST['nombre']) : '' ?>" autocomplete="name">
             </div>
             <div id="nameError" class="error-message" aria-live="polite"></div>
 
             <!-- Correo electrónico -->
             <div class="input-group">
                 <span class="input-icon" aria-hidden="true"><i class="fas fa-envelope" style="color:var(--input-border); width:18px;"></i></span>
-                <input type="email" id="correo" name="correo" placeholder="Correo electrónico" value="<?= isset($_POST['correo']) ? htmlspecialchars($_POST['correo']) : '' ?>" autocomplete="email" required>
+                <input type="email" id="correo" name="correo" placeholder="Correo electrónico" value="<?= isset($_POST['correo']) ? htmlspecialchars($_POST['correo']) : '' ?>" autocomplete="email">
             </div>
             <div id="emailError" class="error-message" aria-live="polite"></div>
 
             <!-- Contraseña -->
             <div class="input-group">
                 <span class="input-icon" aria-hidden="true"><i class="fas fa-lock" style="color:var(--input-border); width:18px;"></i></span>
-                <input type="password" id="contrasena" name="contraseña" placeholder="Contraseña" class="with-right" autocomplete="new-password" aria-describedby="passwordHelp" required>
+                <input type="password" id="contrasena" name="contraseña" placeholder="Contraseña" class="with-right" autocomplete="new-password" aria-describedby="passwordHelp">
                 <button type="button" class="input-icon-right" id="togglePassword" aria-label="Mostrar contraseña" title="Mostrar contraseña">
                     <i class="fas fa-eye" style="color:var(--input-border);"></i>
                 </button>
@@ -449,7 +476,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
             <!-- Confirmar contraseña -->
             <div class="input-group" style="margin-top:12px;">
                 <span class="input-icon" aria-hidden="true"><i class="fas fa-lock" style="color:var(--input-border); width:18px;"></i></span>
-                <input type="password" id="repetir" name="repetir" placeholder="Confirmar contraseña" class="with-right" autocomplete="new-password" required>
+                <input type="password" id="repetir" name="repetir" placeholder="Confirmar contraseña" class="with-right" autocomplete="new-password">
                 <button type="button" class="input-icon-right" id="toggleConfirm" aria-label="Mostrar confirmación" title="Mostrar confirmación">
                     <i class="fas fa-eye" style="color:var(--input-border);"></i>
                 </button>
@@ -485,6 +512,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
                 <a href="login.php" style="font-family:Inter, sans-serif; font-size:16px; color:var(--blue); font-weight:700; margin-left:6px;">Inicia sesión</a>
             </div>
 
+             <!-- Separador -->
             <div class="separator">O</div>
 
             <!-- Social buttons (Google left, Outlook right) -->
@@ -492,29 +520,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
                 <!-- Google -->
                 <button type="button" class="social-btn" id="btnGoogle" onclick="location.href='google_login.php'">
                     <span class="social-icon" aria-hidden="true">
-                        <!-- Google SVG icon (inline) -->
-                        <svg width="20" height="20" viewBox="0 0 533.5 544.3" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid">
-                            <path fill="#4285f4" d="M533.5 278.4c0-17.4-1.6-34.2-4.7-50.5H272v95.6h147.1c-6.3 33.9-25 62.6-53.1 81.8v67h85.7c50.2-46.2 81.8-114.4 81.8-194z"/>
-                            <path fill="#34a853" d="M272 544.3c72 0 132.5-23.8 176.7-64.6l-85.7-67c-23.9 16-54.4 25.5-91 25.5-69.8 0-128.9-47.1-150-110.3H34.5v69.4C78.9 492.4 169 544.3 272 544.3z"/>
-                            <path fill="#fbbc04" d="M122 325.9c-6.8-20.4-10.7-42.1-10.7-64.4s3.9-44 10.7-64.4V127.6H34.5C12.7 171.9 0 217.9 0 261.5s12.7 89.6 34.5 133.9L122 325.9z"/>
-                            <path fill="#ea4335" d="M272 108.3c39.5 0 75 13.6 103 40.5l77.2-77.2C404.5 25.7 345.9 0 272 0 169 0 78.9 51.9 34.5 127.6l87.5 69.4c21.1-63.2 80.2-110.3 150-110.3z"/>
-                        </svg>
+                        <img src="imagenes/google.png" alt="Google" width="20" height="20">
                     </span>
                     <span style="font-family:Inter, sans-serif; font-size:20px; color:var(--text);">Continuar con Google</span>
                 </button>
 
-               <!-- Outlook -->
-<button type="button" class="social-btn" id="btnOutlook" onclick="location.href='outlook_login.php'">
-    <span class="social-icon" aria-hidden="true">
-        <!-- Outlook official SVG -->
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22 6V18C22 19.1046 21.1046 20 20 20H4C2.89543 20 2 19.1046 2 18V6C2 4.89543 2.89543 4 4 4H20C21.1046 4 22 4.89543 22 6Z" fill="#0078D4"/>
-            <path d="M4 4L12 8V16L4 20V4Z" fill="white"/>
-            <path d="M12 8H20V16H12V8Z" fill="#00BCF2"/>
-        </svg>
-    </span>
-    <span style="font-family:Inter, sans-serif; font-size:20px; color:var(--text);">Continuar con Outlook</span>
-</button>
+                <!-- Outlook -->
+                <button type="button" class="social-btn" id="btnOutlook" onclick="location.href='outlook_login.php'">
+                    <span class="social-icon" aria-hidden="true">
+                        <img src="imagenes/outlook.png" alt="Outlook" width="20" height="20">
+                    </span>
+                    <span style="font-family:Inter, sans-serif; font-size:20px; color:var(--text);">Continuar con Outlook</span>
+                </button>
+            </div>
+
             <!-- PHP error blocks (server-side) -->
             <?php if (isset($error)): ?>
                 <div class="error-message" style="display:block; margin-top:16px;"><?= htmlspecialchars($error) ?></div>
@@ -529,11 +548,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
             <?php endif; ?>
 
             <?php if (isset($_SESSION['registro_exitoso'])): ?>
-                <div class="pw-reqs" style="display:block; border-color:<?= htmlspecialchars('--success') ?>; margin-top:12px;">
+                <div class="pw-reqs" style="display:block; border-color:var(--success); margin-top:12px; background:#e8f5e8; border:1px solid var(--success);">
                     <?= htmlspecialchars($_SESSION['registro_exitoso']); unset($_SESSION['registro_exitoso']); ?>
                 </div>
             <?php endif; ?>
-
         </form>
     </div>
 
@@ -750,6 +768,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
             correo.dispatchEvent(new Event('input'));
             contrasena.dispatchEvent(new Event('input'));
             repetir.dispatchEvent(new Event('input'));
+
+            if (nombre.value.trim() === '') {
+                showError(nameError, 'El nombre es obligatorio');
+                valid = false;
+            }
 
             if(nombre.value.trim() === '' || !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(nombre.value.trim())){
                 valid = false;
