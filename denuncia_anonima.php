@@ -84,26 +84,7 @@ $conexion->close();
     .informacion1 {
       margin-right: 15px;
     }
-    .Buscador {
-      position: relative;
-      width: 200px;
-    }
-    .Buscador input {
-      width: 100%;
-      padding: 8px 8px 8px 35px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    .Buscador img {
-      position: absolute;
-      top: 50%;
-      left: 10px;
-      transform: translateY(-50%);
-      width: 16px;
-      height: 16px;
-      pointer-events: none;
-    }
+  
     .menu-configuracion {
       position: relative;
       display: inline-block;
@@ -389,5 +370,7 @@ $conexion->close();
         lastScroll = currentScroll <= 0 ? 0 : currentScroll;
       });
     </script>
+
+    <?php include 'footer.php'; ?>
 </body>
 </html>

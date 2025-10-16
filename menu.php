@@ -146,9 +146,10 @@
     /* .session de redes sociales */
     .menu-section.redes {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       margin-top: 25px;
+      width: 100%;
+      margin: 15px 0;
     }
     .menu-section.redes h3 {
       font-size: 20px;
@@ -172,9 +173,11 @@
     /* Divisores */
     .divider {
       border: none;
+      margin-top: 1px solid #ddd;
       height: 2px;
       background-color: #2F8EFF;
-      margin: 25px 0;
+      width: 90%;
+      margin: 10px auto;
     }
 
     /* Categorias */
@@ -263,25 +266,31 @@
   <nav>
     <div class="nav-left">
       <span class="menu-toggle" onclick="openMenu()">&#9776;</span>
-     <div class="nav-links">
-    <a href="home.php">Inicio</a>
-    <a href="clima1.php">Clima</a>
-    <a href="deporte1.php">Deportes</a>
-    <a href="educacion1.php">Educación</a>
-    <a href="turismo1.php">Turismo</a>
-    <a href="denuncia_anonima.php">Denuncias</a>
-</div>
 
+      <div class="nav-links">
+        <a href="home.php" class="<?= $currentPage == 'home.php' ? 'activo' : '' ?>">Inicio</a>
+        <a href="clima1.php" class="<?= $currentPage == 'clima1.php' ? 'activo' : '' ?>">Clima</a>
+        <a href="deporte1.php" class="<?= $currentPage == 'deporte1.php' ? 'activo' : '' ?>">Deportes</a>
+        <a href="educacion1.php" class="<?= $currentPage == 'educacion1.php' ? 'activo' : '' ?>">Educación</a>
+        <a href="turismo1.php" class="<?= $currentPage == 'turismo1.php' ? 'activo' : '' ?>">Turismo</a>
+        <a href="denuncia_anonima.php" class="<?= $currentPage == 'denuncia_anonima.php' ? 'activo' : '' ?>">Denuncias</a>
+      </div>
     </div>
 
-  <!-- Buscador -->
-    <div class="contenedor-buscador">
+    <!-- Buscador -->
+    <div class="contenedor-buscador">  
       <i class="fas fa-search icono-lupa-externo" onclick="focusBuscador()"></i>
-      <div class="buscador">
-       <input type="text" id="search" placeholder="Buscar" onkeyup="buscar()">
+        <div class="buscador">
+        <input
+          type="text"
+          id="inputBusqueda"
+          placeholder="Buscar"
+          name="term"
+          autocomplete="off"
+          data-categoria="<?= $categoria_actual ?? 'inicio'?>">
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
 
   <!-- Menú lateral desplegable -->
   <div id="menuLateral" class="menu-lateral">
@@ -292,7 +301,7 @@
 
     <div class="menu-section" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
       <h3 style="margin: 0; font-family:'Montserrat',sans-serif; font-size:20px; font-weight:bold; color:#061F3E;">Síguenos</h3>
-      <div class="social-icons" style="display: flex; gap: 10px; align-items: left;">
+      <div class="social-icons" style="display: flex; gap: 10px; align-items: center;">
         <a href="#"><i class="fab fa-facebook-f"></i></a>
         <a href="#"><i class="fab fa-instagram"></i></a>
         <a href="#"><i class="fab fa-x-twitter"></i></a>
@@ -331,17 +340,8 @@
     function closeMenu(){
       document.getElementById("menuLateral").classList.remove("open");
     }
-
-    function buscar(){
-      let input=document.getElementById("search").value.toLowerCase();
-      let links=document.querySelectorAll(".nav-links a, .menu-links a");
-      let found=false;
-      links.forEach(l=>{
-        if(l.textContent.toLowerCase().includes(input)){l.style.display="block";found=true;}
-        else{l.style.display="none";}
-      });
-      document.getElementById("no-results").style.display=found?"none":"block";
-    }
   </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 </body>
 </html>

@@ -1,4 +1,4 @@
-<?php
+<?php 
 if (session_status() === PHP_SESSION_NONE ){
     session_start();
 }
@@ -6,72 +6,64 @@ if (session_status() === PHP_SESSION_NONE ){
 $usuario_logueado = isset($_SESSION['usuario_id']);
 $nombre_usuario = $_SESSION['usuario_nombre'] ?? 'Invitado';
 $imagen_usuario = $_SESSION['usuario_imagen'] ?? 'imagenes/avatar-default.png';
-$pagina_actual = basename($_SERVER['PHP_SELF']);
-$mostrar_login = !$usuario_logueado && $pagina_actual === 'home.php';
 
-// PROCESAR SOLICITUD AJAX PARA LA IA
+// Inicia historial de conversación si no existe
+if (!isset($_SESSION['chat_historial'])) {
+    $_SESSION['chat_historial'] = [];
+}
+
+// Toma el texto ya como pregnta.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mensaje'])) {
     $mensaje = trim($_POST['mensaje']);
+    $interrogativas = ['como', 'qué', 'que', 'cuando', 'donde', 'por qué', 'porque', 'para qué', 'puedo', 'hay', 'es', 'sirve', 'tengo', 'quiero'];
+    $lower = mb_strtolower($mensaje, 'UTF-8');
+
+    foreach ($interrogativas as $palabra) {
+        if (mb_strpos($lower, $palabra) === 0 && substr($mensaje, -1) !== '?') {
+            $mensaje .= '?';
+            break;
+        }
+    }
     $esAdvertencia = isset($_POST['advertencia']) && $_POST['advertencia'] === "true";
 
-    $apiKey = "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"; // Coloca tu API Key
+    // Advertencias por malas palabras
+    if ($esAdvertencia) {
+        echo json_encode(["respuesta" => "Por favor, utiliza un lenguaje respetuoso."]);
+        exit;
+    }
+
+    //  API Key de OpenAI
+    $apiKey = "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";
     $endpoint = "https://api.openai.com/v1/chat/completions";
 
-    // Mensajes base para la IA
-    $messages = [
-    [
+    // Rol y contexto del asistente
+    $system_message = [
         "role" => "system",
-        "content" => "Eres un asistente virtual del periódico digital “Comunicado Digital”. 
-Tu función es ayudar a los usuarios únicamente con temas relacionados con el sitio: noticias, categorías, denuncias, comentarios, registro, inicio de sesión, perfil, búsquedas, reportes y políticas del periódico. 
-Los usuarios pueden referirse al sitio como: “esta app”, “esta aplicación”, “este periódico”, “este periódico digital”; entiende que son equivalentes.
+        "content" => "Eres el asistente virtual del periódico digital “Comunicado Digital”. Solo ayudas con temas del sitio: noticias, categorías, denuncias, comentarios, registro, inicio de sesión, perfil, búsquedas, reportes e información institucional. Los usuarios pueden llamarlo “app”, “aplicación” o “periódico”, todo significa lo mismo.\nCOMPORTAMIENTO:\n1. Responde de forma cordial, natural y profesional.\n2. Explica paso a paso y con lenguaje sencillo.\n3. Si el tema no es del periódico digital, responde: “Lo siento, solo puedo ayudarte con información del periódico digital.”\n4. Interpreta mensajes con errores y pide aclaración si el texto es confuso.\n5. No inventes funciones ni secciones que no existen.\nFUNCIONALIDADES CLAVE:\n- Noticias: se listan por fecha (recientes primero). Se leen sin sesión, pero para comentar, denunciar o enviar se requiere inicio de sesión. No hay favoritos, destacadas ni filtro por fecha.\n- Categorías: Inicio, Clima, Deportes, Educación, Turismo y Denuncias.\n- Buscador: en la barra de categorías; busca solo por título.\n- Denuncias: botón “Enviar denuncia” (título, descripción, fecha opcional, hasta 3 imágenes JPG). Con sesión: pública; sin sesión: anónima. Revisadas antes de publicar.\n- Registro e inicio de sesión: desde “Iniciar sesión”. Se puede registrar con correo o con Google/Outlook. Verificación por correo obligatoria. Recuperar contraseña mediante enlace enviado al correo.\n- Perfil (configuración): cambiar avatar o contraseña (requiere la actual). No se puede cambiar el correo.\n- Comentarios: en cada noticia; los usuarios pueden editar o eliminar los suyos. Administradores también pueden eliminarlos.\n- Enviar noticia: requiere sesión. Campos: categoría, título, descripción, fecha y hasta 3 imágenes JPG. Puede bloquear comentarios. Noticias revisadas antes de publicar.\n- Reportes: botón de reporte en cada noticia, con comentario adicional. Solo se puede reportar una vez.\n- Información institucional: “Sobre nosotros” y “Contactos” en el encabezado; redes: Facebook, Instagram y Twitter.\n- Problemas comunes: correo no llega (reintentar o usar Google/Outlook), noticia en revisión, correo sin verificar o app que no carga (cerrar y reabrir).\nREGLAS ESPECIALES:\n- El asistente solo se usa cuando hay sesión iniciada.\n- Explica funciones (comentar, reportar, enviar, etc.) directamente sin decir “debes iniciar sesión”, salvo que el usuario lo pregunte.\n- Adapta las respuestas al contexto, sin parecer un menú."
+    ];
 
-Comportamiento:
-1. Responde siempre de forma natural, cordial y profesional, como si conversaras normalmente con el usuario.
-2. Da prioridad a explicar soluciones de manera sencilla, práctica y paso a paso. No uses frases rígidas como si fueran preguntas predefinidas, responde al problema que el usuario plantee.
-3. Si la pregunta está fuera del contexto del periódico, responde: “Lo siento, no encontré respuesta para eso.”.
-
-Contexto del sitio y posibles dudas:
-- Noticias y navegación: las más recientes aparecen primero; en Inicio se ven todas las categorías; se puede leer sin iniciar sesión, pero para comentar, enviar, denunciar o reportar debes iniciar sesión.
-- Categorías: Inicio, Clima, Deportes, Educación, Turismo, Denuncias (última en la barra de categorías, a la derecha).
-- Búsquedas: solo por título; deben hacerse en Inicio o en la categoría correspondiente.
-- Denuncias: siempre son anónimas, con o sin iniciar sesión; solo se permite una imagen; los administradores revisan antes de publicar.
-- Registro e inicio de sesión: formulario accesible desde el encabezado (esquina superior derecha); opción de registrarse manualmente o con Google/Outlook; la contraseña debe tener mínimo 8 caracteres, mayúscula, minúscula y un carácter especial. Requiere verificar correo antes de ingresar.
-- Recuperar contraseña: enlace “Olvidé mi contraseña” en login → formulario de recuperación.
-- Perfil y ajustes: se accede desde el ícono de tuerca en el encabezado; permite cambiar foto, contraseña y cerrar sesión (con confirmación).
-- Comentarios: se agregan dentro de cada noticia; cada usuario puede editar o eliminar los suyos; administradores solo eliminan; se pueden bloquear comentarios al enviar una noticia.
-- Enviar noticias: botón inferior derecho → formulario. Se revisan antes de publicarse.
-- Reportes: icono entre descripción y comentarios; motivos: falso, ofensivo, plagio, datos personales; más de 3 reportes generan prioridad para administradores. Requiere sesión iniciada.
-- Información institucional: “Sobre nosotros” y “Contactos” en el encabezado; redes sociales disponibles: Facebook, Instagram, Twitter.
-- Problemas frecuentes: 
-   - Si no llega el correo de verificación: reintenta registrarte, prueba con Google/Outlook o contacta un administrador. 
-   - Si una noticia no aparece publicada: está en revisión de administradores; de momento no hay notificación automática. 
-   - Si cierras tu correo sin verificar: deberás esperar a que se reactive o usar otro correo.
-
-Recuerda: siempre adapta la respuesta al caso que exponga el usuario, no como si respondieras a una lista de preguntas, sino conversando naturalmente con él."
-    ],
-    [
+    // Agregar nuevos mensajes del usuario al historial
+    $_SESSION['chat_historial'][] = [
         "role" => "user",
         "content" => $mensaje
-    ]
-];
+    ];
 
-
-    // Sistema adicional para advertencias IA.
-    if ($esAdvertencia) {
-        $messages[] = [
-            "role" => "system",
-            "content" => "El usuario ha escrito un mensaje ofensivo o inapropiado. 
-Responde con una advertencia cordial, amistosa y profesional, sin insultar. 
-No contestes la pregunta normal, solo advierte al usuario sobre su lenguaje."
-        ];
+    // Limita el historial a los últimos 3 mensajes para evitar exceso de tokens
+    if (count($_SESSION['chat_historial']) > 3) {
+        $_SESSION['chat_historial'] = array_slice($_SESSION['chat_historial'], -3);
     }
+
+    // Combina el mensaje del sistema con el historial del chat
+    $messages = array_merge([$system_message], $_SESSION['chat_historial']);
 
     $data = [
         "model" => "gpt-4o-mini",
         "messages" => $messages,
-        "temperature" => 0.7
+        "temperature" => 0.6,
+        "max_tokens" => 180
     ];
 
+    // Inicializar cURL (transfiere datos entre un cliente y un servidor)
     $ch = curl_init($endpoint);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -82,12 +74,51 @@ No contestes la pregunta normal, solo advierte al usuario sobre su lenguaje."
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
     $response = curl_exec($ch);
+
+    // Verificar errores de cURL
+    if ($response === false) {
+        curl_close($ch);
+        echo json_encode([
+            "respuesta" => "Error de conexión: no se pudo establecer comunicación, Verifica tu conexión e intenta nuevamente."
+        ]);
+        exit;
+    }
+
     curl_close($ch);
 
     $result = json_decode($response, true);
-    $respuestaIA = $result['choices'][0]['message']['content'] ?? "No me llega bien el internet, pide que lo mejoren, porfa";
 
-    echo json_encode(["respuesta" => $respuestaIA]);
+    // Verificar si JSON es válido
+    if ($result === null) {
+        echo json_encode(["respuesta" => "Error al procesar la respuesta del servidor."]);
+        exit;
+    }
+
+    // Verificar si la API devolvió choices
+    if (isset($result['choices'][0]['message']['content'])) {
+        $respuestaIA = str_replace(["**", "*"], "", $result['choices'][0]['message']['content']);
+
+        // Guarda la respuesta de la IA en el historial
+        $_SESSION['chat_historial'][] = [
+            "role" => "assistant",
+            "content" => $respuestaIA
+        ];
+
+      echo json_encode(["respuesta" => $respuestaIA]);
+  } else {
+      // Si el error es por límite de tokens o similar, muestra mensaje amigable
+      $errorMsg = $result['error']['message'] ?? "";
+
+      if (stripos($errorMsg, "maximum context length") !== false ||
+          stripos($errorMsg, "rate limit") !== false ||
+          stripos($errorMsg, "token") !== false) {
+
+          echo json_encode(["respuesta" => "No entendí tu pregunta, por favor escribe nuevamente tu consulta."]);
+
+      } else {
+          echo json_encode(["respuesta" => "No entendí tu pregunta, por favor escribe nuevamente tu consulta."]);
+      }
+  }  
     exit;
 }
 ?>
@@ -283,6 +314,7 @@ No contestes la pregunta normal, solo advierte al usuario sobre su lenguaje."
     font-weight: bold;
     font-size: 14px;
 }
+
 </style>
 </head>
 <body>
@@ -442,6 +474,28 @@ function desbloquearEntrada() {
     ocultarBloqueo();
 }
 
+    function iniciarCuentaRegresiva(duracionMs) {
+        const bloqueoDiv = document.getElementById("bloqueoAviso");
+        let tiempoRestante = Math.floor(duracionMs / 1000); // en segundos
+        bloqueoDiv.style.display = "block";
+
+        // Mostrar mensaje inicial
+        bloqueoDiv.textContent = `Has sido bloqueado por ${tiempoRestante} segundos.`;
+
+        // Intervalo para actualizar cada segundo
+        const intervalo = setInterval(() => {
+            tiempoRestante--;
+            if (tiempoRestante > 0) {
+                bloqueoDiv.textContent = `Has sido bloqueado por ${tiempoRestante} segundos.`;
+            } else {
+                clearInterval(intervalo);
+                desbloquearEntrada();
+                bloqueoActivo = false;
+                contadorAdvertencias = 0;
+            }
+        }, 1000);
+    }
+
 // Procesar entrada
 async function procesarEntrada() {
     if (bloqueoActivo) {
@@ -481,14 +535,9 @@ async function procesarEntrada() {
 
         // Bloqueo si supera 2 advertencias
         if (contadorAdvertencias >= 3) {
-            mostrarBloqueo("Has sido bloqueado por 30 segundos.");
             bloquearEntrada();
             bloqueoActivo = true;
-            setTimeout(() => {
-                desbloquearEntrada();
-                bloqueoActivo = false;
-                contadorAdvertencias = 0;
-            }, tiempoBloqueo);
+            iniciarCuentaRegresiva(tiempoBloqueo);
             return;
         }
 

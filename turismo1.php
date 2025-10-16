@@ -273,5 +273,7 @@ $query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND catego
         lastScroll = currentScroll <= 0 ? 0 : currentScroll;
       });
   </script>
+
+  <?php include 'footer.php'; ?>
 </body>
 </html>

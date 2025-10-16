@@ -1,18 +1,24 @@
 <?php
   include 'conexion.php';
-  
 
+  $categoria_actual = 'Clima';
+  
   $termino_busqueda = '';
   $where = '';
   $params = [];
 
   if (isset($_GET['busqueda']) && !empty($_GET['busqueda'])) {
     $termino_busqueda = trim($_GET['busqueda']);
-    $where = "WHERE titulo LIKE ? OR descripcion LIKE ? OR autor LIKE ?";
+    $where = "AND (titulo LIKE ? OR descripcion LIKE ? OR autor LIKE ?)";
     $params = array_fill(0, 3, '%' . $termino_busqueda . '%');
   }
 
-$query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND categoria = 'Clima' ORDER BY fecha DESC";
+$query = "SELECT * FROM propuestas_noticias 
+          WHERE estado = 'aprobada' AND categoria = 'Clima' 
+          $where
+          ORDER BY fecha DESC
+          LIMIT 20";
+          
   $stmt = $conexion->prepare($query);
 
   if (!empty($params)) {
@@ -94,28 +100,7 @@ $query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND catego
     .informacion1 {
       margin-right: 15px;
     }
-    .Buscador {
-    position: relative;
-    width: 200px;
-  }
-
-  .Buscador input {
-    width: 100%;
-    padding: 8px 8px 8px 35px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
-
-  .Buscador img {
-    position: absolute;
-    top: 50%;
-    left: 10px;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    pointer-events: none;
-  }
+   
   a {
   text-decoration: none;
   }
@@ -279,6 +264,7 @@ $query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND catego
   </script>
 
   <script src="https://kit.fontawesome.com/3d3e3e3d3e.js" crossorigin="anonymus"></script>
-  
+
+ <?php include 'footer.php'; ?>
 </body>
 </html>

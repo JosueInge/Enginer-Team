@@ -1,11 +1,23 @@
 <?php
 // home.php
+$categoria_actual = 'inicio';
 include 'conexion.php';
 include 'chatbot.php';
+include 'menu.php';
 
 
 
 $noticia_id_destacada = $noticia_destacada['id'] ?? 0;
+
+$termino_busqueda = '';
+$where = '';
+$params = [];
+
+if (isset($_GET['busqueda']) && !empty($_GET['busqueda'])) {
+    $termino_busqueda = trim($_GET['busqueda']);
+    $where = "WHERE titulo LIKE ? OR descripcion LIKE ? OR autor LIKE ?";
+    $params = array_fill(0, 3, '%' . $termino_busqueda . '%');
+}
 
 // Obtener la noticia más reciente
 $sql_destacada = "SELECT * FROM noticias 
@@ -41,7 +53,7 @@ function obtenerImagenNoticia($noticia) {
   return $imagenes;
 }
 ?>
-
+<script src="buscador.js" defer></script>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -513,11 +525,12 @@ function obtenerImagenNoticia($noticia) {
 }
 
 .btn {
-    display: inline-flex;
+    display:flex;
+    gap: 20px;
     justify-content: center;
     align-items: center;
     padding: 0 24px;
-    height: 45px;
+    height: 40px;
     border-radius: 25px;
     font-size: 16px;
     font-weight: 700;
@@ -530,179 +543,179 @@ function obtenerImagenNoticia($noticia) {
     transition: all 0.3 ease;
     white-space: nowrap;
     min-width: auto;
-    width: auto; 
+    width: 150px; 
 }
 
 .btn:hover {
-    
+    background:#3B00AD;
 }
     </style>
 </head>
 <body>
     <!-- Incluir menú -->
-    <?php include 'menu.php'; ?>
+
 
     <!-- CONTENIDO PRINCIPAL -->
     <div class="container-fluid">
-        <!-- NOTICIA DESTACADA -->
-        <?php if ($noticia_destacada): ?>
-        <div class="tarjeta-destacada">
-            <!-- Carrusel de imágenes -->
-            <?php 
-            $imagenes = [];
-            // Verificar y agregar solo las imágenes que existen
-            if (!empty($noticia_destacada['imagen']) && imagenExiste($noticia_destacada['imagen'])) {
-                $imagenes[] = $noticia_destacada['imagen'];
-            }
-            if (!empty($noticia_destacada['imagen2']) && imagenExiste($noticia_destacada['imagen2'])) {
-                $imagenes[] = $noticia_destacada['imagen2'];
-            }
-            if (!empty($noticia_destacada['imagen3']) && imagenExiste($noticia_destacada['imagen3'])) {
-                $imagenes[] = $noticia_destacada['imagen3'];
-            }
-            ?>
-            
-            <div class="carrusel-destacado">
-                <div id="carouselDestacado" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
-                    <?php if (count($imagenes) > 1): ?>
-                    <div class="carousel-indicators">
-                        <?php foreach ($imagenes as $index => $imagen): ?>
-                        <button type="button" data-bs-target="#carouselDestacado" data-bs-slide-to="<?= $index ?>" 
-                                class="<?= $index === 0 ? 'active' : '' ?>" aria-current="<?= $index === 0 ? 'true' : 'false' ?>" 
-                                aria-label="Slide <?= $index + 1 ?>"></button>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <div class="carousel-inner">
-                        <?php if (count($imagenes) > 0): ?>
+        <div id="contenedor-noticias" class="contenedor-noticias">
+            <!-- NOTICIA DESTACADA -->
+            <?php if ($noticia_destacada): ?>
+            <div class="tarjeta-destacada">
+                <!-- Carrusel de imágenes -->
+                <?php 
+                $imagenes = [];
+                // Verificar y agregar solo las imágenes que existen
+                if (!empty($noticia_destacada['imagen']) && imagenExiste($noticia_destacada['imagen'])) {
+                    $imagenes[] = $noticia_destacada['imagen'];
+                }
+                if (!empty($noticia_destacada['imagen2']) && imagenExiste($noticia_destacada['imagen2'])) {
+                    $imagenes[] = $noticia_destacada['imagen2'];
+                }
+                if (!empty($noticia_destacada['imagen3']) && imagenExiste($noticia_destacada['imagen3'])) {
+                    $imagenes[] = $noticia_destacada['imagen3'];
+                }
+                ?>
+                
+                <div class="carrusel-destacado">
+                    <div id="carouselDestacado" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+                        <?php if (count($imagenes) > 1): ?>
+                        <div class="carousel-indicators">
                             <?php foreach ($imagenes as $index => $imagen): ?>
-                            <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                                <a href="detalle_noticia.php?id=<?= $noticia_destacada['id'] ?>">
-                                    <img src="imagenes/noticias/<?= $imagen ?>" 
-                                         class="d-block w-100" 
-                                         alt="<?= htmlspecialchars($noticia_destacada['titulo']) ?>"
-                                         onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\'imagen-placeholder w-100 h-100\'>Imagen no disponible</div>';">
-                                </a>
-                            </div>
+                            <button type="button" data-bs-target="#carouselDestacado" data-bs-slide-to="<?= $index ?>" 
+                                    class="<?= $index === 0 ? 'active' : '' ?>" aria-current="<?= $index === 0 ? 'true' : 'false' ?>" 
+                                    aria-label="Slide <?= $index + 1 ?>"></button>
                             <?php endforeach; ?>
-
-                          
-                        <?php else: ?>
-                            <!-- Si no hay imágenes, mostrar placeholder -->
-                            <div class="carousel-item active">
-                                <div class="imagen-placeholder w-100 h-100">
-                                    <div>
-                                        <i class="fas fa-image" style="font-size: 48px; margin-bottom: 15px;"></i><br>
-                                        No hay imágenes para esta noticia
+                        </div>
+                        <?php endif; ?>
+                        
+                        <div class="carousel-inner">
+                            <?php if (count($imagenes) > 0): ?>
+                                <?php foreach ($imagenes as $index => $imagen): ?>
+                                <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                                    <a href="detalle_noticia.php?id=<?= $noticia_destacada['id'] ?>">
+                                        <img src="imagenes/noticias/<?= $imagen ?>" 
+                                             class="d-block w-100" 
+                                             alt="<?= htmlspecialchars($noticia_destacada['titulo']) ?>"
+                                             onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\'imagen-placeholder w-100 h-100\'>Imagen no disponible</div>';">
+                                    </a>
+                                </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <!-- Si no hay imágenes, mostrar placeholder -->
+                                <div class="carousel-item active">
+                                    <div class="imagen-placeholder w-100 h-100">
+                                        <div>
+                                            <i class="fas fa-image" style="font-size: 48px; margin-bottom: 15px;"></i><br>
+                                            No hay imágenes para esta noticia
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <?php if (count($imagenes) > 1): ?>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselDestacado" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Anterior</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselDestacado" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Siguiente</span>
+                        </button>
                         <?php endif; ?>
                     </div>
-                    
-                    <?php if (count($imagenes) > 1): ?>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselDestacado" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Anterior</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselDestacado" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Siguiente</span>
-                    </button>
-                    <?php endif; ?>
                 </div>
-            </div>
-            
-            <!-- Encabezado con información -->
-            <div class="encabezado-tarjeta">
-                <div class="elementos-encabezado">
-                    <span class="categoria"><?= htmlspecialchars($noticia_destacada['categoria']) ?></span>
-                    <span class="separador">|</span>
-                    <span class="autor"><?= htmlspecialchars($noticia_destacada['autor']) ?></span>
-                    <span class="separador">|</span>
-                    <span class="fecha"><?= date('d/m/Y', strtotime($noticia_destacada['fecha'])) ?></span>
-                    <span class="separador">|</span>
-                    <span class="hora"><?= date('H:i', strtotime($noticia_destacada['fecha'])) ?></span>
+                
+                <!-- Encabezado con información -->
+                <div class="encabezado-tarjeta">
+                    <div class="elementos-encabezado">
+                        <span class="categoria"><?= htmlspecialchars($noticia_destacada['categoria']) ?></span>
+                        <span class="separador">|</span>
+                        <span class="autor"><?= htmlspecialchars($noticia_destacada['autor']) ?></span>
+                        <span class="separador">|</span>
+                        <span class="fecha"><?= date('d/m/Y', strtotime($noticia_destacada['fecha'])) ?></span>
+                        <span class="separador">|</span>
+                        <span class="hora"><?= date('H:i', strtotime($noticia_destacada['fecha'])) ?></span>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Título -->
-            <div class="titulo-destacado">
-                <a href="detalle_noticia.php?id=<?= $noticia_destacada['id'] ?>">
-                    <?= htmlspecialchars($noticia_destacada['titulo']) ?>
-                </a>
-            </div>
-            
-            <!-- Resumen -->
-            <div class="resumen-destacado">
-                <?= nl2br(htmlspecialchars($noticia_destacada['descripcion'])) ?>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <!-- SESION ULTIMAS NOTICIAS -->
-         <section class="seccion-ultimas-noticias" style="bordder: 3px solid #007BFF; border-radius: 10px; padding: 15px; background-color: #fff;">
-    <h2 class="titulo-ultimas-noticias">Últimas noticias</h2>
-
-    <div class="contenedor-ultimas-noticias">
-        <?php while ($noticia = $result_ultimas->fetch_assoc()):
-            $imagenes = obtenerImagenNoticia($noticia);
-        ?>
-        <div class="tarjeta-ultima-noticia">
-            <!-- Carrusel de imágenes -->
-            <div id="carouselUltimas<?= $noticia['id'] ?>" class="carousel slide carrusel-ultimas" data-bs-ride="carousel" data-bs-interval="5000">
-                <div class="carousel-inner">
-                    <?php if (!empty($imagenes)): ?>
-                        <?php foreach ($imagenes as $index => $imagen): ?>
-                        <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                            <a href="detalle_noticia.php?id=<?= $noticia['id'] ?>">
-                                <img src="imagenes/noticias/<?= $imagen ?>" 
-                                     alt="<?= htmlspecialchars($noticia['titulo']) ?>" 
-                                     onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\'imagen-placeholder w-100 h-100\'>Sin imagen</div>';">
-                            </a>
-                        </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <div class="carousel-item active">
-                            <div class="imagen-placeholder w-100 h-100">Sin imagen</div>
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <?php if (count($imagenes) > 1): ?>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselUltimas<?= $noticia['id'] ?>" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Anterior</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselUltimas<?= $noticia['id'] ?>" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Siguiente</span>
-                    </button>
-                <?php endif; ?>
-            </div>
-
-            <!-- Contenido -->
-            <div class="contenido-ultima-noticia">
-                <h3 class="titulo-ultima-noticia">
-                    <a href="detalle_noticia.php?id=<?= $noticia['id'] ?>">
-                        <?= htmlspecialchars($noticia['titulo']) ?>
+                
+                <!-- Título -->
+                <div class="titulo-destacado">
+                    <a href="detalle_noticia.php?id=<?= $noticia_destacada['id'] ?>">
+                        <?= htmlspecialchars($noticia_destacada['titulo']) ?>
                     </a>
-                </h3>
-                <div class="info-ultima-noticia">
-                    <span><?= date('d/m/Y', strtotime($noticia['fecha'])) ?></span>
-                    <span class="separador-info">|</span>
-                    <span><?= !empty($noticia['autor']) ? htmlspecialchars($noticia['autor']) : 'Desconocido' ?></span>
+                </div>
+                
+                <!-- Resumen -->
+                <div class="resumen-destacado">
+                    <?= nl2br(htmlspecialchars($noticia_destacada['descripcion'])) ?>
                 </div>
             </div>
+            <?php endif; ?>
+
+            <!-- SESIÓN ÚLTIMAS NOTICIAS -->
+            <section class="seccion-ultimas-noticias" style="bordder: 3px solid #007BFF; border-radius: 10px; padding: 15px; background-color: #fff;">
+                <h2 class="titulo-ultimas-noticias">Últimas noticias</h2>
+
+                <div class="contenedor-ultimas-noticias">
+                    <?php while ($noticia = $result_ultimas->fetch_assoc()):
+                        $imagenes = obtenerImagenNoticia($noticia);
+                    ?>
+                    <div class="tarjeta-ultima-noticia">
+                        <!-- Carrusel de imágenes -->
+                        <div id="carouselUltimas<?= $noticia['id'] ?>" class="carousel slide carrusel-ultimas" data-bs-ride="carousel" data-bs-interval="5000">
+                            <div class="carousel-inner">
+                                <?php if (!empty($imagenes)): ?>
+                                    <?php foreach ($imagenes as $index => $imagen): ?>
+                                    <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                                        <a href="detalle_noticia.php?id=<?= $noticia['id'] ?>">
+                                            <img src="imagenes/noticias/<?= $imagen ?>" 
+                                                 alt="<?= htmlspecialchars($noticia['titulo']) ?>" 
+                                                 onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\'imagen-placeholder w-100 h-100\'>Sin imagen</div>';">
+                                        </a>
+                                    </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <div class="carousel-item active">
+                                        <div class="imagen-placeholder w-100 h-100">Sin imagen</div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <?php if (count($imagenes) > 1): ?>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carouselUltimas<?= $noticia['id'] ?>" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Anterior</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carouselUltimas<?= $noticia['id'] ?>" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Siguiente</span>
+                                </button>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Contenido -->
+                        <div class="contenido-ultima-noticia">
+                            <h3 class="titulo-ultima-noticia">
+                                <a href="detalle_noticia.php?id=<?= $noticia['id'] ?>">
+                                    <?= htmlspecialchars($noticia['titulo']) ?>
+                                </a>
+                            </h3>
+                            <div class="info-ultima-noticia">
+                                <span><?= date('d/m/Y', strtotime($noticia['fecha'])) ?></span>
+                                <span class="separador-info">|</span>
+                                <span><?= !empty($noticia['autor']) ? htmlspecialchars($noticia['autor']) : 'Desconocido' ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endwhile; ?>
+                </div>
+            </section>
         </div>
-        <?php endwhile; ?>
     </div>
-</section>
 
     <!-- Font Awesome para los iconos -->
     <script src="https://kit.fontawesome.com/3d3e3e3d3e.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <?php include 'footer.php'; ?>
 </body>
