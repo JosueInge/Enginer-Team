@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           $bloquear_comentarios
       );
         if ($stmt->execute()) {
-            $mensajeToast = "Tu noticia fue enviada a los administradores!";
+            $mensajeToast = "Tu noticia fue enviada a los administradores, primero será revisada y luego aprobada";
                 $tipoToast = "success";
             } else {
                 $mensajeToast = "Error al enviar la noticia: " . $conexion->error;
@@ -282,7 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       padding: 15px;
     }
 
-    /* Mensaje de modal, al volver a noticias */
+    /* Mensaje de modal, al volver a denuncias */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;

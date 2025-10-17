@@ -146,9 +146,10 @@
     /* .session de redes sociales */
     .menu-section.redes {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       margin-top: 25px;
+      width: 100%;
+      margin: 15px 0;
     }
     .menu-section.redes h3 {
       font-size: 20px;
@@ -172,9 +173,11 @@
     /* Divisores */
     .divider {
       border: none;
+      margin-top: 1px solid #ddd;
       height: 2px;
       background-color: #2F8EFF;
-      margin: 25px 0;
+      width: 90%;
+      margin: 10px auto;
     }
 
     /* Categorias */
@@ -275,16 +278,16 @@
     </div>
 
     <!-- Buscador -->
-    <div class="contenedor-buscador">
+    <div class="contenedor-buscador">  
       <i class="fas fa-search icono-lupa-externo" onclick="focusBuscador()"></i>
-      <div class="buscador">
+        <div class="buscador">
         <input
           type="text"
           id="inputBusqueda"
           placeholder="Buscar"
           name="term"
           autocomplete="off"
-          data-categoria="<?= $categoria_actual ?? 'inicio' ?>">
+          data-categoria="<?= $categoria_actual ?? 'inicio'?>">
       </div>
     </div>
   </nav>
@@ -292,13 +295,13 @@
   <!-- Menú lateral desplegable -->
   <div id="menuLateral" class="menu-lateral">
     <div class="menu-header">
-      <h2>Comunicado digital</h2>
+      <h2>Comunicado Digital</h2>
       <span class="menu-close" onclick="closeMenu()">&times;</span>
     </div>
 
     <div class="menu-section" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
       <h3 style="margin: 0; font-family:'Montserrat',sans-serif; font-size:20px; font-weight:bold; color:#061F3E;">Síguenos</h3>
-      <div class="social-icons" style="display: flex; gap: 10px; align-items: left;">
+      <div class="social-icons" style="display: flex; gap: 10px; align-items: center;">
         <a href="#"><i class="fab fa-facebook-f"></i></a>
         <a href="#"><i class="fab fa-instagram"></i></a>
         <a href="#"><i class="fab fa-x-twitter"></i></a>
@@ -338,5 +341,7 @@
       document.getElementById("menuLateral").classList.remove("open");
     }
   </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 </body>
 </html>

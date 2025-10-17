@@ -1,5 +1,6 @@
 <?php
 $categoria_actual = 'denuncias';
+include 'menu.php';
 include 'conexion.php';
 
 $termino_busqueda = '';
@@ -260,38 +261,9 @@ $conexion->close();
       transform: translateY(-130px);
       transition: transform 0.3s ease;
     }
-
-    .btn {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0 24px;
-    height: 45px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 700;
-    font-family: 'Poppins', sans-serif;
-    text-decoration: none;
-    color: #fff;
-    background-color: #4C00DA;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3 ease;
-    white-space: nowrap;
-    min-width: auto;
-    width: auto; 
-}
-
-.btn:hover {
-    
-}
- 
   </style>
 </head>
 <body>
-
-<?php include 'menu.php'; ?>
-
   <div class="contenido-principal"> 
     <div id="contenedor-denuncias">
       <?php if (empty($propuestas_denuncias)): ?>
