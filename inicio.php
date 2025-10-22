@@ -571,6 +571,75 @@ function obtenerImagenNoticia($noticia) {
       text-decoration: none; 
     }
 
+    /* Estilos del modal de confirmación */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .modal-box {
+        background-color: #FFFFFF;
+        padding: 25px 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        max-width: 350px;
+        text-align: center;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .modal-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #403F48;
+        margin-bottom: 25px;
+    }
+
+    .modal-buttons {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .btn-cancelar {
+        background-color: #EB7373;
+        color: #061F3E;
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        cursor: pointer;
+        text-align: left; /* Alineado a la izquierda */
+    }
+
+    .btn-confirmar {
+        background-color: #61C9A8;
+        color: #061F3E;
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        cursor: pointer;
+        text-align: right; /* Alineado a la derecha */
+    }
+
+    .btn-cancelar:hover {
+        opacity: 0.9;
+    }
+
+    .btn-confirmar:hover {
+        opacity: 0.9;
+    }
+
     </style>
 </head>
 <body>
@@ -745,42 +814,32 @@ function obtenerImagenNoticia($noticia) {
 
     <!-- Cierre de sesion -->
     <script>
-      
       document.getElementById('btnSesion')?.addEventListener('click', function(e) {
-        e.preventDefault();
+          e.preventDefault();
 
-        const confirmBox = document.createElement('div');
-        confirmBox.style.position = 'fixed';
-        confirmBox.style.top = '0';
-        confirmBox.style.left = '0';
-        confirmBox.style.width = '100%';
-        confirmBox.style.height = '100%';
-        confirmBox.style.background = 'rgba(0,0,0,0.5)';
-        confirmBox.style.display = 'flex';
-        confirmBox.style.alignItems = 'center';
-        confirmBox.style.justifyContent = 'center';
-        confirmBox.style.zIndex = '9999';
+          const confirmBox = document.createElement('div');
+          confirmBox.classList.add('modal-overlay');
 
-        confirmBox.innerHTML = `
-          <div style="background: white; padding: 20px 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 300px;">
-            <h3>¿Cerrar sesión?</h3>
-            <p>¿Estás seguro de cerrar sesión?</p>
-            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
-              <button id="confirmLogout" style="background-color: #d9534f; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cerrar sesión</button>
-              <button id="cancelarLogout" style="background-color: #ccc; color: black; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
-            </div>
-          </div>
-        `;
+          confirmBox.innerHTML = `
+              <div class="modal-box">
+                  <h3 class="modal-title">¿Estás seguro de cerrar sesión?</h3>
+                  <div class="modal-buttons">
+                      <button id="cancelarLogout" class="btn-cancelar">Cancelar</button>
+                      <button id="confirmLogout" class="btn-confirmar">Confirmar</button>
+                  </div>
+              </div>
+          `;
 
-        document.body.appendChild(confirmBox);
+          document.body.appendChild(confirmBox);
 
-        document.getElementById('confirmLogout').onclick = () => {
-          window.location.href = "logout.php";
-        };
+          document.getElementById('confirmLogout').onclick = () => {
+              document.body.removeChild(confirmBox);
+              window.location.href = "logout.php";
+          };
 
-        document.getElementById('cancelarLogout').onclick = () => {
-          document.body.removeChild(confirmBox);
-        };
+          document.getElementById('cancelarLogout').onclick = () => {
+              document.body.removeChild(confirmBox);
+          };
       });
 
       // Ocultar encabezado al hacer scroll hacia abajo
