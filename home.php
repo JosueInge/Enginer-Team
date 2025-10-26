@@ -5,8 +5,6 @@ include 'conexion.php';
 include 'chatbot.php';
 include 'menu.php';
 
-
-
 $noticia_id_destacada = $noticia_destacada['id'] ?? 0;
 
 $termino_busqueda = '';
@@ -36,6 +34,24 @@ $stmt_ultimas = $conexion->prepare($sql_ultimas);
 $stmt_ultimas->bind_param("i", $noticia_id_destacada);
 $stmt_ultimas->execute();
 $result_ultimas = $stmt_ultimas->get_result();
+
+// Obtener las ultimas 8 denuncias 
+$sql_denuncias = "SELECT * FROM propuestas_denuncias
+                WHERE estado = 'aprobada'
+                ORDER BY fecha DESC, id DESC
+                LIMIT 8";
+$result_denuncias = $conexion->query($sql_denuncias);
+
+// Funcion para obtener imagen de denuncia
+function obtenerImagenDenuncia($denuncia) {
+    $imagenes = [];
+    foreach (['imagen', 'imagen2', 'imagen3'] as $campo) {
+        if (!empty($denuncia[$campo]) && file_exists('imagenes/denuncias/' . $denuncia[$campo])) {
+            $imagenes[] = $denuncia[$campo];
+        }
+    }
+    return $imagenes;
+}
 
 // Función para verificar si una imagen existe
 function imagenExiste($nombre_imagen) {
@@ -549,6 +565,128 @@ function obtenerImagenNoticia($noticia) {
 .btn:hover {
     background:#3B00AD;
 }
+
+ /* SECCIÓN CONTENIDO PATROCINADO */
+.seccion-contenido-patrocinado {
+    max-width: 1300px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+.titulo-contenido-patrocinado {
+    font-family: 'Poppins', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #403F48;
+    text-align: left;
+    margin-bottom: 30px;
+}
+.contenedor-contenido-patrocinado {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    justify-content: center;
+}
+
+/* Tarjetas */
+.tarjeta-patrocinado {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    max-width: 320px;
+    margin: 0 auto;
+}
+.tarjeta-patrocinado:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+/* SECCION CONTENIDO PATROCINADO */
+.titulo-contenido-patrocinado {
+    font-family: 'Poppins', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #403F48;
+    text-align: left;
+    margin-bottom: 30px;
+}
+.contenedor-contenido-patrocinado {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    justify-content: center;
+}
+.tarjeta-patrocinado {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    max-width: 320px;
+    margin: 0 auto;
+}
+.tarjeta-patrocinado:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+.tarjeta-patrocinado img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+.contenido-patrocinado {
+    padding: 18px 15px 25px 15px;
+}
+
+.titulo-patrocinado {
+    font-family: 'Poppins', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1661AC;
+    text-align: left;
+    margin-bottom: 12px;
+    line-height: 1.3;
+}
+.titulo-patrocinado a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s ease;
+}
+.titulo-patrocinado a:hover {
+    color: #2D8EFF;
+    text-decoration: underline;
+    text-decoration-color: #2D8EFF;
+}
+.info-patrocinado {
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    color: #74737C;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+}
+
+@media (max-width: 12px) {
+    .contenedor-contenido-patrocinado {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (max-width: 992px) {
+    .contenedor-contenido-patrocinado {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 567px) {
+    .contenedor-contenido-patrocinado {
+        grid-template-columns: 1fr;
+    }
+    .titulo-contenido-patrocinado {
+        text-align: center;
+    }
+}
     </style>
 </head>
 <body>
@@ -592,7 +730,7 @@ function obtenerImagenNoticia($noticia) {
                             <?php if (count($imagenes) > 0): ?>
                                 <?php foreach ($imagenes as $index => $imagen): ?>
                                 <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                                    <a href="detalle_noticia.php?id=<?= $noticia_destacada['id'] ?>">
+                                    <a href="ver_noticia.php?id=<?= $noticia_destacada['id'] ?>">
                                         <img src="imagenes/noticias/<?= $imagen ?>" 
                                              class="d-block w-100" 
                                              alt="<?= htmlspecialchars($noticia_destacada['titulo']) ?>"
@@ -641,7 +779,7 @@ function obtenerImagenNoticia($noticia) {
                 
                 <!-- Título -->
                 <div class="titulo-destacado">
-                    <a href="detalle_noticia.php?id=<?= $noticia_destacada['id'] ?>">
+                    <a href="ver_noticia.php?id=<?= $noticia_destacada['id'] ?>">
                         <?= htmlspecialchars($noticia_destacada['titulo']) ?>
                     </a>
                 </div>
@@ -668,7 +806,7 @@ function obtenerImagenNoticia($noticia) {
                                 <?php if (!empty($imagenes)): ?>
                                     <?php foreach ($imagenes as $index => $imagen): ?>
                                     <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                                        <a href="detalle_noticia.php?id=<?= $noticia['id'] ?>">
+                                        <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
                                             <img src="imagenes/noticias/<?= $imagen ?>" 
                                                  alt="<?= htmlspecialchars($noticia['titulo']) ?>" 
                                                  onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\'imagen-placeholder w-100 h-100\'>Sin imagen</div>';">
@@ -697,7 +835,7 @@ function obtenerImagenNoticia($noticia) {
                         <!-- Contenido -->
                         <div class="contenido-ultima-noticia">
                             <h3 class="titulo-ultima-noticia">
-                                <a href="detalle_noticia.php?id=<?= $noticia['id'] ?>">
+                                <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
                                     <?= htmlspecialchars($noticia['titulo']) ?>
                                 </a>
                             </h3>
@@ -711,12 +849,140 @@ function obtenerImagenNoticia($noticia) {
                     <?php endwhile; ?>
                 </div>
             </section>
+
+            <!-- SECCION DENUNCIAS CIUDADANAS -->
+              <section class="seccion-ultimas-noticias" style="bordder: 3px solid #007BFF; border-radius: 10px; padding: 15px; background-color: #fff;">
+                <h2 class="titulo-ultimas-noticias">Denuncias ciudadanas</h2>
+
+                <div class="contenedor-ultimas-noticias">
+                    <?php while ($denuncia = $result_denuncias->fetch_assoc()):
+                        $imagenes = obtenerImagenDenuncia($denuncia);
+                ?>
+                <div class="tarjeta-ultima-noticia">
+                    <div id="carouselDenuncia<?= $denuncia['id'] ?>" class="carousel slide carrusel-ultimas" data-bs-ride="carousel" data-bs-interval="5000">
+                        <div class="carousel-inner">
+                            <?php if (!empty($imagenes)): ?>
+                                <?php foreach ($imagenes as $index => $imagen): ?>
+                                    <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                                        <a href="ver_denuncia.php?id=<?= $denuncia['id'] ?>">
+                                            <img src="imagenes/denuncias/<?= $imagen ?>" 
+                                                 alt="<?= htmlspecialchars($denuncia['titulo']) ?>" 
+                                                 onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\'imagen-placeholder w-100 h-100\'>Sin imagen</div>';">
+                                        </a>
+                                    </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <div class="carousel-item active">
+                                        <div class="imagen-placeholder w-100 h-100">Sin imagen</div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <?php if (count($imagenes) > 1): ?>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carouselDenuncia<?= $denuncia['id'] ?>" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Anterior</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carouselDenuncia<?= $denuncia['id'] ?>" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Siguiente</span>
+                                </button>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Contenido -->
+                        <div class="contenido-ultima-noticia">
+                            <h3 class="titulo-ultima-noticia">
+                                <a href="ver_denuncia.php?id=<?= $denuncia['id'] ?>">
+                                    <?= htmlspecialchars($denuncia['titulo']) ?>
+                                </a>
+                            </h3>
+                            <div class="info-ultima-noticia">
+                                <span><?= date('d/m/Y', strtotime($denuncia['fecha'])) ?></span>
+                                <span class="separador-info">|</span>
+                                <span><?= !empty($denuncia['autor']) ? htmlspecialchars($denuncia['autor']) : 'Anónimo' ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endwhile; ?>
+                </div>
+            </section>
+            <!-- SECCION CONTENIDO PATROCINADO -->
+             <section class="seccion-contenido-patrocinado" style="max-width:1300px; margin:60px auto; padding:0 20px;">
+                <h2 class="titulo-contenido-patrocinado">Contenido patrocinado</h2>
+
+                <div class="contenedor-contenido-patrocinado">
+                    <!-- Tarjeta 1 -->
+                <div class="tarjeta-patrocinado">
+                    <a href="detalle_patrocinado.php?id=1">
+                        <img src="imagenes/patrocinado/gato.jpeg" alt="Arena para michis">
+                            </a>
+                        <div class="contenido-patrocinado">
+                            <h3 class="titulo-patrocinado">
+                                <a href="detalle_patrocina.php?id=1">Arena para michis</a>
+                            </h3>
+                            <div class="info-patrocinado">
+                                <span>17, oct. 2025</span>
+                                <span class="separador-info">|</span>
+                                <span>Don Fino</span>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Tarjeta 2 -->
+                <div class="tarjeta-patrocinado">
+                    <a href="detalle_patrocinado.php?id=1">
+                        <img src="imagenes/patrocinado/mopt.png" alt="Ministerio de Obras Publicas">
+                            </a>
+                        <div class="contenido-patrocinado">
+                            <h3 class="titulo-patrocinado">
+                                <a href="detalle_patrocina.php?id=1">Ministerio de Obras Publicas</a>
+                            </h3>
+                            <div class="info-patrocinado">
+                                <span>17, oct. 2025</span>
+                                <span class="separador-info">|</span>
+                                <span>Kike</span>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Tarjeta 3 -->
+                <div class="tarjeta-patrocinado">
+                    <a href="detalle_patrocinado.php?id=1">
+                        <img src="imagenes/patrocinado/electrolit.jpg" alt="Suero rehidratante Electrolit">
+                            </a>
+                        <div class="contenido-patrocinado">
+                            <h3 class="titulo-patrocinado">
+                                <a href="detalle_patrocina.php?id=1">Suero rehidratante Electrolit</a>
+                            </h3>
+                            <div class="info-patrocinado">
+                                <span>17, oct. 2025</span>
+                                <span class="separador-info">|</span>
+                                <span>Jose</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Tarjeta 4 -->
+                <div class="tarjeta-patrocinado">
+                    <a href="detalle_patrocinado.php?id=1">
+                        <img src="imagenes/patrocinado/vidri.jpeg" alt="Almacenes Vidri">
+                            </a>
+                        <div class="contenido-patrocinado">
+                            <h3 class="titulo-patrocinado">
+                                <a href="detalle_patrocina.php?id=1">Almacenes Vidri</a>
+                            </h3>
+                            <div class="info-patrocinado">
+                                <span>17, oct. 2025</span>
+                                <span class="separador-info">|</span>
+                                <span>Dawick</span>
+                            </div>
+                        </div>
+                    </div>
         </div>
     </div>
+</div>
+    
 
     <!-- Font Awesome para los iconos -->
     <script src="https://kit.fontawesome.com/3d3e3e3d3e.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <?php include 'footer.php'; ?>
 </body>

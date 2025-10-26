@@ -1,175 +1,247 @@
-<?php
+<?php 
+$categoria_actual = 'denuncias';
 session_start();
-include 'menu2.php';
 include 'conexion.php';
+include 'chatbot.php';
+include 'menu2.php';
+
+/* Verificar la sesion */
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login.php");
-    exit();
+  header("Location: login.php");
+  exit();
 }
 
-$termino_busqueda = '';
-$where = '';
-$params = [];
+/* Funcion para obtener denuncias */
+function obtenerDenuncias($conexion) {
+  $sql = "
+    SELECT
+      pd.id,
+      pd.titulo,
+      pd.fecha AS fecha_publicacion,
+      pd.imagen,
+      pd.imagen2,
+      pd.imagen3,
+      COALESCE(u.nombre, 'Anónimo') AS autor
+    FROM propuestas_denuncias pd 
+    LEFT JOIN usuarios u ON pd.usuario_id = u.id
+    WHERE pd.estado = 'aprobada'
+    ORDER BY pd.fecha DESC
+    LIMIT 8
+  ";
 
-$query = "SELECT * FROM propuestas_denuncias WHERE estado = 'aprobada' ORDER BY fecha DESC";
-$stmt = $conexion->prepare($query);
-
-if (!empty($params)) {
-    $types = str_repeat('s', count($params));
-    $stmt->bind_param($types, ...$params);
+  return $conexion->query($sql);
 }
 
-$stmt->execute();
-$resultado = $stmt->get_result();
-$propuestas_denuncias = $resultado->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-$conexion->close();
+// Funcion para obtener imagenes de una denuncia
+function obtenerImagenes($denuncia) {
+  $imagenes = [];
+  foreach (['imagen', 'imagen2', 'imagen3'] as $campo) {
+    if (!empty($denuncia[$campo]) && file_exists("imagenes/denuncias/" . $denuncia[$campo])) {
+      $imagenes[] = $denuncia[$campo];
+    }
+  }
+  return $imagenes;
+}
+
+/* Funcion para consultar las denuncias */
+$result_denuncias = obtenerDenuncias($conexion);
 ?>
+
+<script src="buscador.js" defer></script>
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Denuncias Ciudadanas</title>
-  <style>
-     * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-    }
-    .encabezado {
-      background-color: #0d5c9b;
-      color: white;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-    }
-    
-    .logo img {
-      height: 50px;
-    }
-    .informacion {
-      margin-right: 10px;
-      display: flex;
-      align-items: center;
-    }
-    nav.barra {
-      background-color: #bebaba;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px;
-      font-weight: bold;
-      position: fixed;
-      top: 70px;
-      left: 0;
-      right: 0;
-      z-index: 999;
-    }
-    nav.barra a {
-      color: #000000;
-      text-decoration: none;
-      padding: 8px 15px;
-      border-radius: 5px;
-      transition: 0.3s;
-    }
-    nav.barra a.active {
-      background-color: #0d5c9b;
-      color: white;
-    }
-    .Buscador {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .Buscador img {
-      width: 20px; 
-      height: 20px;
-    }
-    .Buscador input {
-      padding: 8px 12px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    .Buscador button {
-      padding: 8px 12px;
-      background-color: #0d5c9b; 
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .menu-configuracion {
-      position: relative;
-      display: inline-block;
-      margin-left: 15px;
-    }
-    
-    .icono-configuracion {
-      width: 30px;
-      height: 30px;
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
-    
-    .icono-configuracion:hover {
-      transform: rotate(30deg);
-    }
-    
-    .menu-desplegable {
-      display: none;
-      position: absolute;
-      right: 0;
-      background-color: white;
-      min-width: 160px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      z-index: 1001;
-      border-radius: 4px;
-    }
-    
-    .menu-desplegable a {
-      color: #333;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-      transition: background-color 0.3s;
-    }
-    
-    .menu-desplegable a:hover {
-      background-color: #f1f1f1;
-    }
-    
-    .menu-configuracion:hover .menu-desplegable {
-      display: block;
-    }
-    .resultados-busqueda {
-      margin-bottom: 20px;
-      padding: 10px;
-      background-color: #f0f0f0;
-      border-radius: 4px;
-    }
-    .contenedor {
-      display: flex;
-      padding: 150px;
-      gap: 40px;
-    }
-    .denuncia {
-      width: 45%;
-    }
-    a {
-      text-decoration: none;
-    }
-    .boton-publicar { 
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Denuncias - Comunicado Digital</title>
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter&display=swap" rel="stylesheet">
+    <style>
+      :root {
+          --color-primario: #1661AC;
+          --color-secundario: #2D8EFF;
+          --color-texto: #000000;
+          --color-texto-secundario: #74737C;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fa;
+        line-height: 1.6;
+      }
+
+      /* Seccion denuncias */
+      .seccion-ultimas-denuncias {
+        max-width: 1300px;
+        margin: 60px auto;
+        padding: 0 20px;
+      }
+      .titulo-ultimas-denuncias {
+        font-family: 'Poppins', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: #403F48;
+        text-align: left;
+        margin-bottom: 30px;
+      }
+      .contenedor-ultimas-denuncias {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        justify-content: center;
+      }
+
+      /* Tarjetas */
+      .tarjeta-ultima-denuncia {
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        max-width: 320px;
+        margin: 0 auto;
+      }
+      .tarjeta-ultima-denuncia:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      }
+
+      /* Carrusel interno */
+      .carrusel-ultimas {
+        height: 220px;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+      }
+      .carrusel-ultimas img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+      }
+      .carrusel-ultimas .carousel-control-prev, 
+      .carrusel-ultimas .carousel-control-next {
+        width: 35px;
+        height: 35px;
+        background: rgba(0,0,0,0.4);
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .tarjeta-ultima-denuncia:hover .carousel-control-prev,
+      .tarjeta-ultima-denuncia:hover .carousel-control-next {
+        opacity: 1;
+      }
+      .carrusel-ultimas .carousel-indicators {
+        bottom: 8px;
+      }
+      .carrusel-ultimas .carousel-indicators button {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      /* Contenido */
+      .contenido-ultima-denuncia {
+        padding: 18px 15px 25px 15px;
+      }
+      .titulo-ultima-denuncia {
+        font-family: 'Poppins', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #1661AC;
+        text-align: left;
+        margin-bottom: 12px;
+      }
+      .titulo-ultima-denuncia a {
+        text-decoration: none;
+        color: inherit;
+        transition: color 0.3s ease;
+      }
+      .titulo-ultima-denuncia a:hover {
+        color: #2D8EFF;
+        text-decoration: underline;
+        text-decoration-color: #2D8EFF;
+      }
+      .info-ultima-denuncia {
+        font-family: 'Poppins', sans-serif;
+        font-size: 16px;
+        color: #74737C;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 10px;
+      }
+      .separador-info {
+        color: #74737C;
+      }
+
+      /* Placeholder */
+      .imagen-placeholder {
+        background: linear-gradient(45deg, #1661AC, #2D8EFF);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      /* Responsivo */
+      @media (max-width: 1200px) {
+        .contenedor-ultimas-denuncias {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      @media (max-width: 992px) {
+        .contenedor-ultimas-denuncias {
+          grid-template-columns: 1fr;
+        }.titulo-ultimas-denuncias {
+          text-align: center;
+        }
+      }
+
+      .denuncia-principal {
+        border: 3px solid;
+        border-radius: 10px;
+        padding: 15px;
+        background-color: #fff;
+        transition: box-shadow 0.3s ease;
+      }
+      .noticia-principal:hover {
+        box-shadow: 0 0 15px rgba(0, 125, 255, 0.4);
+      }
+
+      .btn {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        align-items: center;
+        padding: 0 24px;
+        height: 40px;
+        border-radius: 25px;
+        font-size: 16px;
+        font-weight: 700;
+        font-family: 'Poppins', sans-serif;
+        text-decoration: none;
+        color: #fff;
+        background-color: #4C00DA;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3 ease;
+        white-space: nowrap;
+        min-width: auto;
+        width: 150px; 
+      }
+
+      .btn:hover {
+        background: #3B00AD;
+      }
+
+      /* Boton publicar denuncia */
+      .boton-publicar { 
       position: fixed; 
       bottom: 30px; left: 
       30px; background-color: #0d5c9b; 
@@ -183,160 +255,95 @@ $conexion->close();
       z-index: 1000; 
       text-decoration: none; 
     }
-    .contenido-principal { 
-      margin-top: 130px;
-      padding: 20px; 
-    }
-    .sin-noticias { 
-      text-align: center; 
-      padding: 50px; 
-      color: #666; 
-    }
-    .noticia-card { 
-      background: white; 
-      border-radius: 8px; 
-      padding: 20px; 
-      margin-bottom: 20px; 
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-      position: relative; 
-    }
-    .dropdown-content { 
-      display: none; 
-      position: absolute; 
-      right: 0; 
-      background-color: #ffffff; 
-      min-width: 140px; 
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
-      border-radius: 8px; 
-      z-index: 1001; 
-      overflow: hidden; 
-      transition: all 0.2s ease-in-out;
-    }
 
-    .dropdown-content a { 
-      color: #333; 
-      padding: 10px 16px; 
-      text-decoration: none; 
-      display: block; 
-      font-size: 14px;
-      transition: background-color 0.2s ease;
-    }
-
-    .dropdown-content a:hover { 
-      background-color: #f0f0f0; 
-    }
-
-    .dropdown:hover .dropdown-content { 
-      display: block; 
-    }
-
-    .noticia-titulo { 
-      color: #0d5c9b; 
-      margin-bottom: 10px; 
-    }
-    .noticia-meta { 
-      color: #666; 
-      font-size: 14px; 
-      margin-bottom: 15px; 
-      display: flex; 
-      gap: 15px; 
-    }
-    .imagen-contenedor { 
-      max-width: 100%; 
-      overflow: hidden;
-       text-align: center; 
-       margin-bottom: 15px; 
-      }
-    .noticia-imagen { 
-      max-width: 100%; 
-      height: auto; 
-      max-height: 400px; 
-      object-fit: contain; 
-      border-radius: 4px; 
-    }
-    .noticia-resumen { 
-      line-height: 1.6; 
-      margin-bottom: 15px;
-    }
-    .encabezado.oculto {
-      transform: translateY(-100%);
-      transition: transform 0.3s ease;
-    }
-    .barra.oculto {
-      transform: translateY(-130px);
-      transition: transform 0.3s ease;
-    }
   </style>
 </head>
 <body>
-  <div class="contenido-principal"> 
 
-    <?php if (empty($propuestas_denuncias)): ?>
-      <div class="sin-noticias">
-        <h2>No hay denuncias publicadas aún</h2>
-        <p>¡Sé el primero en compartir una denuncia!</p>
-      </div>
-    <?php else: ?>
-      <?php foreach ($propuestas_denuncias as $noticia): ?>
-        <article class="noticia-card" style="position: relative;">
-          <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
-            <div class="menu-admin dropdown" style="position: absolute; top: 15px; right: 15px;">
-              <span style="cursor: pointer;">⋮</span>
-              <div class="dropdown-content">
-                <a href="editar_denuncia.php?id=<?= $noticia['id'] ?>">Editar</a>
-                <a href="eliminar_denuncia.php?id=<?= $noticia['id'] ?>" onclick="return confirm('¿Deseas eliminar esta noticia?')">Eliminar</a>
+  <div class="container-fluid">
+    <section class="seccion-ultimas-denuncias" style="border: none; border-radius: 10px; padding: 15px; background-color: #fff;">
+      <h2 class="titulo-ultimas-denuncias">Denuncias ciudadanas</h2>
+
+      <div class="contenedor-ultimas-denuncias">
+        <?php while ($denuncia = $result_denuncias->fetch_assoc()):
+          $imagenes = obtenerImagenes($denuncia);
+      ?>
+      <div class="tarjeta-ultima-denuncia">
+        <!-- Carrusel de imagenes -->
+         <div id="carouselUltimas<?= $denuncia['id'] ?>" class="carousel slide carrusel-ultimas" data-bs-ride="carousel" data-bs-interval="5000">
+          <div class="carousel-inner">
+            <?php if (!empty($imagenes)): ?>
+              <?php foreach ($imagenes as $index => $imagen): ?>
+              <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                <a href="ver_denuncia.php?id=<?= $denuncia['id'] ?>">
+                  <img src="imagenes/denuncias/<?= $imagen ?>" alt="<?= htmlspecialchars($denuncia['titulo']) ?>">
+                </a>
               </div>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <div class="carousel-item active">
+                <div class="imagen-placeholder">Sin imagen</div>
             </div>
           <?php endif; ?>
-
-          <a href="ver_denuncia.php?id=<?= $noticia['id'] ?>" style="text-decoration: none; color: inherit;">
-            <h2 class="noticia-titulo"><?= htmlspecialchars($noticia['titulo']) ?></h2>
-          </a>
-          <div class="noticia-meta">
-            <span><?= htmlspecialchars($noticia['fecha']) ?></span>
-          </div>
-          <?php if ($noticia['imagen']): ?>
-            <div class="imagen-contenedor">
-              <img src="imagenes/denuncias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
-            </div>
-          <?php endif; ?>
-          <p class="noticia-resumen"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
-        </article>
-      <?php endforeach; ?>
-    <?php endif; ?>
       </div>
-    
 
-    <?php if ($_SESSION['usuario_rol'] === 'Poblador'): ?>
-    <a href="enviar_denuncia.php" class="boton-publicar">Enviar denuncia</a>
-    <?php endif; ?>
+      <?php if (count($imagenes) > 1): ?>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselUltimas<?= $denuncia['id'] ?>" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+      </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselUltimas<?= $denuncia['id'] ?>" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Siguiente</span>
+        </button>
+      <?php endif; ?>
+    </div>
 
+          <!-- Contenido -->
+          <div class="contenido-ultima-denuncia">
+            <h3 class="titulo-ultima-denuncia">
+              <a href="ver_denuncia.php?id=<?= $denuncia['id'] ?>">
+                <?= htmlspecialchars($denuncia['titulo']) ?>
+              </a>
+            </h3>
+            <div class="info-ultima-denuncia">
+              <span><?= date('d/m/Y', strtotime($denuncia['fecha_publicacion'])) ?></span>
+              <span>|</span>
+              <span><?= !empty($denuncia['autor']) ? htmlspecialchars($denuncia['autor']) : 'Anónimo' ?></span>
+            </div>
+          </div>
+        </div>
+      <?php endwhile; ?>
+    </div>
+</section>
+</div>
+
+<?php if (isset($_SESSION['usuario_rol'])): ?>
   <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
-    <a href="publicar_denuncia.php" class="boton-publicar">Publicar denuncia</a>
+    <a href="publicar_denuncia.php" class="boton-publicar">Publicar Denuncia</a>
+  <?php elseif ($_SESSION['usuario_rol'] === 'Poblador'): ?>
+    <a href="enviar_denuncia.php" class="boton-publicar">Enviar una denuncia</a>
   <?php endif; ?>
+<?php endif; ?>
 
-  <link rel="stylesheet" href="asistente_virtual.css">
-    <?php include 'chatbot.php'; ?>
-    <script src="chatbot.js"></script>
-  
-    <script>
-  // Confirmación de cierre de sesión
-      document.getElementById('btnSesion')?.addEventListener('click', function(e) {
-        e.preventDefault();
+<!-- Cierre de sesion -->
+ <script>
+  document.getElementById('btnSesion')?.addEventListener('click', function(e) {
+    e.preventDefault();
 
-        const confirmBox = document.createElement('div');
-        confirmBox.style.position = 'fixed';
-        confirmBox.style.top = '0';
-        confirmBox.style.left = '0';
-        confirmBox.style.width = '100%';
-        confirmBox.style.height = '100%';
-        confirmBox.style.background = 'rgba(0,0,0,0.5)';
-        confirmBox.style.display = 'flex';
-        confirmBox.style.alignItems = 'center';
-        confirmBox.style.justifyContent = 'center';
-        confirmBox.style.zIndex = '9999';
+    const confirmBox = document.createElement('div');
+    confirmBox.style.position = 'fixed';
+    confirmBox.style.top = '0';
+    confirmBox.style.left = '0';
+    confirmBox.style.width = '100%';
+    confirmBox.style.height = '100%';
+    confirmBox.style.background = 'rgba(0,0,0,0.5)';
+    confirmBox.style.display = 'flex';
+    confirmBox.style.alignItems = 'center';
+    confirmBox.style.justifyContent = 'center';
+    confirmBox.style.zIndex = '9999';
 
-        confirmBox.innerHTML = `
+     confirmBox.innerHTML = `
           <div style="background: white; padding: 20px 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 300px;">
             <h3>¿Cerrar sesión?</h3>
             <p>¿Estás seguro de cerrar sesión?</p>
@@ -356,36 +363,12 @@ $conexion->close();
         document.getElementById('cancelarLogout').onclick = () => {
           document.body.removeChild(confirmBox);
         };
-      });
+  });
+  </script>
 
-      // Ocultar encabezado y barra al hacer scroll hacia abajo
-      let lastScroll = 0;
-      const encabezado = document.querySelector('.encabezado');
-      const barra = document.querySelector('nav.barra');
-      let timer;
+<script src="https://kit.fontawesome.com/3d3e3e3d3e.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-      window.addEventListener('scroll', () => {
-        const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-
-        if (currentScroll > lastScroll && currentScroll > 80) {
-          barra?.classList.add('oculto');
-
-          clearTimeout(timer);
-          timer = setTimeout(() => {
-            encabezado?.classList.add('oculto');
-          }, 200);
-
-        } else {
-
-          clearTimeout(timer);
-          encabezado?.classList.remove('oculto');
-          barra?.classList.remove('oculto');
-        }
-
-        lastScroll = currentScroll <= 0 ? 0 : currentScroll;
-      });
-    </script>
-    <?php include 'footer.php' ?>
-
+<?php include 'footer.php'; ?>
 </body>
 </html>
