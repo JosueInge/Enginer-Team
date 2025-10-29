@@ -42,6 +42,13 @@ $stmt_ultimas->bind_param("i", $noticia_id_destacada);
 $stmt_ultimas->execute();
 $result_ultimas = $stmt_ultimas->get_result();
 
+// Obtener noticias que podrian interesarte
+$sql_interes = "SELECT * FROM noticias
+                WHERE fecha <= CURDATE()
+                ORDER BY RAND()
+                LIMIT 4";
+$result_interes = $conexion->query($sql_interes);
+
 // Función para verificar si una imagen existe
 function imagenExiste($nombre_imagen) {
     return !empty($nombre_imagen) && file_exists('imagenes/noticias/' . $nombre_imagen);
@@ -802,6 +809,50 @@ function obtenerImagenNoticia($noticia) {
                     <?php endwhile; ?>
                 </div>
             </section>
+
+            <!-- SECCION PODRIA INTERESARTE -->
+             <section class="seccion-interes mt-4" style="padding: 20px; background-color: #fff;">
+                <h2 style="font-family: 'Poppins'; font-size: 24px; font-weight: bold; color: #403F48; text-align: left;">Podrian interesarte</h2>
+
+                <div class="row mt-4 g-4 justify-content-center">
+                    <?php while ($noticia = $result_interes->fetch_assoc()):
+                    $imagenes = obtenerImagenNoticia($noticia); ?>
+                    <div class="col-md-3 d-flex justify-content-center">
+                        <div class="card shadow-sm border-0" style="max-width: 320px; transition: transform 0.2s;">
+                            <div class="carouselInteres<?= $noticia['id'] ?>" class="carousel slide" data-bs-ride="corousel" data-bs-interval="5000">
+                                <div class="carrusel/inner">
+                                    <?php if (!empty($imagenes)): ?>
+                                        <?php foreach ($imagenes as $index => $img): ?>
+                                            <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                                                <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
+                                                    <img src="imagenes/noticias/<?= $img ?>" class="d-block w-100" alt="<?= htmlspecialchars($noticia['titulo']) ?>" style="height: 220px; object-fit: cover; border-radius: 12px;">
+                                        </a>
+                                        </div>
+                                        <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <div class="carousel-item active">
+                                                <div class="d-flex align-items-center justify-content-center bg-light" style="height: 220px; border-radius: 12px;">Sin imagen</div>
+                                        </div>
+                                        <?php endif; ?>
+                                        </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="card-title" style="font-family: 'Poppins'; font-weight: bold; color: #1661AC; font-size: 20px;">
+                                                <a href="ver_noticia.php?id=<?= $noticia['id'] ?>" style="color: #1661AC; text-decoration: none;">
+                                                    <?= htmlspecialchars($noticia['titulo']) ?>
+                                        </a>
+                                        </h5>
+                                        <p class="card-text" style="font-family: 'Poppins'; font-size: 16px; color: #74737C;">
+                                            <?= date('d/m/Y', strtotime($noticia['fecha'])) ?> |
+                                            <?= !empty($noticia['autor']) ? htmlspecialchars($noticia['autor']) : 'Anonimo' ?>
+                                        </p>
+                                        </div>
+                                        </div>
+                                        </div>
+                                        <?php endwhile; ?>
+                                        </div>
+                                        </section>
+
         </div>
     </div>
     <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
@@ -874,6 +925,7 @@ function obtenerImagenNoticia($noticia) {
 
     <!-- Font Awesome para los iconos -->
     <script src="https://kit.fontawesome.com/3d3e3e3d3e.js" crossorigin="anonymous"></script>
+       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <?php include 'footer.php'; ?>
 </body>

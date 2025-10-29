@@ -2,7 +2,6 @@
 $categoria_actual = 'denuncias_anonimas';
 include 'conexion.php';
 include 'chatbot.php';
-include 'menu.php';
 
 /* Funcion para obtener denunicas */
 function obtenerDenuncias($conexion) {
@@ -253,6 +252,9 @@ $result_denuncias = obtenerDenuncias($conexion);
   </style>
 </head>
 <body>
+
+<?php include 'menu.php'; ?>
+
 
   <div class="container-fluid">
     <section class="seccion-ultimas-denuncias" style="border: 3px solid #e5e8ebff; border-radius: 10px; padding: 15px; background-color: #fff;">
