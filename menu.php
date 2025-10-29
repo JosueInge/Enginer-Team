@@ -1,5 +1,5 @@
 <?php 
-
+$currentPage = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -29,12 +29,23 @@
       font-size:16px;font-weight:bold;
       text-align:center;line-height:40px;
       text-decoration:none;
-      color:#fff;transition:.3s;
+      transition:.3s;
       position:relative;overflow:hidden;
     }
-    .btn-login{background:#4C00DA;}
-    .btn-register{background:#4C00DA;}
-    .btn:hover{background:#3B00AD;}
+    /* Botones con borde solido */
+    .btn-login, .btn-register {
+      background: #4C00DA; 
+      border: 1px solid #2D8EFF;
+      box-shadow: 0 2px 6px rgba(45, 142, 239, 0.3);
+      transition: all 0.3s;
+    }
+    .btn-login:hover, .btn-register:hover {
+      background: #3B00AD;
+      border: 2px solid #2D8EFF; 
+      box-shadow: 0 4px 12px rgba(45, 142, 239, 0.4);
+    }
+
+   
     .btn:active::after{
       content:"";position:absolute;
       width:300%;height:300%;
@@ -43,6 +54,14 @@
       background:rgba(255,255,255,0.3);
       border-radius:50%;animation:ripple .6s linear;
     }
+    /* Estilo para enlace activo */
+    .nav-links a.activo {
+      background: linear-gradient(90deg,#61C9A8,#61C9A880);
+      color: #061F3E;
+      box-shadow: 0 2px 8px rgba(97, 168, 168, 0.4);
+      border: none;
+    }
+
     @keyframes ripple{to{width:0;height:0;opacity:0;}}
 
     /* Barra navegación */

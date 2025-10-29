@@ -1,9 +1,8 @@
 <?php
 // home.php
-$categoria_actual = 'inicio';
+$categoria_actual = 'home';
 include 'conexion.php';
 include 'chatbot.php';
-include 'menu.php';
 
 $noticia_id_destacada = $noticia_destacada['id'] ?? 0;
 
@@ -41,6 +40,40 @@ $sql_denuncias = "SELECT * FROM propuestas_denuncias
                 ORDER BY fecha DESC, id DESC
                 LIMIT 8";
 $result_denuncias = $conexion->query($sql_denuncias);
+
+// Obtener noticias que podrian interesarte (aleatorias o por fechas)
+$sql_interes = "SELECT * FROM noticias
+                WHERE fecha <= CURDATE()
+                ORDER BY RAND()
+                LIMIT 4";
+$result_interes = $conexion->query($sql_interes);
+
+// Datos estaticos de los anuncios
+$anuncios = [
+    [
+        'id' => 1,
+        'titulo' => 'Fudem plazamundo',
+        'imagen' => 'fudem.jpg',
+        'enlace' => 'https://plazamundo.com.sv/soyapango/comercios/fudem/'
+    ],
+    [
+        'id' => 2,
+        'titulo' => 'Plaza Mundo - De aqui somos todos',
+        'imagen' => 'plazamundo.jpg',
+        'enlace' => 'https://plazamundo.com.sv/'
+    ],
+    [
+        'id' => 3,
+        'titulo' => 'Oppo',
+        'imagen' => 'oppo.jpg',
+        'enlace' => 'https://www.oppo.com/es/newsroom/press/oppo-a91-llega-a-espana-con-cuatro-camaras-traseras--y-un-diseno/'
+    ]
+];
+
+// Funcios para verificar si una imagen de un anuncio existe 
+function imagenAnuncioExiste($nombre_imagen) {
+    return !empty($nombre_imagen) && file_exists('imagenes/anuncios/' . $nombre_imagen);
+}
 
 // Funcion para obtener imagen de denuncia
 function obtenerImagenDenuncia($denuncia) {
@@ -93,6 +126,7 @@ function obtenerImagenNoticia($noticia) {
         
         /* TARJETA DESTACADA */
         .tarjeta-destacada {
+            position: relative;
             max-width: 1300px;
             height: auto;
             min-height: 940px;
@@ -540,31 +574,6 @@ function obtenerImagenNoticia($noticia) {
     box-shadow: 0 0 15px rgba(0, 123, 225, 0.4);
 }
 
-.btn {
-    display:flex;
-    gap: 20px;
-    justify-content: center;
-    align-items: center;
-    padding: 0 24px;
-    height: 40px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 700;
-    font-family: 'Poppins', sans-serif;
-    text-decoration: none;
-    color: #fff;
-    background-color: #4C00DA;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3 ease;
-    white-space: nowrap;
-    min-width: auto;
-    width: 150px; 
-}
-
-.btn:hover {
-    background:#3B00AD;
-}
 
  /* SECCIÓN CONTENIDO PATROCINADO */
 .seccion-contenido-patrocinado {
@@ -687,18 +696,225 @@ function obtenerImagenNoticia($noticia) {
         text-align: center;
     }
 }
+
+/* Anuncios publicitarios */
+/* Anuncio1 esquina superior derecha de la noticia principal */
+.anuncio-1 {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    max-width: 255px;
+    height: 255px;
+    border-radius: 1px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 10;
+    background: #fff;
+}
+
+.anuncio-1:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+.anuncio-1 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Anuncio 2 debajo de seccion ultimas noticias, centrado */
+.anuncio-2 {
+    max-width: 1215px;
+    height: 300px;
+    margin: 40px auto;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #fff;
+}
+
+.anuncio-2:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.anuncio-2 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Anuncio 3 - en fila de contenido patrocinado */
+.tarjeta-patrocinado.anuncio-3  {
+    max-width: 310px;
+    height: 270px;
+    margin: 0 auto;
+    padding: 0;
+    border: none;
+}
+.tarjeta-patrocinado.anuncio-3 a {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.tarjeta-patrocinado.anuncio-3 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 1px;
+}
+
+/* Responsivo */
+@media (max-width: 1200px) {
+    .tarjeta-destacada {
+        margin: 30px 20px;
+        min-height: auto;
+    }
+
+    .encabezado-tarjeta,
+    .titulo-destacado,
+    .resumen-destacado {
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+
+    .anuncio-1 {
+        max-width: 220px;
+        height: 220px;
+    }
+
+    .anuncio-2 {
+        max-width: 95%;
+        height: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .carrusel-destacado {
+        height: 400px;
+    }
+
+    .carrusel-destacado .carousel-item {
+        height: 400px;
+    }
+
+    .encabezado-tarjeta {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .elementos-encabezado {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .titulo-destacado a {
+        font-size: 24px;
+    }
+    .resumen-destacado {
+        font-size: 18px;
+    }
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 40px;
+        height: 40px;
+        margin: 0 10px;
+    }
+    .anuncio-1 {
+        position: relative;
+        bottom: auto;
+        right: auto;
+        max-width: 200px;
+        height: 200px;
+        margin: 20px auto;
+    }
+    .anuncio-2 {
+        height: 200px;
+    }
+}
+
+@media (max-width: 576px) {
+    .tarjeta-destacada {
+        margin: 20px 15px;
+        border-radius: 20px;
+    }
+    .carrusel-destacado {
+        height: 300px;
+        border-radius: 20px 20px 0 0;
+    }
+    .carrusel-destacado .carousel-item {
+        height: 300px;
+    }
+
+    .encabezado-tarjeta,
+    .titulo-destacado,
+    .resumen-destacado {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    .titulo-destacado a {
+        font-size: 20px;
+    }
+    .resumen-destacado {
+        font-size: 16px;
+    }
+    .anuncio-1 {
+        max-width: 180px;
+        height: 180px;
+    }
+    .anuncio-2 {
+        height: 150px;
+    }
+    
+}
+.btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 24px;
+    height: 45px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    text-decoration: none;
+    color: #fff;
+    background-color: #4C00DA;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3 ease;
+    white-space: nowrap;
+    min-width: auto;
+    width: auto; 
+}
     </style>
 </head>
 <body>
     <!-- Incluir menú -->
-
+     <?php include 'menu.php'; ?>
 
     <!-- CONTENIDO PRINCIPAL -->
     <div class="container-fluid">
         <div id="contenedor-noticias" class="contenedor-noticias">
             <!-- NOTICIA DESTACADA -->
             <?php if ($noticia_destacada): ?>
-            <div class="tarjeta-destacada">
+            <div class="tarjeta-destacada position-relative">
+
+            <!-- Anuncio1 - esquina inferior derecha -->
+             <a href="<?= $anuncios[0]['enlace'] ?>" target="_blank" class="anuncio-1">
+                <?php if (imagenAnuncioExiste($anuncios[0]['imagen'])): ?>
+                    <img src="imagenes/anuncios/<?= $anuncios[0]['imagen'] ?>"
+                        alt="<?= htmlspecialchars($anuncios[0]['titulo']) ?>">
+                <?php else: ?>
+                    <div class="imagen-placeholder anuncio w-100 h-100">
+                    Anuncio 1<br>
+                    <small>255x255px</small>
+            </div>
+            <?php endif; ?>
+        </a>
+
                 <!-- Carrusel de imágenes -->
                 <?php 
                 $imagenes = [];
@@ -850,6 +1066,19 @@ function obtenerImagenNoticia($noticia) {
                 </div>
             </section>
 
+            <!-- Anuncio 2 - debajo de ultimas noticias, centrado-->
+            <a href="<?= $anuncios[1]['enlace'] ?>" target="_blank" class="anuncio-2">
+                <?php if (imagenAnuncioExiste($anuncios[1]['imagen'])): ?>
+                    <img src="imagenes/anuncios/<?= $anuncios[1]['imagen'] ?>"
+                        alt="<?= htmlspecialchars($anuncios[1]['titulo']) ?>">
+                <?php else: ?>
+                <div class="imagen-placeholder anuncio w-100 h-100">
+                    Anuncio Publicitario<br>
+                    <small>1215x300px</small>
+                </div>
+            <?php endif; ?>
+           </a>
+
             <!-- SECCION DENUNCIAS CIUDADANAS -->
               <section class="seccion-ultimas-noticias" style="bordder: 3px solid #007BFF; border-radius: 10px; padding: 15px; background-color: #fff;">
                 <h2 class="titulo-ultimas-noticias">Denuncias ciudadanas</h2>
@@ -907,18 +1136,77 @@ function obtenerImagenNoticia($noticia) {
                     <?php endwhile; ?>
                 </div>
             </section>
+
+            <!-- SECCION PODRIA INTERESARTE -->
+             <section class="seccion-interes mt-4" style="padding: 20px; background-color: #fff;">
+                <h2 style="font-family: 'Poppins'; font-size: 24px; font-weight: bold; color: #403F48; text-align: left;">Podrian interesarte</h2>
+
+                <div class="row mt-4 g-4 justify-content-center">
+                    <?php while ($noticia = $result_interes->fetch_assoc()):
+                    $imagenes = obtenerImagenNoticia($noticia); ?>
+                    <div class="col-md-3 d-flex justify-content-center">
+                        <div class="card shadow-sm border-0" style="max-width: 320px; transition: transform 0.2s;">
+                            <div id="carouselInteres<?= $noticia['id'] ?>" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+                                <div class="carousel-inner">
+                                    <?php if (!empty($imagenes)): ?>
+                                        <?php foreach ($imagenes as $index => $img): ?>
+                                            <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                                                <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
+                                                    <img src="imagenes/noticias/<?= $img ?>" class="d-block w-100" alt="<?= htmlspecialchars($noticia['titulo']) ?>" style="height: 220px; object-fit: cover; border-radius: 12px;">
+                                                </a>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <div class="carousel-item active">
+                                            <div class="d-flex align-items-center justify-content-center bg-light" style="height: 220px; border-radius: 12px;">Sin imagen</div>
+                                    </div>
+                                    <?php endif; ?>
+                                    </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title" style="font-family: 'Poppins'; font-weight: bold; color: #1661AC; font-size: 20px;">
+                                            <a href="ver_noticia.php?id=<?= $noticia['id'] ?>" style="color: #1661AC; text-decoration: none;">
+                                                <?= htmlspecialchars($noticia['titulo']) ?>
+                                    </a>
+                                    </h5>
+                                    <p class="card-text" style="font-family: 'Poppins'; font-size: 16px; color: #74737C;">
+                                        <?= date('d/m/Y', strtotime($noticia['fecha'])) ?> |
+                                        <?= !empty($noticia['autor']) ? htmlspecialchars($noticia['autor']) : 'Anónimo' ?>
+                                    </p>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    <?php endwhile; ?>
+                                    </div>
+                                    </section>
             <!-- SECCION CONTENIDO PATROCINADO -->
              <section class="seccion-contenido-patrocinado" style="max-width:1300px; margin:60px auto; padding:0 20px;">
                 <h2 class="titulo-contenido-patrocinado">Contenido patrocinado</h2>
 
                 <div class="contenedor-contenido-patrocinado">
-                    <!-- Tarjeta 1 -->
+                    <!-- -Anuncio 3 En cualquier posicion de la fila -->
+                   <div class="tarjeta-patrocinado anuncio-3">
+                    <a href="<?= htmlspecialchars($anuncios[2]['enlace']) ?>" target="_blank">
+                        <?php if (imagenAnuncioExiste($anuncios[2]['imagen'])): ?>
+                            <img src="imagenes/anuncios/<?= $anuncios[2]['imagen'] ?>"
+                                alt="<?= htmlspecialchars($anuncios[2]['titulo']) ?>">
+                            <?php else: ?>
+                        <div class="imagen-placeholder anuncio w-100 h-100 d-flex align-items-center justify-content-center">
+                            Anuncio Publicitario<br>
+                            <small>310x270px</small>
+                        </div>
+                    <?php endif; ?>
+                    </a>
+                </div>
+
+                <!-- Contenido patrocinado -->
+
                 <div class="tarjeta-patrocinado">
                     <a href="detalle_patrocinado.php?id=1">
                         <img src="imagenes/patrocinado/gato.jpeg" alt="Arena para michis">
-                            </a>
-                        <div class="contenido-patrocinado">
-                            <h3 class="titulo-patrocinado">
+                    </a>
+                    <div class="contenido-patrocinado">
+                        <h3 class="titulo-patrocinado">
                                 <a href="detalle_patrocina.php?id=1">Arena para michis</a>
                             </h3>
                             <div class="info-patrocinado">
@@ -961,27 +1249,14 @@ function obtenerImagenNoticia($noticia) {
                         </div>
                     </div>
                     <!-- Tarjeta 4 -->
-                <div class="tarjeta-patrocinado">
-                    <a href="detalle_patrocinado.php?id=1">
-                        <img src="imagenes/patrocinado/vidri.jpeg" alt="Almacenes Vidri">
-                            </a>
-                        <div class="contenido-patrocinado">
-                            <h3 class="titulo-patrocinado">
-                                <a href="detalle_patrocina.php?id=1">Almacenes Vidri</a>
-                            </h3>
-                            <div class="info-patrocinado">
-                                <span>17, oct. 2025</span>
-                                <span class="separador-info">|</span>
-                                <span>Dawick</span>
-                            </div>
-                        </div>
-                    </div>
+                
+            </div>
         </div>
     </div>
 </div>
-    
-
-    <!-- Font Awesome para los iconos -->
+        <!-- Desplazar carrusel-->
+       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Font Awesome para los iconos -->
     <script src="https://kit.fontawesome.com/3d3e3e3d3e.js" crossorigin="anonymous"></script>
 
     <?php include 'footer.php'; ?>

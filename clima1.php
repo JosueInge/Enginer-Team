@@ -177,6 +177,7 @@ $query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND catego
       transform: translateY(-130px);
       transition: transform 0.3s ease;
     }
+    
   </style>
 </head>
 <body>
