@@ -1,15 +1,16 @@
 <?php
-  session_start();
-  include 'menu2.php';
-  include 'conexion.php';
-  if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login.php");
-    exit();
+session_start();
+include 'conexion.php';
+$categoria_actual = 'Turismo';
+if (!isset($_SESSION['usuario_id'])) {
+  header("Location: login.php");
+  exit();
+
 }
 
- $nombreUsuario = isset($_SESSION['usuario_nombre']) ? htmlspecialchars($_SESSION['usuario_nombre']) : null;
+$nombreUsuario = isset($_SESSION['usuario_nombre']) ? htmlspecialchars($_SESSION['usuario_nombre']) : null;
 
- $termino_busqueda = '';
+$termino_busqueda = '';
 $where = '';
 $params = [];
 
@@ -19,159 +20,320 @@ if (isset($_GET['busqueda']) && !empty($_GET['busqueda'])) {
     $params = array_fill(0, 3, '%' . $termino_busqueda . '%');
 }
 
-$query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND categoria = 'Turismo' ORDER BY fecha DESC";
-$stmt = $conexion->prepare($query);
+// Obtener noticias de la categoria clima
+$sql_noticias = "SELECT * FROM noticias
+                WHERE categoria = 'turismo' AND fecha <= CURDATE()
+                ORDER BY fecha DESC, id DESC
+                LIMIT 12";
+$result_noticias = $conexion->query($sql_noticias);
 
-if (!empty($params)) {
-    $types = str_repeat('s', count($params));
-    $stmt->bind_param($types, ...$params);
+// Funcion para verificar si una imagen existe
+function imagenExiste($nombre_imagen) {
+  return !empty($nombre_imagen) && file_exists('imagenes/noticias/' . $nombre_imagen);
 }
 
-$stmt->execute();
-$resultado = $stmt->get_result();
-$noticias = $resultado->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-$conexion->close();
+// Funcion para obtener imagenes de una noticia
+function obtenerImagenNoticia($noticia) {
+  $imagenes = [];
+  foreach (['imagen', 'imagen2', 'imagen3'] as $campo) {
+    if (!empty($noticia[$campo]) && imagenExiste($noticia[$campo])) {
+      $imagenes[] = $noticia[$campo];
+    }
+  }
+  return $imagenes;
+}
 ?>
-
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Comunicado Digital</title>
+  <title>Deporte - Comunicado Digital</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
   <style>
-     * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    :root {
+      --color-primario: #1661AC;
+      --color-secundario: #2D8EFF;
+      --color-texto: #000000;
+      --color-texto-secundario: #74737C;
+      --color-fondo: #f8f9f9;
     }
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--color-fondo);
     }
-    .encabezado {
-      background-color: #0d5c9b;
-      color: white;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-    }
-    
-    .logo img {
-      height: 50px;
-    }
-    .informacion {
-      margin-right: 10px;
+    /* Seccion encabezado categoria */
+    .encabezado-categoria {
+      max-width: 1300px;
+      margin: 30px auto 40px auto;
+      padding: 0 20px;
       display: flex;
       align-items: center;
+      gap: 20px;
     }
-    nav.barra {
-      background-color: #bebaba;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px;
-      font-weight: bold;
-      position: fixed;
-      top: 70px;
-      left: 0;
-      right: 0;
-      z-index: 999;
+    .titulo-categoria {
+      font-family: 'Poppins', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #403F48;
+      margin: 0;
+      white-space: nowrap;
     }
-    nav.barra a {
-      color: #000000;
+    .linea-divisora {
+      flex: 1;
+      height: 2px;
+      background-color: #403F48;
+      max-width: 975px;
+    }
+
+    /* Contenedor principal */
+    .contenedor-principal {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: 40px;
+      align-items: start;
+    }
+
+    /* Seccion noticias */
+    .seccion-noticias {
+      width: 100%;
+    }
+    .contenedor-noticias {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 25px;
+      margin-bottom: 50px;
+    }
+
+    /* Tarjetas de noticias */
+    .tarjeta-noticia {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      max-width: 320px;
+      margin: 0 auto;
+      height: 100%
+    }
+    .tarjeta-noticia:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    /* Carrusel interno */
+    .carrusel-noticia {
+      height: 220px;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .carrusel-noticia img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .carrusel-noticia .carousel-control-prev,
+    .carrusel-noticia .carousel-control-next {
+      width: 35px;
+      height: 35px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 50%;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .tarjeta-noticia:hover .carousel-control-prev,
+    .tarjeta-noticia:hover .carousel-control-next {
+      opacity: 1;
+    }
+    .carrusel-noticia .carousel-indicators {
+      bottom: 8px;
+    }
+    .carrusel-noticia .carousel-indicators button {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Contenido tarjeta */
+    .contenido-noticia {
+      padding: 18px 15px 25px 15px;
+    }
+    .titulo-noticia {
+      font-family: 'Poppins', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1661AC;
+      text-align: left;
+      margin-bottom: 12px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .titulo-noticia a {
       text-decoration: none;
-      padding: 8px 15px;
-      border-radius: 5px;
-      transition: 0.3s;
+      color: inherit;
+      transition: color 0.3s ease;
     }
-    nav.barra a.active {
-      background-color: #0d5c9b;
-      color: white;
+    .titulo-noticia a:hover {
+      color: #2D8EFF;
+      text-decoration: underline;
+      text-decoration-color: #2D8EFF;
     }
-    .Buscador {
+    .info-noticia {
+      font-family: 'Poppins', sans-serif;
+      font-size: 16px;
+      color: #74737C;
       display: flex;
+      justify-content: flex-start;
       align-items: center;
       gap: 8px;
     }
-    .Buscador img {
-      width: 20px; 
-      height: 20px;
+    .separador-info {
+      color: #74737C;
     }
-    .Buscador input {
-      padding: 8px 12px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 14px;
+
+    /* Boton ver mas */
+    .contenedor-boton {
+      display: flex;
+      justify-content: center;
+      margin: 40px 0 60px 0;
     }
-    .Buscador button {
-      padding: 8px 12px;
-      background-color: #0d5c9b; 
-      color: white;
+    .btn-ver-mas {
+      width: 170px;
+      height: 50px;
+      background: #2D8EFF;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
       cursor: pointer;
+      transition: all 0.3s ease;
     }
-    .menu-configuracion {
-      position: relative;
-      display: inline-block;
-      margin-left: 15px;
+    .btn-ver-mas:hover {
+      background: #1a75e0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(45, 142, 255, 0.3);
     }
-    
-    .icono-configuracion {
-      width: 30px;
-      height: 30px;
-      cursor: pointer;
-      transition: transform 0.3s;
+
+    /* Anuncio lateral */
+    .anuncio-lateral {
+      position: sticky;
+      top: 20px;
+      max-width: 200px;
+      height: 725px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
     }
-    
-    .icono-configuracion:hover {
-      transform: rotate(30deg);
+    .anuncio-lateral:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
     }
-    
-    .menu-desplegable {
-      display: none;
-      position: absolute;
-      right: 0;
-      background-color: white;
-      min-width: 160px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      z-index: 1001;
-      border-radius: 4px;
-    }
-    
-    .menu-desplegable a {
-      color: #333;
-      padding: 12px 16px;
-      text-decoration: none;
+    .anuncio-lateral a {
       display: block;
-      transition: background-color 0.3s;
+      width: 100%;
+      height: 100%;
+    }
+
+    .anuncio-lateral img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .placeholder-anuncio {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, #1661AC, #2D8EFF);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Placeholder para imagenes */
+    .imagen-placeholder {
+      background: linear-gradient(45deg, #1661AC, #2D8EFF);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* Responsivo */
+    @media (max-width: 1200px) {
+      .contenedor-noticias {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .contenedor-principal {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+      .anuncio-lateral {
+        max-width: 100%;
+        height: 200px;
+        position: static;
+      }
+      .linea-divisora {
+        max-width: 600px;
+      }
+    }
+
+    @media (max-width: 992px) {
+      .contenedor-noticias {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .encabezado-categoria {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      .linea-divisora {
+        width: 100%;
+        max-width: none;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .contenedor-noticias {
+        grid-template-columns: 1fr;
+      }
+      .encabezado-categoria {
+        padding: 0 15px;
+      }
+      .titulo-categoria {
+        font-size: 20px;
+      }
     }
     
-    .menu-desplegable a:hover {
-      background-color: #f1f1f1;
-    }
-    
-    .menu-configuracion:hover .menu-desplegable {
-      display: block;
-    }
-    .resultados-busqueda {
-      margin-bottom: 20px;
-      padding: 10px;
-      background-color: #f0f0f0;
-      border-radius: 4px;
-    }
-    a {
-      text-decoration: none;
-    }
-    .boton-publicar { 
+  .boton-publicar { 
       position: fixed; 
       bottom: 30px; left: 
       30px; background-color: #0d5c9b; 
@@ -185,139 +347,120 @@ $conexion->close();
       z-index: 1000; 
       text-decoration: none; 
     }
-    .contenido-principal {
-      margin-top: 130px;
-      padding: 20px;
-    }
-    .resultados-busqueda {
-      margin-bottom: 20px;
-      padding: 10px;
-      background-color: #f0f0f0;
-      border-radius: 4px;
-    }
-    .sin-noticias {
-      text-align: center;
-      padding: 50px;
-      color: #666;
-    }
-    .noticia-card {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .noticia-titulo {
-      color: #0d5c9b;
-      margin-bottom: 10px;
-    }
-    .noticia-meta {
-      color: #666;
-      font-size: 14px;
-      margin-bottom: 15px;
-      display: flex;
-      gap: 15px;
-    }
-    .imagen-contenedor {
-      max-width: 100%;
-      overflow: hidden;
-      text-align: center;
-      margin-bottom: 15px;
-    }
-    .noticia-imagen {
-      max-width: 100%;
-      height: auto;
-      max-height: 400px;
-      object-fit: contain;
-      border-radius: 4px;
-    }
-    .noticia-resumen {
-      line-height: 1.6;
-      margin-bottom: 15px;
-    }
-    .dropdown-content { 
-      display: none; 
-      position: absolute; 
-      right: 0; 
-      background-color: #ffffff; 
-      min-width: 140px; 
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
-      border-radius: 8px; 
-      z-index: 1001; 
-      overflow: hidden; 
-      transition: all 0.2s ease-in-out;
-    }
-    .dropdown-content a { 
-      color: #333; 
-      padding: 10px 16px; 
-      text-decoration: none; 
-      display: block; 
-      font-size: 14px;
-      transition: background-color 0.2s ease;
-    }
-    .dropdown-content a:hover { 
-      background-color: #f0f0f0; 
-    }
-    .dropdown:hover .dropdown-content { 
-      display: block; 
-    }
-    .encabezado.oculto {
-      transform: translateY(-100%);
-      transition: transform 0.3s ease;
-    }
-    .barra.oculto {
-      transform: translateY(-130px);
-      transition: transform 0.3s ease;
-    }
+
+.btn:hover {
+    
+}
+ 
   </style>
 </head>
 <body>
-  <div class="contenido-principal">
-      <?php if (!empty($termino_busqueda)): ?>
-        <div class="resultados-busqueda">
-          <p>Resultados de búsqueda para: <strong><?= htmlspecialchars($termino_busqueda) ?></strong></p>
-          <?php if (empty($noticias)): ?>
-            <p>No se encontraron noticias que coincidan con tu búsqueda.</p>
-          <?php endif; ?>
-        </div>
-      <?php endif; ?>
 
-      <?php if (empty($noticias)): ?>
-        <div class="sin-noticias">
-          <h2>No hay noticias publicadas aún</h2>
-          <p>¡Sé el primero en compartir una noticia!</p>
+<?php include 'menu2.php'; ?>
+
+<div class="container-fluid">
+  <!-- Encabezado categoria -->
+   <div class="encabezado-categoria">
+      <h1 class="titulo-categoria">Todo sobre el deporte</h1>
+      <div class="linea-divisora"></div>
+</div>
+
+<!-- Contenedor principal -->
+ <div class="contenedor-principal">
+  <!-- Seccion noticias -->
+   <div class="seccion-noticias">
+    <div class="contenedor-noticias">
+      <?php while ($noticia = $result_noticias->fetch_assoc()):
+        $imagenes = obtenerImagenNoticia($noticia);
+?>
+<div class="tarjeta-noticia">
+  <!-- Carrusel de imagenes -->
+   <div id="carouselNoticia<?= $noticia['id'] ?>" class="carousel slide carrusel-noticia" data-bs-ride="carousel" data-bs-interval="5000">
+    <div class="carousel-inner">
+      <?php if (!empty($imagenes)): ?>
+        <?php foreach ($imagenes as $index => $imagen): ?>
+        <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+          <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
+            <img src="imagenes/noticias/<?= $imagen ?>"
+              alt="<?= htmlspecialchars($noticia['titulo']) ?>"
+              onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\'imagen-placeholder w-100 h-100\'>Sin imagen</div>';">
+        </a>
         </div>
-      <?php else: ?>
-        <?php foreach ($noticias as $noticia): ?>
-          <article class="noticia-card" style="position: relative;">
-            <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
-              <div class="menu-admin dropdown" style="position: absolute; top: 15px; right: 15px;">
-              <span style="cursor: pointer;">⋮</span>
-              <div class="dropdown-content">
-                <a href="editar_noticia.php?id=<?= $noticia['id'] ?>">Editar</a>
-                <a href="eliminar_noticia.php?id=<?= $noticia['id'] ?>" onclick="return confirm('¿Deseas eliminar esta noticia?')">Eliminar</a>
-              </div>
-            </div>
-            <?php endif; ?>
-            <a href="ver_noticia.php?id=<?= $noticia['id'] ?>" style="text-decoration: none; color: inherit;">
-              <h2 class="noticia-titulo"><?= htmlspecialchars($noticia['titulo']) ?></h2>
-            </a>
-            <div class="noticia-meta">
-              <span><?= htmlspecialchars($noticia['categoria']) ?></span>
-              <span><?= htmlspecialchars($noticia['autor']) ?></span>
-              <span><?= htmlspecialchars($noticia['fecha']) ?></span>
-            </div>
-            <?php if ($noticia['imagen']): ?>
-              <div class="imagen-contenedor">
-                <img src="imagenes/noticias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
-              </div>
-            <?php endif; ?>
-            <p class="noticia-resumen"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
-          </article>
         <?php endforeach; ?>
+      <?php else: ?>
+        <div class="carousel-item active">
+          <div class="imagen-placeholder w-100 h-100 d-flex align-items-center justify-content-center">
+            Sin imagen
+      </div>
+      </div>
       <?php endif; ?>
-    </div>
-    <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
+      </div>
+
+      <?php if (count($imagenes) > 1): ?>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselNoticia<?= $noticia['id'] ?>" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#carouselNoticia<?= $noticia['id'] ?>" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Siguiente</span>
+      </button>
+
+      <div class="carousel-indicators">
+        <?php foreach ($imagenes as $index => $imagen): ?>
+          <button type="button" data-bs-target="#carouselNoticias<?= $noticia['id'] ?>"
+                  data-bs-slide-to="<?= $index ?>"
+                  class="<?= $index === 0 ? 'active' : '' ?>"
+                  aria-label="Slide <?= $index + 1 ?>"></button>
+        <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+        </div>
+
+        <!-- Contenido -->
+         <div class="contenido-noticia">
+          <h3 class="titulo-noticia">
+            <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
+              <?= htmlspecialchars($noticia['titulo']) ?>
+        </a>
+        </h3>
+        <div class="info-noticia">
+          <span><?= date('d/m/Y', strtotime($noticia['fecha'])) ?></span>
+          <span class="separador-info">|</span>
+          <span><?= !empty($noticia['autor']) ? htmlspecialchars($noticia['autor']) : 'Desconocido' ?></span>
+        </div>
+        </div>
+        </div>
+        <?php endwhile; ?>
+        </div>
+
+        <!-- Boton ver mas -->
+         <div class="contenedor-boton">
+         <button class="btn-ver-mas">Ver más</button>
+        </div>
+        </div>
+
+        <!-- Anuncio lateral -->
+         <div class="anuncio-lateral">
+          <a href="detalle_anuncio.php?id=1" target="_blanck">
+            <?php
+            $imagen_anuncio = 'cinemark.jpeg';
+            $ruta_anuncio = 'imagenes/anuncios/' . $imagen_anuncio;
+            ?>
+            <?php if (file_exists($ruta_anuncio)): ?>
+              <img src="<?= $ruta_anuncio ?>" alt="Anuncio publicitario">
+            <?php else: ?>
+            <div class="placeholder-anuncio">
+              Anuncio Publicitario<br>
+              <small>200x725px</small>
+        </div>
+        <?php endif; ?>
+            </a>
+            </div>
+            </div>
+            </div>
+
+             <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
       <a href="publicar_noticia.php" class="boton-publicar">Publicar Noticia</a>
     <?php endif; ?>
 
@@ -328,7 +471,8 @@ $conexion->close();
     <link rel="stylesheet" href="asistente_virtual.css">
     <?php include 'chatbot.php'; ?>
     <script src="chatbot.js"></script>
-      <script>
+
+           <script>
   // Confirmación de cierre de sesión
       document.getElementById('btnSesion')?.addEventListener('click', function(e) {
         e.preventDefault();
@@ -366,35 +510,9 @@ $conexion->close();
           document.body.removeChild(confirmBox);
         };
       });
+      </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-      // Ocultar encabezado y barra al hacer scroll hacia abajo
-      let lastScroll = 0;
-      const encabezado = document.querySelector('.encabezado');
-      const barra = document.querySelector('nav.barra');
-      let timer;
-
-      window.addEventListener('scroll', () => {
-        const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-
-        if (currentScroll > lastScroll && currentScroll > 80) {
-          barra?.classList.add('oculto');
-
-          clearTimeout(timer);
-          timer = setTimeout(() => {
-            encabezado?.classList.add('oculto');
-          }, 200);
-
-        } else {
-
-          clearTimeout(timer);
-          encabezado?.classList.remove('oculto');
-          barra?.classList.remove('oculto');
-        }
-
-        lastScroll = currentScroll <= 0 ? 0 : currentScroll;
-      });
-    </script>
-    <?php include 'footer.php' ?>
-
+ <?php include 'footer.php'; ?>
 </body>
 </html>
