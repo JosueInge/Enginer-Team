@@ -211,6 +211,25 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       transition: background 0.3s;
     }
     
+    /*  activa el hover del icono menu */
+    .menu-links a.activo {
+      background: #C7F1FF;
+      color: #061F3E;
+      border-radius: 8px;
+    }
+    .menu-toggle.activo {
+      color: #061F3E;
+    }
+
+    .menu-toggle.activo {
+      color: #061F3E;
+      background: #61C9A8; /* color de fondo */
+      border: 1px solid #61C9A880;
+      border-radius: 5px;
+      padding: 1px 10px; /* espacios del marco que rodea al icono */
+      box-shadow: 0 0 6px #61C9A8;
+      transition: all 0.3s ease;
+    }
 
     .menu-header h2 {
       font-size:24px;
@@ -329,7 +348,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
     <div class="separator"></div>
     <div class="menu-links">
-      <a href="politica1.php">Política</a>
+      <a href="politica.php">Política</a>
       <a href="cultura.php">Cultura</a>
       <a href="entretenimiento.php">Entretenimiento</a>
       <a href="social.php">Social</a>
@@ -355,9 +374,57 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   <script>
     function openMenu(){
       document.getElementById("menuLateral").classList.add("open");
+      document.querySelector(".menu-toggle").classList.add("activo");
     }
+
     function closeMenu(){
       document.getElementById("menuLateral").classList.remove("open");
+      document.querySelector(".menu-toggle").classList.remove("activo");
+    }
+
+    const categoriaLinks = document.querySelectorAll('.menu-links a');
+
+    categoriaLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        // Guardamos el href del enlace clickeado
+        localStorage.setItem('categoriaActiva', link.getAttribute('href'));
+      });
+    });
+
+    // APLICAR la categoría activa cuando se cargue la página
+    window.addEventListener('DOMContentLoaded', () => {
+      const categoriaActiva = localStorage.getItem('categoriaActiva');
+      if (categoriaActiva) {
+        categoriaLinks.forEach(link => {
+          if (link.getAttribute('href') === categoriaActiva) {
+            link.classList.add('activo');
+          } else {
+            link.classList.remove('activo');
+          }
+        });
+
+        // Si hay una categoría activa, el ícono hamburguesa también se pinta activo
+        document.querySelector('.menu-toggle').classList.add('activo');
+      }
+    });
+
+    // FUNCIONES de abrir/cerrar menú lateral
+    function openMenu() {
+      document.getElementById("menuLateral").classList.add("open");
+    }
+
+    function closeMenu() {
+      document.getElementById("menuLateral").classList.remove("open");
+    }
+
+    // Limpia categoría activa si estamos en páginas principales
+    const paginasSinCategoria = ['home.php','clima1.php','deporte1.php','educacion1.php','turismo1.php','denuncia_anonima.php'
+    ];
+
+    const rutaActual = window.location.pathname;
+
+    if (paginasSinCategoria.some(pagina => rutaActual.includes(pagina))) {
+      localStorage.removeItem('categoriaActiva');
     }
   </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
