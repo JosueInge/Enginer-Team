@@ -1,30 +1,29 @@
 <?php
-  include 'conexion.php';
-  include 'menu.php';
+$categoria_actual = 'Clima';
+include 'conexion.php';
 
-  $termino_busqueda = '';
-  $where = '';
-  $params = [];
+// Obtener noticias de la categoria clima
+$sql_noticias = "SELECT * FROM noticias
+                WHERE categoria = 'clima' AND fecha <= CURDATE()
+                ORDER BY fecha DESC, id DESC
+                LIMIT 12";
+$result_noticias = $conexion->query($sql_noticias);
 
-  if (isset($_GET['busqueda']) && !empty($_GET['busqueda'])) {
-    $termino_busqueda = trim($_GET['busqueda']);
-    $where = "WHERE titulo LIKE ? OR descripcion LIKE ? OR autor LIKE ?";
-    $params = array_fill(0, 3, '%' . $termino_busqueda . '%');
-  }
-
-$query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND categoria = 'Clima' ORDER BY fecha DESC";
-  $stmt = $conexion->prepare($query);
-
-  if (!empty($params)) {
-    $types = str_repeat('s', count($params));
-    $stmt->bind_param($types, ...$params);
+// Funcion para verificar si una imagen existe
+function imagenExiste($nombre_imagen) {
+  return !empty($nombre_imagen) && file_exists('imagenes/noticias/' . $nombre_imagen);
 }
 
-  $stmt->execute();
-  $resultado = $stmt->get_result();
-  $noticias = $resultado->fetch_all(MYSQLI_ASSOC);
-  $stmt->close();
-  $conexion->close();
+// Funcion para obtener imagenes de una noticia
+function obtenerImagenNoticia($noticia) {
+  $imagenes = [];
+  foreach (['imagen', 'imagen2', 'imagen3'] as $campo) {
+    if (!empty($noticia[$campo]) && imagenExiste($noticia[$campo])) {
+      $imagenes[] = $noticia[$campo];
+    }
+  }
+  return $imagenes;
+}
 ?>
 
 <!DOCTYPE html>
@@ -32,221 +31,424 @@ $query = "SELECT * FROM propuestas_noticias WHERE estado = 'aprobada' AND catego
 <head>
   <meta charset="UTF-8" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Comunicado Digital</title>
+  <title>Clima - Comunicado Digital</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    :root {
+      --color-primario: #1661AC;
+      --color-secundario: #2D8EFF;
+      --color-texto: #000000;
+      --color-texto-secundario: #74737C;
+      --color-fondo: #f8f9f9;
     }
     body {
-      font-family: Arial, sans-serif;
-      background-color: #fff;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--color-fondo);
     }
-    .encabezado1 {
-      background-color: #0d5c9b;
-      color: white;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      position: fixed;
-      top: 0;
-      left: 0;
-     right: 0;
-     z-index: 1000;
-    }
-    .logo1 {
+    /* Seccion encabezado categoria */
+    .encabezado-categoria {
+      max-width: 1300px;
+      margin: 30px auto 40px auto;
+      padding: 0 20px;
       display: flex;
       align-items: center;
+      gap: 20px;
     }
-    .logo1 img {
-      height: 50px;
-      margin-right: 10px;
+    .titulo-categoria {
+      font-family: 'Poppins', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #403F48;
+      margin: 0;
+      white-space: nowrap;
     }
-    nav.barra1{
-      background-color: #bebaba;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px;
-      font-weight: bold;
-      position: fixed;
-      top: 70px;
-      left: 0;
-      right: 0;
-      z-index: 999;
+    .linea-divisora {
+      flex: 1;
+      height: 2px;
+      background-color: #403F48;
+      max-width: 975px;
     }
-    nav.barra1 a{
-      color: #000000;
-      text-decoration: none;
-      padding: 8px 15px;
-      border-radius: 5px;
-      transition: 0.3s;
-    }
-    nav.barra1 a.active {
-      background-color: #0d5c9b;
-      color: white;
-    }
-    .redes1 {
-      margin-left: 500px;
-    }
-    .informacion1 {
-      margin-right: 15px;
-    }
-    .Buscador {
-    position: relative;
-    width: 200px;
-  }
 
-  .Buscador input {
-    width: 100%;
-    padding: 8px 8px 8px 35px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
+    /* Contenedor principal */
+    .contenedor-principal {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: 40px;
+      align-items: start;
+    }
 
-  .Buscador img {
-    position: absolute;
-    top: 50%;
-    left: 10px;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    pointer-events: none;
-  }
-  a {
-  text-decoration: none;
-  }
-  .contenido-principal {
-      margin-top: 130px;
-      padding: 20px;
+    /* Seccion noticias */
+    .seccion-noticias {
+      width: 100%;
     }
-    .resultados-busqueda {
-      margin-bottom: 20px;
-      padding: 10px;
-      background-color: #f0f0f0;
-      border-radius: 4px;
+    .contenedor-noticias {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 25px;
+      margin-bottom: 50px;
     }
-    .sin-noticias {
-      text-align: center;
-      padding: 50px;
-      color: #666;
-    }
-    .noticia-card {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .noticia-titulo {
-      color: #0d5c9b;
-      margin-bottom: 10px;
-    }
-    .noticia-meta {
-      color: #666;
-      font-size: 14px;
-      margin-bottom: 15px;
-      display: flex;
-      gap: 15px;
-    }
-    .imagen-contenedor {
-      max-width: 100%;
+
+    /* Tarjetas de noticias */
+    .tarjeta-noticia {
+      background: #fff;
+      border-radius: 16px;
       overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      max-width: 320px;
+      margin: 0 auto;
+      height: 100%
+    }
+    .tarjeta-noticia:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    /* Carrusel interno */
+    .carrusel-noticia {
+      height: 220px;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .carrusel-noticia img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .carrusel-noticia .carousel-control-prev,
+    .carrusel-noticia .carousel-control-next {
+      width: 35px;
+      height: 35px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 50%;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .tarjeta-noticia:hover .carousel-control-prev,
+    .tarjeta-noticia:hover .carousel-control-next {
+      opacity: 1;
+    }
+    .carrusel-noticia .carousel-indicators {
+      bottom: 8px;
+    }
+    .carrusel-noticia .carousel-indicators button {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Contenido tarjeta */
+    .contenido-noticia {
+      padding: 18px 15px 25px 15px;
+    }
+    .titulo-noticia {
+      font-family: 'Poppins', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1661AC;
+      text-align: left;
+      margin-bottom: 12px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .titulo-noticia a {
+      text-decoration: none;
+      color: inherit;
+      transition: color 0.3s ease;
+    }
+    .titulo-noticia a:hover {
+      color: #2D8EFF;
+      text-decoration: underline;
+      text-decoration-color: #2D8EFF;
+    }
+    .info-noticia {
+      font-family: 'Poppins', sans-serif;
+      font-size: 16px;
+      color: #74737C;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 8px;
+    }
+    .separador-info {
+      color: #74737C;
+    }
+
+    /* Boton ver mas */
+    .contenedor-boton {
+      display: flex;
+      justify-content: center;
+      margin: 40px 0 60px 0;
+    }
+    .btn-ver-mas {
+      width: 170px;
+      height: 50px;
+      background: #2D8EFF;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-ver-mas:hover {
+      background: #1a75e0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(45, 142, 255, 0.3);
+    }
+
+    /* Anuncio lateral */
+    .anuncio-lateral {
+      position: sticky;
+      top: 20px;
+      max-width: 200px;
+      height: 725px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+    }
+    .anuncio-lateral:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    .anuncio-lateral a {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .anuncio-lateral img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .placeholder-anuncio {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, #1661AC, #2D8EFF);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
       text-align: center;
-      margin-bottom: 15px;
+      padding: 20px;
     }
-    .noticia-imagen {
-      max-width: 100%;
-      height: auto;
-      max-height: 400px;
-      object-fit: contain;
-      border-radius: 4px;
+
+    /* Placeholder para imagenes */
+    .imagen-placeholder {
+      background: linear-gradient(45deg, #1661AC, #2D8EFF);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
     }
-    .noticia-resumen {
-      line-height: 1.6;
-      margin-bottom: 15px;
+
+    /* Responsivo */
+    @media (max-width: 1200px) {
+      .contenedor-noticias {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .contenedor-principal {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+      .anuncio-lateral {
+        max-width: 100%;
+        height: 200px;
+        position: static;
+      }
+      .linea-divisora {
+        max-width: 600px;
+      }
     }
-    .encabezado1.oculto {
-      transform: translateY(-100%); 
-      transition: transform 0.3s ease;
+
+    @media (max-width: 992px) {
+      .contenedor-noticias {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .encabezado-categoria {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      .linea-divisora {
+        width: 100%;
+        max-width: none;
+      }
     }
-    .barra1.oculto {
-      transform: translateY(-130px);
-      transition: transform 0.3s ease;
+
+    @media (max-width: 576px) {
+      .contenedor-noticias {
+        grid-template-columns: 1fr;
+      }
+      .encabezado-categoria {
+        padding: 0 15px;
+      }
+      .titulo-categoria {
+        font-size: 20px;
+      }
     }
+    
+    .btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 24px;
+    height: 45px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    text-decoration: none;
+    color: #fff;
+    background-color: #4C00DA;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3 ease;
+    white-space: nowrap;
+    min-width: auto;
+    width: auto; 
+}
+
+.btn:hover {
+    
+}
+ 
   </style>
 </head>
 <body>
-  <div class="contenido-principal">
-      <?php if (!empty($termino_busqueda)): ?>
-        <div class="resultados-busqueda">
-          <p>Resultados de búsqueda para: <strong><?= htmlspecialchars($termino_busqueda) ?></strong></p>
-          <?php if (empty($noticias)): ?>
-            <p>No se encontraron noticias que coincidan con tu búsqueda.</p>
-          <?php endif; ?>
-        </div>
-      <?php endif; ?>
 
-      <?php if (empty($noticias)): ?>
-        <div class="sin-noticias">
-          <h2>No hay noticias publicadas aún</h2>
-          <p>¡Sé el primero en compartir una noticia!</p>
+<?php include 'menu.php'; ?>
+
+<div class="container-fluid">
+  <!-- Encabezado categoria -->
+   <div class="encabezado-categoria">
+      <h1 class="titulo-categoria">Todo sobre el clima</h1>
+      <div class="linea-divisora"></div>
+</div>
+
+<!-- Contenedor principal -->
+ <div class="contenedor-principal">
+  <!-- Seccion noticias -->
+   <div class="seccion-noticias">
+    <div class="contenedor-noticias">
+      <?php while ($noticia = $result_noticias->fetch_assoc()):
+        $imagenes = obtenerImagenNoticia($noticia);
+?>
+<div class="tarjeta-noticia">
+  <!-- Carrusel de imagenes -->
+   <div id="carouselNoticia<?= $noticia['id'] ?>" class="carousel slide carrusel-noticia" data-bs-ride="carousel" data-bs-interval="5000">
+    <div class="carousel-inner">
+      <?php if (!empty($imagenes)): ?>
+        <?php foreach ($imagenes as $index => $imagen): ?>
+        <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+          <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
+            <img src="imagenes/noticias/<?= $imagen ?>"
+              alt="<?= htmlspecialchars($noticia['titulo']) ?>"
+              onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\'imagen-placeholder w-100 h-100\'>Sin imagen</div>';">
+        </a>
         </div>
-      <?php else: ?>
-        <?php foreach ($noticias as $noticia): ?>
-          <article class="noticia-card">
-            <h2 class="noticia-titulo">
-              <a href="ver_noticia.php?id=<?= $noticia['id'] ?>" style="text-decoration: none; color: inherit;">
-                <?= htmlspecialchars($noticia['titulo']) ?>
-              </a>
-            </h2>
-            <div class="noticia-meta">
-              <span><?= htmlspecialchars($noticia['categoria']) ?></span>
-              <span><?= htmlspecialchars($noticia['autor']) ?></span>
-              <span><?= htmlspecialchars($noticia['fecha']) ?></span>           
-            </div>
-            <?php if ($noticia['imagen']): ?>
-              <div class="imagen-contenedor">
-                <img src="imagenes/noticias/<?= htmlspecialchars($noticia['imagen']) ?>" class="noticia-imagen" alt="<?= htmlspecialchars($noticia['titulo']) ?>">
-              </div>
-            <?php endif; ?>
-            <p class="noticia-resumen"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
-          </article>
         <?php endforeach; ?>
+      <?php else: ?>
+        <div class="carousel-item active">
+          <div class="imagen-placeholder w-100 h-100 d-flex align-items-center justify-content-center">
+            Sin imagen
+      </div>
+      </div>
       <?php endif; ?>
-    </div>
+      </div>
 
-    <script>
-      let lastScroll = 0;
-        const encabezado = document.querySelector('.encabezado1');
-        const barra = document.querySelector('nav.barra1');
-        let timer;
+      <?php if (count($imagenes) > 1): ?>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselNoticia<?= $noticia['id'] ?>" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#carouselNoticia<?= $noticia['id'] ?>" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Siguiente</span>
+      </button>
 
-        window.addEventListener('scroll', () => {
-          const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+      <div class="carousel-indicators">
+        <?php foreach ($imagenes as $index => $imagen): ?>
+          <button type="button" data-bs-target="#carouselNoticias<?= $noticia['id'] ?>"
+                  data-bs-slide-to="<?= $index ?>"
+                  class="<?= $index === 0 ? 'active' : '' ?>"
+                  aria-label="Slide <?= $index + 1 ?>"></button>
+        <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+        </div>
 
-          // Scroll hacia abajo
-          if (currentScroll > lastScroll && currentScroll > 80) {
-            barra?.classList.add('oculto');
+        <!-- Contenido -->
+         <div class="contenido-noticia">
+          <h3 class="titulo-noticia">
+            <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
+              <?= htmlspecialchars($noticia['titulo']) ?>
+        </a>
+        </h3>
+        <div class="info-noticia">
+          <span><?= date('d/m/Y', strtotime($noticia['fecha'])) ?></span>
+          <span class="separador-info">|</span>
+          <span><?= !empty($noticia['autor']) ? htmlspecialchars($noticia['autor']) : 'Desconocido' ?></span>
+        </div>
+        </div>
+        </div>
+        <?php endwhile; ?>
+        </div>
 
-            // Oculta encabezado con retraso (200 ms)
-            clearTimeout(timer);
-            timer = setTimeout(() => {
-              encabezado?.classList.add('oculto');
-            }, 200);
+        <!-- Boton ver mas -->
+         <div class="contenedor-boton">
+         <button class="btn-ver-mas">Ver más</button>
+        </div>
+        </div>
 
-          } else {
-            // Scroll hacia arriba: muestra ambos de inmediato
-            clearTimeout(timer);
-            encabezado?.classList.remove('oculto');
-            barra?.classList.remove('oculto');
-          }
+        <!-- Anuncio lateral -->
+         <div class="anuncio-lateral">
+          <a href="detalle_anuncio.php?id=1" target="_blanck">
+            <?php
+            $imagen_anuncio = 'cinemark.jpeg';
+            $ruta_anuncio = 'imagenes/anuncios/' . $imagen_anuncio;
+            ?>
+            <?php if (file_exists($ruta_anuncio)): ?>
+              <img src="<?= $ruta_anuncio ?>" alt="Anuncio publicitario">
+            <?php else: ?>
+            <div class="placeholder-anuncio">
+              Anuncio Publicitario<br>
+              <small>200x725px</small>
+        </div>
+        <?php endif; ?>
+            </a>
+            </div>
+            </div>
+            </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-          lastScroll = currentScroll <= 0 ? 0 : currentScroll;
-        });
-  </script>
+ <?php include 'footer.php'; ?>
 </body>
 </html>

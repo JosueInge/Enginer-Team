@@ -2,5 +2,10 @@
     "require": {
         "google/apiclient": "^2.18",
         "thenetworg/oauth2-azure": "^2.2"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^4.0",
+        "phpmd/phpmd": "^2.15",
+        "phpstan/phpstan": "*"
     }
 }

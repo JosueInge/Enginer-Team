@@ -24,23 +24,51 @@ if (isset($_GET['busqueda']) && !empty($_GET['busqueda'])) {
     $params = array_fill(0, 3, '%' . $termino_busqueda . '%');
 }
 
-// Obtener la noticia más reciente
-$sql_destacada = "SELECT * FROM noticias 
-                 WHERE fecha <= CURDATE() 
-                 ORDER BY fecha DESC, id DESC 
-                 LIMIT 3";
+// Obtener noticias destacadas mas recientes para noticias y propuestas_noticias
+$sql_destacada = "SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'noticia' as fuente
+                FROM noticias
+                WHERE fecha <= CURDATE()
+                
+                UNION ALL 
+                
+                SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'noticia' as fuente
+                FROM propuestas_noticias
+                WHERE estado = 'aprobada' AND fecha <= CURDATE()
+                
+                ORDER BY fecha DESC, id DESC
+                LIMIT 3";
 $result_destacada = $conexion->query($sql_destacada);
 $noticia_destacada = $result_destacada->fetch_assoc();
 
-// Obtener las ultimas 8 noticias (para 2 filas de 4 en desktop)
-$sql_ultimas = "SELECT * FROM noticias 
-                WHERE fecha <= CURDATE() AND id != ?
+// Obtener las ultimas 8 noticias combinando noticias y propuestas_noticias
+$sql_ultimas = "SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'noticia' as fuente
+                FROM noticias
+                WHERE fecha <= CURDATE()
+                
+                UNION ALL
+                
+                SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'propuestas' as fuente
+                FROM propuestas_noticias
+                WHERE estado = 'aprobada' AND fecha <= CURDATE()
+                
                 ORDER BY fecha DESC, id DESC
                 LIMIT 8";
-$stmt_ultimas = $conexion->prepare($sql_ultimas);
-$stmt_ultimas->bind_param("i", $noticia_id_destacada);
-$stmt_ultimas->execute();
-$result_ultimas = $stmt_ultimas->get_result();
+$result_ultimas = $conexion->query($sql_ultimas);
+
+// Obtener noticias que podrian interesarte aleatorias, combinando noticias y propuestas_noticias
+$sql_interes = "SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'noticia' as fuente
+                FROM noticias
+                WHERE fecha <= CURDATE()
+                
+                UNION ALL
+                
+                SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'propuestas' as fuente
+                FROM propuestas_noticias
+                WHERE estado = 'aprobada' AND fecha <= CURDATE()
+                
+                ORDER BY RAND()
+                LIMIT 4";
+$result_interes = $conexion->query($sql_interes);
 
 // Función para verificar si una imagen existe
 function imagenExiste($nombre_imagen) {
@@ -683,7 +711,7 @@ function obtenerImagenNoticia($noticia) {
                             <?php if (count($imagenes) > 0): ?>
                                 <?php foreach ($imagenes as $index => $imagen): ?>
                                 <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                                    <a href="detalle_noticia.php?id=<?= $noticia_destacada['id'] ?>">
+                                    <a href="ver_noticia.php?id=<?= $noticia_destacada['id'] ?>">
                                         <img src="imagenes/noticias/<?= $imagen ?>" 
                                              class="d-block w-100" 
                                              alt="<?= htmlspecialchars($noticia_destacada['titulo']) ?>"
@@ -732,7 +760,7 @@ function obtenerImagenNoticia($noticia) {
                 
                 <!-- Título -->
                 <div class="titulo-destacado">
-                    <a href="detalle_noticia.php?id=<?= $noticia_destacada['id'] ?>">
+                    <a href="ver_noticia.php?id=<?= $noticia_destacada['id'] ?>">
                         <?= htmlspecialchars($noticia_destacada['titulo']) ?>
                     </a>
                 </div>
@@ -759,7 +787,7 @@ function obtenerImagenNoticia($noticia) {
                                 <?php if (!empty($imagenes)): ?>
                                     <?php foreach ($imagenes as $index => $imagen): ?>
                                     <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                                        <a href="detalle_noticia.php?id=<?= $noticia['id'] ?>">
+                                        <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
                                             <img src="imagenes/noticias/<?= $imagen ?>" 
                                                  alt="<?= htmlspecialchars($noticia['titulo']) ?>" 
                                                  onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\'imagen-placeholder w-100 h-100\'>Sin imagen</div>';">
@@ -788,7 +816,7 @@ function obtenerImagenNoticia($noticia) {
                         <!-- Contenido -->
                         <div class="contenido-ultima-noticia">
                             <h3 class="titulo-ultima-noticia">
-                                <a href="detalle_noticia.php?id=<?= $noticia['id'] ?>">
+                                <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
                                     <?= htmlspecialchars($noticia['titulo']) ?>
                                 </a>
                             </h3>
@@ -802,6 +830,50 @@ function obtenerImagenNoticia($noticia) {
                     <?php endwhile; ?>
                 </div>
             </section>
+
+            <!-- SECCION PODRIA INTERESARTE -->
+             <section class="seccion-interes mt-4" style="padding: 20px; background-color: #fff;">
+                <h2 style="font-family: 'Poppins'; font-size: 24px; font-weight: bold; color: #403F48; text-align: left;">Podrian interesarte</h2>
+
+                <div class="row mt-4 g-4 justify-content-center">
+                    <?php while ($noticia = $result_interes->fetch_assoc()):
+                    $imagenes = obtenerImagenNoticia($noticia); ?>
+                    <div class="col-md-3 d-flex justify-content-center">
+                        <div class="card shadow-sm border-0" style="max-width: 320px; transition: transform 0.2s;">
+                            <div class="carouselInteres<?= $noticia['id'] ?>" class="carousel slide" data-bs-ride="corousel" data-bs-interval="5000">
+                                <div class="carrusel/inner">
+                                    <?php if (!empty($imagenes)): ?>
+                                        <?php foreach ($imagenes as $index => $img): ?>
+                                            <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                                                <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
+                                                    <img src="imagenes/noticias/<?= $img ?>" class="d-block w-100" alt="<?= htmlspecialchars($noticia['titulo']) ?>" style="height: 220px; object-fit: cover; border-radius: 12px;">
+                                        </a>
+                                        </div>
+                                        <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <div class="carousel-item active">
+                                                <div class="d-flex align-items-center justify-content-center bg-light" style="height: 220px; border-radius: 12px;">Sin imagen</div>
+                                        </div>
+                                        <?php endif; ?>
+                                        </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="card-title" style="font-family: 'Poppins'; font-weight: bold; color: #1661AC; font-size: 20px;">
+                                                <a href="ver_noticia.php?id=<?= $noticia['id'] ?>" style="color: #1661AC; text-decoration: none;">
+                                                    <?= htmlspecialchars($noticia['titulo']) ?>
+                                        </a>
+                                        </h5>
+                                        <p class="card-text" style="font-family: 'Poppins'; font-size: 16px; color: #74737C;">
+                                            <?= date('d/m/Y', strtotime($noticia['fecha'])) ?> |
+                                            <?= !empty($noticia['autor']) ? htmlspecialchars($noticia['autor']) : 'Anonimo' ?>
+                                        </p>
+                                        </div>
+                                        </div>
+                                        </div>
+                                        <?php endwhile; ?>
+                                        </div>
+                                        </section>
+
         </div>
     </div>
     <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
@@ -874,6 +946,7 @@ function obtenerImagenNoticia($noticia) {
 
     <!-- Font Awesome para los iconos -->
     <script src="https://kit.fontawesome.com/3d3e3e3d3e.js" crossorigin="anonymous"></script>
+       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <?php include 'footer.php'; ?>
 </body>

@@ -1,242 +1,374 @@
 <?php
 session_start();
 include 'conexion.php';
+include 'menu.php';
+include 'chatbot.php';
 
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] !== 'Administrador') {
-    header("Location: login.php");
-    exit();
-}
-
-$error = null;
-
-if (!isset($_GET['id'])) {
-    header("Location: noticias.php");
-    exit();
-}
-$id_noticia = intval($_GET["id"]);
-
-$stmt = $conexion->prepare("SELECT * FROM propuestas_noticias WHERE id = ?");
-$stmt->bind_param("i", $id_noticia);
+// Obtener ID de la noticia a editar
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$sql = "SELECT * FROM noticias WHERE id = ?";
+$stmt = $conexion->prepare($sql);
+$stmt->bind_param("i", $id);
 $stmt->execute();
-$noticia = $stmt->get_result()->fetch_assoc();
-$stmt->close();
+$result = $stmt->get_result();
+$noticia = $result->fetch_assoc();
 
 if (!$noticia) {
-    header("Location: noticia.php");
-    exit();
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $titulo = $_POST['titulo'] ?? '';
-    $descripcion = $_POST['descripcion'] ??'';
-
-    $stmt = $conexion->prepare("UPDATE propuestas_noticias SET titulo = ?, descripcion = ? WHERE id = ?");
-    $stmt->bind_param("ssi", $titulo, $descripcion, $id_noticia);
-    if ($stmt->execute()) {
-        header("Location: noticias.php?actualizada=1");
-        exit();
-    } else {
-        $error = "Error al actualizar: " . $conexion->error;
-    }
-    $stmt->close();
-    
+    echo "<h2>Noticia no encontrada</h2>";
+    exit;
 }
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Editar Noticia</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f9fafb;
-            margin: 0;
-            color: #333;
-            line-height: 1.6;
-        }
-        a {
-            text-decoration: none;
-            color: #0d5c9b;
-            font-weight: 600;
-            transition: color 0.3s ease;
-        }
-        a:hover {
-            color: #074973;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editar Noticia</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f4f6f9;
+  margin: 0;
+  padding: 0;
+}
 
-        header {
-            background-color: #0d5c9b;
-            color: #fff;
-            padding: 12px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 6px rgb(13 92 155 / 0.4);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .logo img {
-            height: 48px;
-            user-select: none;
-        }
+/* ENCABEZADO */
+header {
+  background-color: #061F3E;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+}
+header img {
+  height: 50px;
+}
+header a {
+  font-family: 'Poppins', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  transition: 0.3s;
+}
+header a:hover {
+  text-decoration: underline;
+  color: #1661AC;
+}
 
-        nav.informacion a {
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
+/* CONTENEDOR FORMULARIO */
+.form-container {
+  max-width: 900px;
+  margin: 50px auto;
+  background-color: #fff;
+  padding: 40px 60px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
 
-        nav.informacion a:hover,
-        nav.informacion a:focus {
-            color: #a8d0ff;
-            text-decoration: none;
-        }
+.form-container h1 {
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #1661AC;
+  margin-bottom: 30px;
+}
 
-        .contenedor-principal {
-            max-width: 720px;
-            background: #fff;
-            margin: 40px auto 60px;
-            padding: 30px 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 16px rgb(0 0 0 / 0.1);
-        }
-        h1 {
-            color: #0d5c9b;
-            margin-bottom: 25px;
-            font-weight: 700;
-            font-size: 2rem;
-            text-align: center;
-        }
+/* ETIQUETAS */
+label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #403F48;
+  display: block;
+  margin-bottom: 5px;
+}
 
-        .campo {
-            margin-bottom: 22px;
-        }
-        .campo label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #555;
-            font-size: 1rem;
-            user-select: none;
-        }
-        .campo input[type="text"],
-        .campo textarea {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1.8px solid #ccc;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-family: inherit;
-            transition: border-color 0.3s ease;
-            resize: vertical;
-            min-height: 100px;
-        }
-        .campo input[type="text"]:focus,
-        .campo textarea:focus {
-            outline: none;
-            border-color: #0d5c9b;
-            box-shadow: 0 0 6px rgba(13, 92, 155, 0.4);
-        }
+/* CAMPOS */
+select, input[type="text"], textarea, input[type="date"] {
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #B1B1B1;
+  margin-bottom: 15px;
+  transition: 0.2s;
+  color: #061F3E;
+  background-color: #fff;
+}
+select:focus, input:focus, textarea:focus {
+  border-color: #2D8EFF;
+  outline: none;
+  box-shadow: 0 0 6px rgba(45,142,255,0.3);
+}
+input:hover, textarea:hover, select:hover {
+  transform: scale(1.01);
+  box-shadow: 0 0 8px rgba(0,0,0,0.05);
+}
 
-        .boton-publicar {
-            background-color: #0d5c9b;
-            color: white;
-            border: none;
-            padding: 15px 0;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: 700;
-            width: 100%;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-            user-select: none;
-        }
-        .boton-publicar:hover,
-        .boton-publicar:focus {
-            background-color: #074973;
-            box-shadow: 0 4px 12px rgba(7, 73, 115, 0.6);
-        }
+/* PLACEHOLDER COLOR */
+::placeholder { color: #B1B1B1; }
 
-        .error {
-            background-color: #ffe6e6;
-            border: 1px solid #ff4d4d;
-            color: #b00000;
-            padding: 12px 15px;
-            border-radius: 6px;
-            margin-bottom: 22px;
-            font-weight: 600;
-            text-align: center;
-            user-select: none;
-        }
-        @media (max-width: 600px) {
-            .contenedor-principal {
-                margin: 20px 15px 40px;
-                padding: 25px 20px;
-            }
-            h1 {
-                font-size: 1.6rem;
-            }
-            .campo input[type="text"],
-            .campo textarea {
-                padding: 12px 14px;
-            }
-            .boton-publicar {
-                font-size: 1rem;
-                padding: 14px 0;
-            }
-        }
-    </style>
+/* ERRORES */
+.mensaje-error {
+  background-color: #F8D7DA;
+  border: 1px solid #F5C2C7;
+  color: #842029;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  border-radius: 8px;
+  padding: 5px 10px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  display: none;
+}
+
+/* CONTADOR */
+.contador {
+  position: relative;
+  text-align: right;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #B1B1B1;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  display: none;
+}
+.contador.error { color: #E33639; }
+
+/* IMAGEN */
+.subir-archivo {
+  border: 1px solid #B1B1B1;
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.subir-archivo button {
+  background-color: #ADEBFF;
+  color: #061F3E;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.subir-archivo button:disabled {
+  background-color: #B1B1B1;
+  cursor: not-allowed;
+}
+.subir-archivo span {
+  font-size: 14px;
+  color: #74737C;
+}
+
+/* VISTA PREVIA */
+.vista-previa {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.vista-previa img {
+  width: 350px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #B1B1B1;
+  position: relative;
+}
+.vista-previa button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  color: #E33629;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* BOTONES */
+.botones {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+.boton {
+  width: 200px;
+  height: 50px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.boton-cancelar {
+  background-color: #E85D5D;
+  color: #1B314B;
+}
+.boton-confirmar {
+  background-color: #61C9A8;
+  color: #1B314B;
+}
+.boton:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba()
+}
+.modal-contenido {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    width: 400px;
+}
+.modal-contenido h3 {
+    font-family: 'Poppins', sans-serif;
+    color: #403F48;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+.modal-botones {
+    display: flex;
+    justify-content: space-between;
+}
+.modal-botones button {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    padding: 8px 20px;
+}
+.btn-cancelar {
+    background-color: #EB7373;
+    color: #061F373E;
+}
+.btn-confirmar {
+    background-color: #61C9A8;
+    color: #fff;
+}
+</style>
 </head>
 <body>
+
 <header>
-    <div class="logo">
-        <img src="imagenes/logo.png" alt="logo" />
-    </div>
-    <nav class="informacion">
-        <a href="inicio.php">Volver a Noticias</a>
-    </nav>
+    <img src="imagenes/logo.png" alt="Logo">
+    <a href="#" id="volverDetalles">Volver a detalles</a>
 </header>
 
-<div class="contenedor-principal">
+<div class="form-container">
     <h1>Editar Noticia</h1>
+    <form id="formEditarNoticia">
+        <label for="categoria">Categoria:</labbel>
+        <select id="categoria" name="categoria">
+            <option value="">Seleccione una categoria</option>
+            <option value="Clima" <?= $noticia['categoria']=='Clima'?'selected':''; ?>>Clima</option>
+            <option value="Deporte" <?= $noticia['categoria']=='Deporte'?'selected':''; ?>>Deporte</option>
+</select>
 
-    <?php if ($error): ?>
-        <div class="error"><?php echo htmlspecialchars($error); ?></div>
-    <?php endif; ?>
+<label for="titulo">Titulo:</label>
+<input ftype="text" id="titulo" name="titulo" maxlength="150" placeholder="Escribe el titulo de la noticia" value="<?= htmlspecialchars($noticia['titulo']) ?>">
+<div class="contador" id="contadorTitulo">0/150</div>
+<div class="mensaje-error" id="errorTitulo"></div>
 
-    <form method="POST" novalidate>
-        <div class="campo">
-            <label for="titulo">Título:</label>
-            <input
-                type="text"
-                id="titulo"
-                name="titulo"
-                value="<?php echo htmlspecialchars($noticia['titulo']); ?>"
-                required
-                autocomplete="off"
-            />
-        </div>
+<label for="descripcion">Descripcion:</label>
+<textarea id="descripcion" name="descripcion" rows="6" maxlength="3000" placeholder="Escribe la descripcion de tu noticia"><?= htmlspecialchars($noticia['descripcion']) ?></textarea>
+<div class="contador" id="contadorDescripcion">0/3000</div>
+<div class="mensaje-error" id="errorDescripcion"></div>
 
-        <div class="campo">
-            <label for="descripcion">Descripción:</label>
-            <textarea
-                id="descripcion"
-                name="descripcion"
-                required
-                autocomplete="off"
-            ><?php echo htmlspecialchars($noticia['descripcion']); ?></textarea>
-        </div>
-
-        <button class="boton-publicar" type="submit">Guardar Cambios</button>
-    </form>
+<label>Carga una imagen (opcional)</label>
+<span>Puedes cargar hasta 3 imagenes en formato (.jpeg).</span>
+<div class="subir-archivo">
+    <button type="button" id="btnArchivo">Subir archivo</button>
+    <input type="file" id="archivo" name="archivo[]" accept=".jpeg" multiple style="display:none">
+    <span id="textoArchivo">No se ha seleccionado ningun archivo</span>
 </div>
+<div class="vista-previa" id="vistaPrevia"></div>
+
+<div class="botones">
+    <button type="button" class="boton boton-cancelar" id="cancelarBtn">Cancelar</burron>
+    <button type="submit" class="boton boton-confirmar" id="confirmarBtn">Confirmar</burron>
+    <div>
+</form>
+</div>
+
+<!-- Modales -->
+ <div class="modal" id="modalVolver">
+    <div class="modal-contenido">
+        <h3>Estas seguro de volver a los dettales de esta noticia?</h3>
+        <div class="modal-botones">
+            <button class="btn-cancelar" onclick="cerrarModal('modalVolver')">Cancelar</button>
+            <button class="btn-confirmar" onclick="location.href='ver_noticia.php?id=<?= $noticia['id'] ?>'">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalCancelar">
+    <div class="modal-contenido">
+        <h3>Estas seguro de cancelar los cmbios realizados de esta noticia?</h3>
+        <div class="btn-cancelar" onclick="cerrarModal('modalCancelar')">Cancelar</button>
+        <button class="btn-cancelar" onclick="location.href='ver_noticia.php?id=<?= $noticia['id'] ?>'">Confirmar</button>
+    </div>
+</div>
+</div>
+
+<div class="modal" id="modalConfirmar">
+    <div class="modal-contenido">
+        <h3>Estas seguro de guardar los cambios de esta noticia?</h3>
+        <div class="modal-botones">
+            <button class="btn-cancelar" onclick="cerrarModal('modalConfirmar')">Cancelar</button>
+            <button class="btn-confirmar" onclick="alert('Los cambios fueron guardados correctamente!');location.href='ver_noticia.php?id=<?= $noticia['id'] ?>'">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('volverDetalles').onclick = () => {
+    document.getElementById('modalVolver').style.display = 'flex';
+};
+document.getElementById('cancelarBtn').onclick = () => {
+    document.getElementById('modalCancelar').style.display = 'flex';
+};
+document.getElementById('confirmarBtn').onclick = (e) => {
+    e.preventDefault();
+    document.getElementById('modalConfirmar').style.display = 'flex';
+};
+function cerrarModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+
+// Contadores 
+function actualizarContador(idCampo, idContador, max) {
+    const campo = document.getElementById(idCampo);
+    const contador = document.getElementById(idContador);
+    campo.addEvenetListener('input' () => {
+        contador.style.display = 'block';
+        const length = campo.value.length;
+        contador.textContent = `${lenth}/${max}`;
+        contador.classList.toggle('error', (idCampo==='titulo' && length<10) || (idCampo==='descripcion' && length<300));
+    });
+}
+actualizarContador('titulo', 'contadorTitulo', 150);
+actualizarContador('descripcion', 'contadorDescripcion', 3000);
+</script>
 </body>
 </html>
