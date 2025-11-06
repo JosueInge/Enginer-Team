@@ -329,7 +329,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
     <div class="separator"></div>
     <div class="menu-links">
-      <a href="politica.php">Política</a>
+      <a href="politica1.php">Política</a>
       <a href="cultura.php">Cultura</a>
       <a href="entretenimiento.php">Entretenimiento</a>
       <a href="social.php">Social</a>

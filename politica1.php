@@ -1,24 +1,12 @@
 <?php
-$categoria_actual = 'Clima';
+$categoria_actual = 'Politica';
 include 'conexion.php';
 
-// Configuracion de paginacion
-$noticias_por_pagina = 12;
-$pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-$offset = ($pagina_actual - 1) * $noticias_por_pagina;
-
-// Obtener el total de noticias
-$sql_total = "SELECT COUNT(*) as total FROM noticias
-              WHERE categoria = 'deportes' AND fecha <= CURDATE()";
-$result_total = $conexion->query($sql_total);
-$total_noticias = $result_total->fetch_assoc()['total'];
-$total_paginas = ceil($total_noticias / $noticias_por_pagina);
-
-// Obtener noticias de la categoria deportes
+// Obtener noticias de la categoria clima
 $sql_noticias = "SELECT * FROM noticias
-                WHERE categoria = 'deportes' AND fecha <= CURDATE()
+                WHERE categoria = 'politica' AND fecha <= CURDATE()
                 ORDER BY fecha DESC, id DESC
-                LIMIT $noticias_por_pagina OFFSET $offset";
+                LIMIT 12";
 $result_noticias = $conexion->query($sql_noticias);
 
 // Funcion para verificar si una imagen existe
@@ -43,7 +31,7 @@ function obtenerImagenNoticia($noticia) {
 <head>
   <meta charset="UTF-8" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Deporte - Comunicado Digital</title>
+  <title>Turismo - Comunicado Digital</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -218,48 +206,11 @@ function obtenerImagenNoticia($noticia) {
       color: #fff;
       cursor: pointer;
       transition: all 0.3s ease;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
     }
     .btn-ver-mas:hover {
       background: #1a75e0;
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(45, 142, 255, 0.3);
-      color: #fff;
-      text-decoration: none;
-    }
-
-    /* Contenedor paginacion */
-    .contenedor-paginacion {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 15px;
-      margin: 40px 0 60px 0;
-      flex-wrap: wrap;
-    }
-
-    .info-paginacion {
-      font-family: 'Poppins', sans-serif;
-      font-size: 16px;
-      color: #74737C;
-      margin: 0 10px;
-    }
-
-    .btn-paginacion {
-      padding: 8px 16px;
-      background: #fff;
-      border: 2px solid #2D8EFF;
-      border-radius: 6px;
-      font-family: 'Open Sans', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      color: #2D8EFF;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
     }
 
     /* Anuncio lateral */
@@ -398,7 +349,7 @@ function obtenerImagenNoticia($noticia) {
 <div class="container-fluid">
   <!-- Encabezado categoria -->
    <div class="encabezado-categoria">
-      <h1 class="titulo-categoria">Todo sobre el deporte</h1>
+      <h1 class="titulo-categoria">Todo sobre la politica</h1>
       <div class="linea-divisora"></div>
 </div>
 
@@ -471,23 +422,10 @@ function obtenerImagenNoticia($noticia) {
         <?php endwhile; ?>
         </div>
 
-        <!-- Paginacion -->
-         <?php if ($total_paginas > 1): ?>
-          <div class="contenedor-paginacion">
-            <?php if ($pagina_actual > 1): ?>
-              <a href="?pagina=<?= $pagina_actual - 1 ?>" class="btn-paginacion">Anterior</a>
-            <?php endif; ?>
-
-      
-            </div>
-            <?php endif; ?>
-
         <!-- Boton ver mas -->
-         <?php if ($pagina_actual < $total_paginas): ?>
          <div class="contenedor-boton">
-         <a href="?pagina=<?= $pagina_actual + 1 ?>" class="btn-ver-mas">Ver mas</a>
+         <button class="btn-ver-mas">Ver más</button>
         </div>
-        <?php endif; ?>
         </div>
 
         <!-- Anuncio lateral -->

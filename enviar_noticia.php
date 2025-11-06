@@ -40,10 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($mime === 'image/jpeg' && ($extension === 'jpg' || $extension === 'jpeg') && $info && $info['mime'] === 'image/jpeg') {
                     $nombreUnico = uniqid() . '.jpg';
-                    $ruta_destino = 'imagenes/denuncias/' . $nombreUnico;
+                    $ruta_destino = 'imagenes/noticias/' . $nombreUnico;
 
-                    if (!file_exists('imagenes/denuncias')) {
-                        mkdir('imagenes/denuncias', 0755, true);
+                    if (!file_exists('imagenes/noticias')) {
+                        mkdir('imagenes/noticias', 0755, true);
                     }
                     // Guardar imagen temporalmente, se moverá al enviar correctamente
 

@@ -869,6 +869,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <option value="Clima">Clima</option>
         <option value="Educacion">Educación</option>
         <option value="Turismo">Turismo</option>
+
       </select>
     </div>
 
