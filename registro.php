@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['check_email'])) {
                     $mail->setFrom('TUCORREO@gmail.com', 'Comunicado Digital');
                     $mail->addAddress($correo);
 
-                    $verificar_url = "http://192.168.82.87/Enginer-Team/verificar.php?token=" . $token;
+                    $verificar_url = "http://192.168.1.7:8080/Enginer-Team/verificar.php?token=" . $token;
 
                     $mail->isHTML(true);
                     $mail->Subject = 'Verifica tu cuenta';

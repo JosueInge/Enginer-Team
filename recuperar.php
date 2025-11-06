@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->setFrom('TUCORREO@gmail.com', 'Comunicado Digital');
             $mail->addAddress($correo);
 
-            $link = "http://192.168.82.87/Enginer-Team/restablecer.php?token=$token"; 
+            $link = "http://192.168.82.87:8080/Enginer-Team/restablecer.php?token=$token"; 
 
             $mail->isHTML(true);
             $mail->Subject = 'Recuperación de contraseña';
