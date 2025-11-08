@@ -1,5 +1,5 @@
 <?php
-$categoria_actual = 'Clima';
+$categoria_actual = 'Deportes';
 include 'conexion.php';
 
 // Configuracion de paginacion
@@ -7,16 +7,29 @@ $noticias_por_pagina = 12;
 $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 $offset = ($pagina_actual - 1) * $noticias_por_pagina;
 
-// Obtener el total de noticias
-$sql_total = "SELECT COUNT(*) as total FROM noticias
-              WHERE categoria = 'deportes' AND fecha <= CURDATE()";
+// Obtener el total de noticias combinando noticias y propuestas noticias 
+$sql_total = "SELECT COUNT(*) as total FROM (
+              SELECT id FROM noticias
+              WHERE categoria = 'deportes' AND fecha <= CURDATE()
+              UNION ALL
+              SELECT id FROM propuestas_noticias
+              WHERE categoria = 'deportes' AND estado = 'aprobada' AND fecha <= CURDATE()
+          ) as combined";
 $result_total = $conexion->query($sql_total);
 $total_noticias = $result_total->fetch_assoc()['total'];
 $total_paginas = ceil($total_noticias / $noticias_por_pagina);
 
-// Obtener noticias de la categoria deportes
-$sql_noticias = "SELECT * FROM noticias
+// Obtener noticias de la categoria deportes combinando noticias y propuestas noticias 
+$sql_noticias = "SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'noticia' as fuente
+                FROM noticias
                 WHERE categoria = 'deportes' AND fecha <= CURDATE()
+
+                UNION ALL 
+
+                SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'propuestas' as fuente
+                FROM propuestas_noticias
+                WHERE categoria = 'deportes' AND estado = 'aprobada' AND fecha <= CURDATE()
+
                 ORDER BY fecha DESC, id DESC
                 LIMIT $noticias_por_pagina OFFSET $offset";
 $result_noticias = $conexion->query($sql_noticias);
@@ -35,6 +48,16 @@ function obtenerImagenNoticia($noticia) {
     }
   }
   return $imagenes;
+}
+
+// Funcion para generar enlace correcto segun la fuente
+function generarEnlaceNoticia($noticia) {
+  // Verificar si existe el campo 'fuente'
+  if (isset($noticia['fuente']) && $noticia['fuente'] === 'propuestas') {
+    return "ver_noticia.php?id=" . $noticia['id'];
+  } else {
+    return "ver_noticia.php?id=" . $noticia['id'];
+  }
 }
 
 // Si es una peticion AJAX, devolver solo el HTML de las nuevas noticias 
@@ -56,14 +79,14 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
         </a>
         </div>
         <?php endforeach; ?>
-        <?php else: ?>
+      <?php else: ?>
           <div class="carousel-item active">
             <div class="imagen-placeholder w-100 h-100 d-flex align-items-center justify-content-center">
               Sin imagen
-        </div>
-        </div>
+            </div>
+          </div>
         <?php endif; ?>
-        </div>
+      </div>
 
         <?php if (count($imagenes) > 1): ?>
           <button class="carousel-control-prev" type="button" data-bs-target="#carouselNoticia<?= $noticia['id'] ?>" data-bs-slide="prev">
@@ -91,21 +114,20 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
             <h3 class="titulo-noticia">
               <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
                 <?= htmlspecialchars($noticia['titulo']) ?>
-          </a>
-          </h3>
+              </a>
+            </h3>
           <div class="info-noticia">
             <span><?= date('d/m/Y', strtotime($noticia['fecha'])) ?></span>
             <span class="separador-info">|</span>
             <span><?= !empty($noticia['autor']) ? htmlspecialchars($noticia['autor']) : 'Desconocido' ?></span>
           </div>
-          </div>
-          </div>
-          <?php
-          endwhile;
-          exit;
+        </div>
+      </div>
+    <?php
+      endwhile;
+      exit;
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="es">
@@ -182,7 +204,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
       transition: all 0.3s ease;
       max-width: 320px;
       margin: 0 auto;
-      height: 100%
+      height: 100%;
     }
     .tarjeta-noticia:hover {
       transform: translateY(-6px);
@@ -299,6 +321,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
       color: #fff;
       text-decoration: none;
     }
+
     .btn-ver-mas.cargando {
       opacity: 0.7;
       cursor: not-allowed;
@@ -394,6 +417,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
     @media (max-width: 1200px) {
       .contenedor-noticias {
         grid-template-columns: repeat(3, 1fr);
+        justify-items: start;
       }
 
       .contenedor-principal {
@@ -428,6 +452,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
     @media (max-width: 576px) {
       .contenedor-noticias {
         grid-template-columns: 1fr;
+        justify-items: start;
       }
       .encabezado-categoria {
         padding: 0 15px;
@@ -452,14 +477,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
     background-color: #4C00DA;
     border: none;
     cursor: pointer;
-    transition: all 0.3 ease;
+    transition: all 0.3s ease;
     white-space: nowrap;
     min-width: auto;
     width: auto; 
 }
-
-
- 
   </style>
 </head>
 <body>
@@ -474,10 +496,10 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
 </div>
 
 <!-- Contenedor principal -->
- <div class="contenedor-principal" id="contenedor-noticias">
+ <div class="contenedor-principal">
   <!-- Seccion noticias -->
    <div class="seccion-noticias">
-    <div class="contenedor-noticias">
+    <div class="contenedor-noticias" id="contenedor-noticias">
       <?php while ($noticia = $result_noticias->fetch_assoc()):
         $imagenes = obtenerImagenNoticia($noticia);
 ?>
@@ -488,7 +510,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
       <?php if (!empty($imagenes)): ?>
         <?php foreach ($imagenes as $index => $imagen): ?>
         <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-          <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
+            <a href="<?= generarEnlaceNoticia($noticia) ?>">
             <img src="imagenes/noticias/<?= $imagen ?>"
               alt="<?= htmlspecialchars($noticia['titulo']) ?>"
               onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\'imagen-placeholder w-100 h-100\'>Sin imagen</div>';">
@@ -528,7 +550,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
         <!-- Contenido -->
          <div class="contenido-noticia">
           <h3 class="titulo-noticia">
-            <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
+            <a href="<?= generarEnlaceNoticia($noticia) ?>">
               <?= htmlspecialchars($noticia['titulo']) ?>
         </a>
         </h3>
@@ -571,61 +593,62 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
             </div>
             </div>
             </div>
+       
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const btnVerMas = document.getElementById('btn-ver-mas');
-        const contenedorNoticias = document.getElementById('contenedor-noticias');
-
-        if (btnVerMas) {
-          btnVerMas.addEventListener('click', function() {
+document.addEventListener('DOMContentLoaded', function() {
+    const btnVerMas = document.getElementById('btn-ver-mas');
+    const contenedorNoticias = document.getElementById('contenedor-noticias');
+    
+    if (btnVerMas) {
+        btnVerMas.addEventListener('click', function() {
             const paginaActual = parseInt(this.getAttribute('data-pagina'));
             const siguientePagina = paginaActual + 1;
             const totalPaginas = parseInt(this.getAttribute('data-total-paginas'));
-
+            
             // Mostrar estado de carga
             this.classList.add('cargando');
             this.innerHTML = 'Cargando...';
             this.disabled = true;
-
-            // Realizar peticion AJAX
+            
+            // Realizar petición AJAX
             fetch(`?pagina=${siguientePagina}&ajax=true`)
-            .then(response => response.text())
-            .then(html => {
-              //Agregar las nuevas noticias al contenedor
-              contenedorNoticias.innerHTML += html;
-
-              // Actualizar el estado del boton
-              this.setAttribute('data-pagina', siguientePagina);
-
-              if (siguientePagina >= totalPaginas) {
-                //Ocultar boton si no hay mas paginas
-                this.style.display = 'none';
-              } else {
-                // Restaurar boton
-                this.classList.remove('cargando');
-                this.innerHTML = 'Ver más';
-                this.disabled = false;
-              }
-
-              // Reinicializar carruseles de Bootstrap para las nuevas noticias
-              const carruseles = contenedorNoticias.querySelectorAll('.carousel');
-              carruseles.forEach(carrusel => {
-                new bootstrap.Carousel(carrusel);
-              });
-            })
-            .catch(error => {
-              console.error('Error:', error);
-              // Restaurar boton en caso de error
-              this.classList.remove('cargando');
-              this.innerHTML = 'Ver más';
-              this.disabled = false;
-              alert('Error al cargar más noticias. Intenta nuevamente.');
-            });
-          });
-        }
-      });
-      </script>
+                .then(response => response.text())
+                .then(html => {
+                    // Agregar las nuevas noticias al contenedor
+                    contenedorNoticias.innerHTML += html;
+                    
+                    // Actualizar el estado del botón
+                    this.setAttribute('data-pagina', siguientePagina);
+                    
+                    if (siguientePagina >= totalPaginas) {
+                        // Ocultar botón si no hay más páginas
+                        this.style.display = 'none';
+                    } else {
+                        // Restaurar botón
+                        this.classList.remove('cargando');
+                        this.innerHTML = 'Ver más';
+                        this.disabled = false;
+                    }
+                    
+                    // Reinicializar carruseles de Bootstrap para las nuevas noticias
+                    const carruseles = contenedorNoticias.querySelectorAll('.carousel');
+                    carruseles.forEach(carrusel => {
+                        new bootstrap.Carousel(carrusel);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Restaurar botón en caso de error
+                    this.classList.remove('cargando');
+                    this.innerHTML = 'Ver más';
+                    this.disabled = false;
+                    alert('Error al cargar más noticias. Intenta nuevamente.');
+                });
+        });
+    }
+});
+</script>
 
  <?php include 'footer.php'; ?>
 </body>
