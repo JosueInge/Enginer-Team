@@ -4,8 +4,6 @@ $categoria_actual = 'home';
 include 'conexion.php';
 include 'chatbot.php';
 
-$noticia_id_destacada = $noticia_destacada['id'] ?? 0;
-
 $termino_busqueda = '';
 $where = '';
 $params = [];
@@ -16,23 +14,36 @@ if (isset($_GET['busqueda']) && !empty($_GET['busqueda'])) {
     $params = array_fill(0, 3, '%' . $termino_busqueda . '%');
 }
 
-// Obtener la noticia más reciente
-$sql_destacada = "SELECT * FROM noticias 
-                 WHERE fecha <= CURDATE() 
-                 ORDER BY fecha DESC, id DESC 
-                 LIMIT 3";
+// Obtener noticias destacadas (3 mas recientes) combinando noticias y propuestas_noticias
+$sql_destacada = "SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'noticias' as fuente
+                FROM noticias
+                WHERE fecha <= CURDATE()
+                
+                UNION ALL
+                
+                SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'propuestas' as fuente
+                FROM propuestas_noticias
+                WHERE estado = 'aprobada' AND fecha <= CURDATE()
+                
+                ORDER BY fecha DESC, id DESC
+                LIMIT 3";
 $result_destacada = $conexion->query($sql_destacada);
 $noticia_destacada = $result_destacada->fetch_assoc();
 
-// Obtener las ultimas 8 noticias (para 2 filas de 4 en desktop)
-$sql_ultimas = "SELECT * FROM noticias 
-                WHERE fecha <= CURDATE() AND id != ?
+// Obtener las ultimas 8 noticias combinando noticias y propuestas_noticias
+$sql_ultimas = "SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'noticias' as fuente
+                FROM noticias
+                WHERE fecha <= CURDATE()
+                
+                UNION ALL 
+                
+                SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'propuestas' as fuente
+                FROM propuestas_noticias
+                WHERE estado = 'aprobada' AND fecha <= CURDATE()
+                
                 ORDER BY fecha DESC, id DESC
                 LIMIT 8";
-$stmt_ultimas = $conexion->prepare($sql_ultimas);
-$stmt_ultimas->bind_param("i", $noticia_id_destacada);
-$stmt_ultimas->execute();
-$result_ultimas = $stmt_ultimas->get_result();
+$result_ultimas = $conexion->query($sql_ultimas);
 
 // Obtener las ultimas 8 denuncias 
 $sql_denuncias = "SELECT * FROM propuestas_denuncias
@@ -41,9 +52,17 @@ $sql_denuncias = "SELECT * FROM propuestas_denuncias
                 LIMIT 8";
 $result_denuncias = $conexion->query($sql_denuncias);
 
-// Obtener noticias que podrian interesarte (aleatorias o por fechas)
-$sql_interes = "SELECT * FROM noticias
+// Obtener noticias que podrian interesarte (aleatorias o por fechas) combinando noticias y propuestas noticias
+$sql_interes = "SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'noticias' as fuente
+                FROM noticias
                 WHERE fecha <= CURDATE()
+                
+                UNION ALL
+                
+                SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'propuestas' as fuente
+                FROM propuestas_noticias
+                WHERE estado = 'aprobada' AND fecha <= CURDATE()
+                
                 ORDER BY RAND()
                 LIMIT 4";
 $result_interes = $conexion->query($sql_interes);
@@ -86,20 +105,40 @@ function obtenerImagenDenuncia($denuncia) {
     return $imagenes;
 }
 
-// Función para verificar si una imagen existe
+// Funcion para verificar si una imagen existe para noticias y propuestas_noticias
 function imagenExiste($nombre_imagen) {
     return !empty($nombre_imagen) && file_exists('imagenes/noticias/' . $nombre_imagen);
 }
 
-// Funcion para obtener imagenes de una noticia
+// Funcion para obtener imagenes de una noticia para ambas tablas
 function obtenerImagenNoticia($noticia) {
-  $imagenes = [];
-  foreach (['imagen', 'imagen2', 'imagen3'] as $campo) {
-    if (!empty($noticia[$campo]) && imagenExiste($noticia[$campo])) {
-        $imagenes[] = $noticia[$campo];
+    $imagenes = [];
+    $fuente = $noticia['fuente'] ?? 'noticias';
+
+    foreach (['imagen', 'imagen2', 'imagen3'] as $campo) {
+        if (!empty($noticia[$campo]) && imagenExiste($noticia[$campo], $fuente)) {
+            $imagenes[] = $noticia[$campo];
+        }
     }
-  }
-  return $imagenes;
+    return $imagenes;
+}
+
+// Funcion para generar enlace correcto segun la fuente 
+function generarEnlaceNoticia($noticia) {
+    $fuente = $noticia['fuente'] ?? 'noticia';
+    $id = $noticia['id'];
+
+    if ($fuente === 'propuestas') {
+        return "ver_propuesta_noticia.php?id=$id";
+    } else {
+        return "ver_noticia.php?id=$id";
+    }
+}
+
+//Funcion para obtener ruta de la imagen segun la fuente
+function obtenerRutaImagen($imagen, $fuente = 'noticia') {
+    $carpeta = ($fuente === 'propuestas') ? 'propuestas_noticias' : 'noticias';
+    return "imagenes/$carpeta/$imagen";
 }
 ?>
 <script src="buscador.js" defer></script>
@@ -917,17 +956,8 @@ function obtenerImagenNoticia($noticia) {
 
                 <!-- Carrusel de imágenes -->
                 <?php 
-                $imagenes = [];
-                // Verificar y agregar solo las imágenes que existen
-                if (!empty($noticia_destacada['imagen']) && imagenExiste($noticia_destacada['imagen'])) {
-                    $imagenes[] = $noticia_destacada['imagen'];
-                }
-                if (!empty($noticia_destacada['imagen2']) && imagenExiste($noticia_destacada['imagen2'])) {
-                    $imagenes[] = $noticia_destacada['imagen2'];
-                }
-                if (!empty($noticia_destacada['imagen3']) && imagenExiste($noticia_destacada['imagen3'])) {
-                    $imagenes[] = $noticia_destacada['imagen3'];
-                }
+                $imagenes = obtenerImagenNoticia($noticia_destacada);
+                $fuente = $noticia_destacada['fuente'];
                 ?>
                 
                 <div class="carrusel-destacado">
@@ -1014,6 +1044,7 @@ function obtenerImagenNoticia($noticia) {
                 <div class="contenedor-ultimas-noticias">
                     <?php while ($noticia = $result_ultimas->fetch_assoc()):
                         $imagenes = obtenerImagenNoticia($noticia);
+                        $fuente = $noticia['fuente'];
                     ?>
                     <div class="tarjeta-ultima-noticia">
                         <!-- Carrusel de imágenes -->
@@ -1143,7 +1174,8 @@ function obtenerImagenNoticia($noticia) {
 
                 <div class="row mt-4 g-4 justify-content-center">
                     <?php while ($noticia = $result_interes->fetch_assoc()):
-                    $imagenes = obtenerImagenNoticia($noticia); ?>
+                    $imagenes = obtenerImagenNoticia($noticia); 
+                    $fuente = $noticia['fuente']; ?>
                     <div class="col-md-3 d-flex justify-content-center">
                         <div class="card shadow-sm border-0" style="max-width: 320px; transition: transform 0.2s;">
                             <div id="carouselInteres<?= $noticia['id'] ?>" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
