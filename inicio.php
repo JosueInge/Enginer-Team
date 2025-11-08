@@ -24,27 +24,48 @@ if (isset($_GET['busqueda']) && !empty($_GET['busqueda'])) {
     $params = array_fill(0, 3, '%' . $termino_busqueda . '%');
 }
 
-// Obtener la noticia más reciente
-$sql_destacada = "SELECT * FROM noticias 
-                 WHERE fecha <= CURDATE() 
-                 ORDER BY fecha DESC, id DESC 
-                 LIMIT 3";
+// Obtener noticias destacadas mas recientes para noticias y propuestas_noticias
+$sql_destacada = "SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'noticia' as fuente
+                FROM noticias
+                WHERE fecha <= CURDATE()
+                
+                UNION ALL 
+                
+                SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'noticia' as fuente
+                FROM propuestas_noticias
+                WHERE estado = 'aprobada' AND fecha <= CURDATE()
+                
+                ORDER BY fecha DESC, id DESC
+                LIMIT 3";
 $result_destacada = $conexion->query($sql_destacada);
 $noticia_destacada = $result_destacada->fetch_assoc();
 
-// Obtener las ultimas 8 noticias (para 2 filas de 4 en desktop)
-$sql_ultimas = "SELECT * FROM noticias 
-                WHERE fecha <= CURDATE() AND id != ?
+// Obtener las ultimas 8 noticias combinando noticias y propuestas_noticias
+$sql_ultimas = "SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'noticia' as fuente
+                FROM noticias
+                WHERE fecha <= CURDATE()
+                
+                UNION ALL
+                
+                SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'propuestas' as fuente
+                FROM propuestas_noticias
+                WHERE estado = 'aprobada' AND fecha <= CURDATE()
+                
                 ORDER BY fecha DESC, id DESC
                 LIMIT 8";
-$stmt_ultimas = $conexion->prepare($sql_ultimas);
-$stmt_ultimas->bind_param("i", $noticia_id_destacada);
-$stmt_ultimas->execute();
-$result_ultimas = $stmt_ultimas->get_result();
+$result_ultimas = $conexion->query($sql_ultimas);
 
-// Obtener noticias que podrian interesarte
-$sql_interes = "SELECT * FROM noticias
+// Obtener noticias que podrian interesarte aleatorias, combinando noticias y propuestas_noticias
+$sql_interes = "SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'noticia' as fuente
+                FROM noticias
                 WHERE fecha <= CURDATE()
+                
+                UNION ALL
+                
+                SELECT id, titulo, descripcion, imagen, imagen2, imagen3, autor, fecha, categoria, 'propuestas' as fuente
+                FROM propuestas_noticias
+                WHERE estado = 'aprobada' AND fecha <= CURDATE()
+                
                 ORDER BY RAND()
                 LIMIT 4";
 $result_interes = $conexion->query($sql_interes);
@@ -690,7 +711,7 @@ function obtenerImagenNoticia($noticia) {
                             <?php if (count($imagenes) > 0): ?>
                                 <?php foreach ($imagenes as $index => $imagen): ?>
                                 <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                                    <a href="detalle_noticia.php?id=<?= $noticia_destacada['id'] ?>">
+                                    <a href="ver_noticia.php?id=<?= $noticia_destacada['id'] ?>">
                                         <img src="imagenes/noticias/<?= $imagen ?>" 
                                              class="d-block w-100" 
                                              alt="<?= htmlspecialchars($noticia_destacada['titulo']) ?>"
@@ -739,7 +760,7 @@ function obtenerImagenNoticia($noticia) {
                 
                 <!-- Título -->
                 <div class="titulo-destacado">
-                    <a href="detalle_noticia.php?id=<?= $noticia_destacada['id'] ?>">
+                    <a href="ver_noticia.php?id=<?= $noticia_destacada['id'] ?>">
                         <?= htmlspecialchars($noticia_destacada['titulo']) ?>
                     </a>
                 </div>
@@ -766,7 +787,7 @@ function obtenerImagenNoticia($noticia) {
                                 <?php if (!empty($imagenes)): ?>
                                     <?php foreach ($imagenes as $index => $imagen): ?>
                                     <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                                        <a href="detalle_noticia.php?id=<?= $noticia['id'] ?>">
+                                        <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
                                             <img src="imagenes/noticias/<?= $imagen ?>" 
                                                  alt="<?= htmlspecialchars($noticia['titulo']) ?>" 
                                                  onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\'imagen-placeholder w-100 h-100\'>Sin imagen</div>';">
@@ -795,7 +816,7 @@ function obtenerImagenNoticia($noticia) {
                         <!-- Contenido -->
                         <div class="contenido-ultima-noticia">
                             <h3 class="titulo-ultima-noticia">
-                                <a href="detalle_noticia.php?id=<?= $noticia['id'] ?>">
+                                <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
                                     <?= htmlspecialchars($noticia['titulo']) ?>
                                 </a>
                             </h3>

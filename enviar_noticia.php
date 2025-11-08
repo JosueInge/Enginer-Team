@@ -40,10 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($mime === 'image/jpeg' && ($extension === 'jpg' || $extension === 'jpeg') && $info && $info['mime'] === 'image/jpeg') {
                     $nombreUnico = uniqid() . '.jpg';
-                    $ruta_destino = 'imagenes/denuncias/' . $nombreUnico;
+                    $ruta_destino = 'imagenes/noticias/' . $nombreUnico;
 
-                    if (!file_exists('imagenes/denuncias')) {
-                        mkdir('imagenes/denuncias', 0755, true);
+                    if (!file_exists('imagenes/noticias')) {
+                        mkdir('imagenes/noticias', 0755, true);
                     }
                     // Guardar imagen temporalmente, se moverá al enviar correctamente
 
@@ -282,7 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       padding: 15px;
     }
 
-    /* Mensaje de modal, al volver a denuncias */
+    /* Mensaje de modal, al volver a noticias */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -854,6 +854,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <option value="Clima">Clima</option>
         <option value="Educacion">Educación</option>
         <option value="Turismo">Turismo</option>
+        <option value="Politica">Politica</option>
+        <option value="Cultura">Cultura</option>
+        <option value="Entretenimiento">Entretenimiento</option>
+        <option value="Social">Social</option>
+        <option value="Salud">Salud</option>
+        <option value="Medio ambiente">Medio ambiente</option>
+        <option value="Tendencia">Tendencia</option>
       </select>
     </div>
 
