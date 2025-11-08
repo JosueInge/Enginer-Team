@@ -1,3 +1,5 @@
+enviar_denuncia_anonima.php
+
 <?php
 session_start();
 include 'conexion.php'; // debe definir $conexion (mysqli)
@@ -18,7 +20,7 @@ $titulo = $_POST['titulo'] ?? '';
 $descripcion = $_POST['descripcion'] ?? '';
 $fecha_evento = $_POST['fecha_evento'] ?? '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'submit_denuncia') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Limpieza
     $titulo = trim($_POST['titulo'] ?? '');
     $descripcion = trim($_POST['descripcion'] ?? '');
@@ -55,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Manejo de imágenes (.jpeg solamente), máximo 3, tamaño máx 3MB cada una
     $imagenes_nombres = [null, null, null];
     $imagenes_guardadas = [];
-    $upload_dir = DIR . '/imagenes/denuncias/';
+    $upload_dir = __DIR__ . '/imagenes/denuncias/';
     if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
 
     if (isset($_FILES['imagenes']) && is_array($_FILES['imagenes']['name']) && count(array_filter($_FILES['imagenes']['name'])) > 0) {
@@ -828,7 +830,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <div class="logo">
       <img src="imagenes/logo.png" alt="logo">
     </div>
-    <h3><a class="volverDenuncias" href="denuncia.php">Volver a Denuncias</a></h3>
+    <h3><a class="volverDenuncias" href="denuncia_anonima.php">Volver a Denuncias</a></h3>
   </header>
 
   <div class="contenedor-principal">
@@ -840,7 +842,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         <div>Tu denuncia es 100 % anónima. No pediremos datos personales ni podremos rastrear tu identidad.</div>
       </div>
 
-    <form action="enviar_denuncia.php" method="POST" enctype="multipart/form-data">
+    <form action="enviar_denuncia_anonima.php" method="POST" enctype="multipart/form-data">
 
       <div class="Camposdelformulario">
         <label for="titulo" class="requerido">Título:</label>
