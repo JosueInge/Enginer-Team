@@ -88,9 +88,13 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
     /* Hamburguesa */
     .menu-toggle {
-      font-size:32px;
-      cursor:pointer;
-      color:#061F3E;
+      font-size: 32px;
+      cursor: pointer;
+      color: #061F3E;
+      padding: 1px 10px; /* igual que el activo */
+      border: 1px solid transparent; /* mantiene el espacio del borde */
+      border-radius: 5px;
+      transition: all 0.3s ease;
     }
 
     /* Buscador */
@@ -348,13 +352,13 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
     <div class="separator"></div>
     <div class="menu-links">
-      <a href="politica.php">Política</a>
-      <a href="cultura.php">Cultura</a>
-      <a href="entretenimiento.php">Entretenimiento</a>
-      <a href="social.php">Social</a>
-      <a href="salud.php">Salud</a>
-      <a href="medioambiente.php">Medio ambiente</a>
-      <a href="tendencia.php">Tendencia</a>
+      <a href="politica1.php">Política</a>
+      <a href="cultura1.php">Cultura</a>
+      <a href="entretenimiento1.php">Entretenimiento</a>
+      <a href="social1.php">Social</a>
+      <a href="salud1.php">Salud</a>
+      <a href="medioambiente1.php">Medio ambiente</a>
+      <a href="tendencia1.php">Tendencia</a>
     </div>
 
     <div class="separator"></div>

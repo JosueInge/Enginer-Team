@@ -1,6 +1,24 @@
 <?php
-$categoria_actual = 'Cultura';
+session_start();
 include 'conexion.php';
+$categoria_actual = 'Cultura';
+if (!isset($_SESSION['usuario_id'])) {
+  header("Location: login.php");
+  exit();
+
+}
+
+$nombreUsuario = isset($_SESSION['usuario_nombre']) ? htmlspecialchars($_SESSION['usuario_nombre']) : null;
+
+$termino_busqueda = '';
+$where = '';
+$params = [];
+
+if (isset($_GET['busqueda']) && !empty($_GET['busqueda'])) {
+    $termino_busqueda = trim($_GET['busqueda']);
+    $where = "WHERE titulo LIKE ? OR descripcion LIKE ? OR autor LIKE ?";
+    $params = array_fill(0, 3, '%' . $termino_busqueda . '%');
+}
 
 // Obtener noticias de la categoria clima
 $sql_noticias = "SELECT * FROM propuestas_noticias
@@ -31,7 +49,7 @@ function obtenerImagenNoticia($noticia) {
 <head>
   <meta charset="UTF-8" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Clima - Comunicado Digital</title>
+  <title>Deporte - Comunicado Digital</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -68,6 +86,11 @@ function obtenerImagenNoticia($noticia) {
       height: 2px;
       background-color: #403F48;
       max-width: 975px;
+    }
+
+    /* ESTO FUE LO QUE AGREGUE */
+    .container-fluid {
+      margin-top: 75px;
     }
 
     /* Contenedor principal */
@@ -315,26 +338,20 @@ function obtenerImagenNoticia($noticia) {
       }
     }
     
-    .btn {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0 24px;
-    height: 45px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 700;
-    font-family: 'Poppins', sans-serif;
-    text-decoration: none;
-    color: #fff;
-    background-color: #4C00DA;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3 ease;
-    white-space: nowrap;
-    min-width: auto;
-    width: auto; 
-}
+  .boton-publicar { 
+      position: fixed; 
+      bottom: 30px; left: 
+      30px; background-color: #0d5c9b; 
+      color: white; 
+      border: none; 
+      padding: 15px 25px; 
+      border-radius: 50px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+      z-index: 1000; 
+      text-decoration: none; 
+    }
 
 .btn:hover {
     
@@ -344,7 +361,7 @@ function obtenerImagenNoticia($noticia) {
 </head>
 <body>
 
-<?php include 'menu.php'; ?>
+<?php include 'menu2.php'; ?>
 
 <div class="container-fluid">
   <!-- Encabezado categoria -->
@@ -447,6 +464,58 @@ function obtenerImagenNoticia($noticia) {
             </div>
             </div>
             </div>
+
+             <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
+      <a href="publicar_noticia.php" class="boton-publicar">Publicar Noticia</a>
+    <?php endif; ?>
+
+    <?php if ($_SESSION['usuario_rol'] === 'Poblador'): ?>
+      <a href="enviar_noticia.php" class="boton-publicar">Enviar una noticia</a>
+    <?php endif; ?>
+
+    <link rel="stylesheet" href="asistente_virtual.css">
+    <?php include 'chatbot.php'; ?>
+    <script src="chatbot.js"></script>
+
+           <script>
+  // Confirmación de cierre de sesión
+      document.getElementById('btnSesion')?.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const confirmBox = document.createElement('div');
+        confirmBox.style.position = 'fixed';
+        confirmBox.style.top = '0';
+        confirmBox.style.left = '0';
+        confirmBox.style.width = '100%';
+        confirmBox.style.height = '100%';
+        confirmBox.style.background = 'rgba(0,0,0,0.5)';
+        confirmBox.style.display = 'flex';
+        confirmBox.style.alignItems = 'center';
+        confirmBox.style.justifyContent = 'center';
+        confirmBox.style.zIndex = '9999';
+
+        confirmBox.innerHTML = `
+          <div style="background: white; padding: 20px 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 300px;">
+            <h3>¿Cerrar sesión?</h3>
+            <p>¿Estás seguro de cerrar sesión?</p>
+            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+              <button id="confirmLogout" style="background-color: #d9534f; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cerrar sesión</button>
+              <button id="cancelarLogout" style="background-color: #ccc; color: black; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(confirmBox);
+
+        document.getElementById('confirmLogout').onclick = () => {
+          window.location.href = "logout.php";
+        };
+
+        document.getElementById('cancelarLogout').onclick = () => {
+          document.body.removeChild(confirmBox);
+        };
+      });
+      </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
  <?php include 'footer.php'; ?>

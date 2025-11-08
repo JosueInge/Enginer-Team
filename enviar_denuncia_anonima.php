@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Manejo de imágenes (.jpeg solamente), máximo 3, tamaño máx 3MB cada una
     $imagenes_nombres = [null, null, null];
     $imagenes_guardadas = [];
-    $upload_dir = DIR . '/imagenes/denuncias/';
+    $upload_dir = __DIR__ . '/imagenes/denuncias/';
     if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
 
     if (isset($_FILES['imagenes']) && is_array($_FILES['imagenes']['name']) && count(array_filter($_FILES['imagenes']['name'])) > 0) {
@@ -840,7 +840,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         <div>Tu denuncia es 100 % anónima. No pediremos datos personales ni podremos rastrear tu identidad.</div>
       </div>
 
-    <form action="enviar_denuncia.php" method="POST" enctype="multipart/form-data">
+    <form action="enviar_denuncia_anonima.php" method="POST" enctype="multipart/form-data">
 
       <div class="Camposdelformulario">
         <label for="titulo" class="requerido">Título:</label>

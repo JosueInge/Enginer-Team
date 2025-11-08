@@ -88,6 +88,11 @@ function obtenerImagenNoticia($noticia) {
       max-width: 975px;
     }
 
+    /* Espacio entre la barra de navegacion y el contenedor */
+    .container-fluid {
+      margin-top: 75px;
+    }
+
     /* Contenedor principal */
     .contenedor-principal {
       max-width: 1300px;
