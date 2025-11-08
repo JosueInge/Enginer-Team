@@ -3,8 +3,8 @@ $categoria_actual = 'Politica';
 include 'conexion.php';
 
 // Obtener noticias de la categoria clima
-$sql_noticias = "SELECT * FROM noticias
-                WHERE categoria = 'politica' AND fecha <= CURDATE()
+$sql_noticias = "SELECT * FROM propuestas_noticias
+                WHERE categoria = 'Politica' AND estado = 'aprobada' AND fecha <= CURDATE()
                 ORDER BY fecha DESC, id DESC
                 LIMIT 12";
 $result_noticias = $conexion->query($sql_noticias);

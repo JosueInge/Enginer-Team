@@ -148,13 +148,13 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
 
       <!-- Categorías -->
       <div class="seccion-categorias">
-          <a href="#" class="categoria">Política</a>
-          <a href="#" class="categoria">Cultura</a>
-          <a href="#" class="categoria">Entretenimiento</a>
-          <a href="#" class="categoria">Social</a>
-          <a href="#" class="categoria">Salud</a>
-          <a href="#" class="categoria">Medio ambiente</a>
-          <a href="#" class="categoria">Tendencia</a>
+          <a href="politica.php" class="categoria">Política</a>
+          <a href="cultura.php" class="categoria">Cultura</a>
+          <a href="entretenimiento.php" class="categoria">Entretenimiento</a>
+          <a href="social.php" class="categoria">Social</a>
+          <a href="salud.php" class="categoria">Salud</a>
+          <a href="medioambiente.php" class="categoria">Medio ambiente</a>
+          <a href="tendencia.php" class="categoria">Tendencia</a>
       </div>
 
       <!-- Línea separadora -->
@@ -162,9 +162,9 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
 
       <!-- Enlaces secundarios -->
       <div class="seccion-secundarios">
-          <a href="#" class="secundario">Contratar publicidad</a>
-          <a href="#" class="secundario">Términos y condiciones</a>
-          <a href="#" class="secundario">Políticas de privacidad</a>
+          <a href="publicidad.php" class="secundario">Contratar publicidad</a>
+          <a href="terminos.php" class="secundario">Términos y condiciones</a>
+          <a href="privacidad.php" class="secundario">Políticas de privacidad</a>
       </div>
 
       <!-- Texto legal -->
@@ -425,6 +425,11 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
       overflow-y: auto;
       transition: left 0.4s ease;
   }
+
+  .menu-lateral.open {
+      left:0;
+    }
+
   .cerrar-menu {
       position: absolute;
       top: 5px;
@@ -499,6 +504,28 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
       color: #2D8EFF;
       text-align: center;
       margin-top: 20px;
+  }
+
+  /* activa el icono hamburguesa al dar click en el */
+  .icono-hamburguesa.activo {
+    color: #061F3E;
+    background: #61C9A880;
+    border: 1px solid #61C9A880;
+    border-radius: 5px;
+    box-shadow: 0 0 6px #61C9A880;
+    padding: 5px; /* crea espacio alrededor del icono */
+    transition: all 0.3s ease;
+  }
+
+  .icono-hamburguesa {
+    box-sizing: content-box;
+  }
+
+  /* activa las categorias al dar click en ellas */
+  .categoria.activo {
+    background: #C7F1FF;
+    color: #061F3E;
+    border-radius: 8px;
   }
 
   /*Responsive*/
@@ -588,7 +615,7 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
 </style>
 
 <script>
-// Comportamiento al hacer scroll
+  // Comportamiento al hacer scroll
   let lastScrollTop = 0;
   const encabezadoMenu2 = document.querySelector('.encabezado-menu2');
   const barraMenu2 = document.querySelector('.barra-menu2');
@@ -685,5 +712,46 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
       }
   });
 
+  // --- NUEVO: comportamiento visual (hover activo) ---
+  const categorias = document.querySelectorAll('.seccion-categorias a');
+
+  // Guardar categoría activa al hacer clic
+  categorias.forEach(link => {
+    link.addEventListener('click', () => {
+      localStorage.setItem('categoriaActiva', link.getAttribute('href'));
+
+      // Quitar activo de todas y agregar a la clickeada
+      categorias.forEach(l => l.classList.remove('activo'));
+      link.classList.add('activo');
+
+      // Activar hover del icono hamburguesa
+      btnHamburguesa.classList.add('activo');
+    });
+  });
+
+  // Mantener activa la categoría y el icono al recargar
+  window.addEventListener('DOMContentLoaded', () => {
+    const categoriaActiva = localStorage.getItem('categoriaActiva');
+    if (categoriaActiva) {
+      categorias.forEach(link => {
+        if (link.getAttribute('href') === categoriaActiva) {
+          link.classList.add('activo');
+        }
+      });
+      btnHamburguesa.classList.add('activo');
+    }
+  });
+
+  // Limpiar estado activo si estamos en páginas principales
+  const paginasSinCategoria = [
+    'inicio.php', 'clima.php', 'noticias.php',
+    'educacion.php', 'turismo.php', 'denuncia.php'
+  ];
+  const rutaActual = window.location.pathname;
+
+  if (paginasSinCategoria.some(pagina => rutaActual.includes(pagina))) {
+    localStorage.removeItem('categoriaActiva');
+    btnHamburguesa.classList.remove('activo');
+  }
 </script>
 <?php endif; ?>

@@ -1,24 +1,30 @@
 <?php
-$categoria_actual = 'Clima';
+session_start();
 include 'conexion.php';
+$categoria_actual = 'Salud';
+if (!isset($_SESSION['usuario_id'])) {
+  header("Location: login.php");
+  exit();
 
-// Configuracion de paginacion
-$noticias_por_pagina = 12;
-$pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-$offset = ($pagina_actual - 1) * $noticias_por_pagina;
+}
 
-// Obtener el total de noticias
-$sql_total = "SELECT COUNT(*) as total FROM noticias
-              WHERE categoria = 'deportes' AND fecha <= CURDATE()";
-$result_total = $conexion->query($sql_total);
-$total_noticias = $result_total->fetch_assoc()['total'];
-$total_paginas = ceil($total_noticias / $noticias_por_pagina);
+$nombreUsuario = isset($_SESSION['usuario_nombre']) ? htmlspecialchars($_SESSION['usuario_nombre']) : null;
 
-// Obtener noticias de la categoria deportes
-$sql_noticias = "SELECT * FROM noticias
-                WHERE categoria = 'deportes' AND fecha <= CURDATE()
+$termino_busqueda = '';
+$where = '';
+$params = [];
+
+if (isset($_GET['busqueda']) && !empty($_GET['busqueda'])) {
+    $termino_busqueda = trim($_GET['busqueda']);
+    $where = "WHERE titulo LIKE ? OR descripcion LIKE ? OR autor LIKE ?";
+    $params = array_fill(0, 3, '%' . $termino_busqueda . '%');
+}
+
+// Obtener noticias de la categoria clima
+$sql_noticias = "SELECT * FROM propuestas_noticias
+                WHERE categoria = 'Salud' AND estado = 'aprobada' AND fecha <= CURDATE()
                 ORDER BY fecha DESC, id DESC
-                LIMIT $noticias_por_pagina OFFSET $offset";
+                LIMIT 12";
 $result_noticias = $conexion->query($sql_noticias);
 
 // Funcion para verificar si una imagen existe
@@ -36,76 +42,7 @@ function obtenerImagenNoticia($noticia) {
   }
   return $imagenes;
 }
-
-// Si es una peticion AJAX, devolver solo el HTML de las nuevas noticias 
-if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
-  while ($noticia = $result_noticias->fetch_assoc()):
-    $imagenes = obtenerImagenNoticia($noticia);
-    ?>
-<div class="tarjeta-noticia">
-  <!-- Carrusel de imagenes -->
-  <div id="carouselNoticia<?= $noticia['id'] ?>" class="carousel slide carrusel-noticia" data-bs-ride="carousel" data-bs-interval="5000">
-    <div class="carousel-inner">
-      <?php if (!empty($imagenes)): ?>
-        <?php foreach ($imagenes as $index => $imagen): ?>
-          <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-            <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
-              <img src="imagenes/noticias/<?= $imagen ?>"
-              alt="<?= htmlspecialchars($noticia['titulo']) ?>"
-              onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\'imagen-placeholder w-100 h-100\'>Sin imagen</div>';">
-        </a>
-        </div>
-        <?php endforeach; ?>
-        <?php else: ?>
-          <div class="carousel-item active">
-            <div class="imagen-placeholder w-100 h-100 d-flex align-items-center justify-content-center">
-              Sin imagen
-        </div>
-        </div>
-        <?php endif; ?>
-        </div>
-
-        <?php if (count($imagenes) > 1): ?>
-          <button class="carousel-control-prev" type="button" data-bs-target="#carouselNoticia<?= $noticia['id'] ?>" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Anterior</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselNoticia<?= $noticia['id'] ?>" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Siguiente</span>
-        </button>
-
-        <div class="carousel-indicators">
-          <?php foreach ($imagenes as $index => $imagen): ?>
-            <button type="button" data-bs-target="#carouselNoticia<?= $noticia['id'] ?>"
-                data-bs-slide-to="<?= $index ?>"
-                class="<?= $index === 0 ? 'active' : '' ?>"
-                aria-label="Slide <?= $index + 1 ?>"></button>
-            <?php endforeach; ?>
-          </div>
-          <?php endif; ?>
-          </div>
-
-          <!-- Contenido -->
-           <div class="contenido-noticia">
-            <h3 class="titulo-noticia">
-              <a href="ver_noticia.php?id=<?= $noticia['id'] ?>">
-                <?= htmlspecialchars($noticia['titulo']) ?>
-          </a>
-          </h3>
-          <div class="info-noticia">
-            <span><?= date('d/m/Y', strtotime($noticia['fecha'])) ?></span>
-            <span class="separador-info">|</span>
-            <span><?= !empty($noticia['autor']) ? htmlspecialchars($noticia['autor']) : 'Desconocido' ?></span>
-          </div>
-          </div>
-          </div>
-          <?php
-          endwhile;
-          exit;
-}
 ?>
-
 
 <!DOCTYPE html>
 <html lang="es">
@@ -149,6 +86,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
       height: 2px;
       background-color: #403F48;
       max-width: 975px;
+    }
+
+    /* ESTO FUE LO QUE AGREGUE */
+    .container-fluid {
+      margin-top: 75px;
     }
 
     /* Contenedor principal */
@@ -287,52 +229,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
       color: #fff;
       cursor: pointer;
       transition: all 0.3s ease;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
     }
     .btn-ver-mas:hover {
       background: #1a75e0;
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(45, 142, 255, 0.3);
-      color: #fff;
-      text-decoration: none;
-    }
-    .btn-ver-mas.cargando {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-
-    /* Contenedor paginacion */
-    .contenedor-paginacion {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 15px;
-      margin: 40px 0 60px 0;
-      flex-wrap: wrap;
-    }
-
-    .info-paginacion {
-      font-family: 'Poppins', sans-serif;
-      font-size: 16px;
-      color: #74737C;
-      margin: 0 10px;
-    }
-
-    .btn-paginacion {
-      padding: 8px 16px;
-      background: #fff;
-      border: 2px solid #2D8EFF;
-      border-radius: 6px;
-      font-family: 'Open Sans', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      color: #2D8EFF;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
     }
 
     /* Anuncio lateral */
@@ -437,44 +338,40 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
       }
     }
     
-    .btn {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0 24px;
-    height: 45px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 700;
-    font-family: 'Poppins', sans-serif;
-    text-decoration: none;
-    color: #fff;
-    background-color: #4C00DA;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3 ease;
-    white-space: nowrap;
-    min-width: auto;
-    width: auto; 
+  .boton-publicar { 
+      position: fixed; 
+      bottom: 30px; left: 
+      30px; background-color: #0d5c9b; 
+      color: white; 
+      border: none; 
+      padding: 15px 25px; 
+      border-radius: 50px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+      z-index: 1000; 
+      text-decoration: none; 
+    }
+
+.btn:hover {
+    
 }
-
-
  
   </style>
 </head>
 <body>
 
-<?php include 'menu.php'; ?>
+<?php include 'menu2.php'; ?>
 
 <div class="container-fluid">
   <!-- Encabezado categoria -->
    <div class="encabezado-categoria">
-      <h1 class="titulo-categoria">Todo sobre el deporte</h1>
+      <h1 class="titulo-categoria">Todo sobre la salud</h1>
       <div class="linea-divisora"></div>
 </div>
 
 <!-- Contenedor principal -->
- <div class="contenedor-principal" id="contenedor-noticias">
+ <div class="contenedor-principal">
   <!-- Seccion noticias -->
    <div class="seccion-noticias">
     <div class="contenedor-noticias">
@@ -516,7 +413,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
 
       <div class="carousel-indicators">
         <?php foreach ($imagenes as $index => $imagen): ?>
-          <button type="button" data-bs-target="#carouselNoticia<?= $noticia['id'] ?>"
+          <button type="button" data-bs-target="#carouselNoticias<?= $noticia['id'] ?>"
                   data-bs-slide-to="<?= $index ?>"
                   class="<?= $index === 0 ? 'active' : '' ?>"
                   aria-label="Slide <?= $index + 1 ?>"></button>
@@ -543,13 +440,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
         </div>
 
         <!-- Boton ver mas -->
-         <?php if ($pagina_actual < $total_paginas): ?>
          <div class="contenedor-boton">
-          <button id="btn-ver-mas" class="btn-ver-mas" data-pagina="<?= $pagina_actual ?>" data-total-paginas="<?= $total_paginas ?>">
-            Ver más
-         </button>
+         <button class="btn-ver-mas">Ver más</button>
         </div>
-        <?php endif; ?>
         </div>
 
         <!-- Anuncio lateral -->
@@ -571,61 +464,59 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
             </div>
             </div>
             </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const btnVerMas = document.getElementById('btn-ver-mas');
-        const contenedorNoticias = document.getElementById('contenedor-noticias');
 
-        if (btnVerMas) {
-          btnVerMas.addEventListener('click', function() {
-            const paginaActual = parseInt(this.getAttribute('data-pagina'));
-            const siguientePagina = paginaActual + 1;
-            const totalPaginas = parseInt(this.getAttribute('data-total-paginas'));
+             <?php if ($_SESSION['usuario_rol'] === 'Administrador'): ?>
+      <a href="publicar_noticia.php" class="boton-publicar">Publicar Noticia</a>
+    <?php endif; ?>
 
-            // Mostrar estado de carga
-            this.classList.add('cargando');
-            this.innerHTML = 'Cargando...';
-            this.disabled = true;
+    <?php if ($_SESSION['usuario_rol'] === 'Poblador'): ?>
+      <a href="enviar_noticia.php" class="boton-publicar">Enviar una noticia</a>
+    <?php endif; ?>
 
-            // Realizar peticion AJAX
-            fetch(`?pagina=${siguientePagina}&ajax=true`)
-            .then(response => response.text())
-            .then(html => {
-              //Agregar las nuevas noticias al contenedor
-              contenedorNoticias.innerHTML += html;
+    <link rel="stylesheet" href="asistente_virtual.css">
+    <?php include 'chatbot.php'; ?>
+    <script src="chatbot.js"></script>
 
-              // Actualizar el estado del boton
-              this.setAttribute('data-pagina', siguientePagina);
+           <script>
+  // Confirmación de cierre de sesión
+      document.getElementById('btnSesion')?.addEventListener('click', function(e) {
+        e.preventDefault();
 
-              if (siguientePagina >= totalPaginas) {
-                //Ocultar boton si no hay mas paginas
-                this.style.display = 'none';
-              } else {
-                // Restaurar boton
-                this.classList.remove('cargando');
-                this.innerHTML = 'Ver más';
-                this.disabled = false;
-              }
+        const confirmBox = document.createElement('div');
+        confirmBox.style.position = 'fixed';
+        confirmBox.style.top = '0';
+        confirmBox.style.left = '0';
+        confirmBox.style.width = '100%';
+        confirmBox.style.height = '100%';
+        confirmBox.style.background = 'rgba(0,0,0,0.5)';
+        confirmBox.style.display = 'flex';
+        confirmBox.style.alignItems = 'center';
+        confirmBox.style.justifyContent = 'center';
+        confirmBox.style.zIndex = '9999';
 
-              // Reinicializar carruseles de Bootstrap para las nuevas noticias
-              const carruseles = contenedorNoticias.querySelectorAll('.carousel');
-              carruseles.forEach(carrusel => {
-                new bootstrap.Carousel(carrusel);
-              });
-            })
-            .catch(error => {
-              console.error('Error:', error);
-              // Restaurar boton en caso de error
-              this.classList.remove('cargando');
-              this.innerHTML = 'Ver más';
-              this.disabled = false;
-              alert('Error al cargar más noticias. Intenta nuevamente.');
-            });
-          });
-        }
+        confirmBox.innerHTML = `
+          <div style="background: white; padding: 20px 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 300px;">
+            <h3>¿Cerrar sesión?</h3>
+            <p>¿Estás seguro de cerrar sesión?</p>
+            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+              <button id="confirmLogout" style="background-color: #d9534f; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cerrar sesión</button>
+              <button id="cancelarLogout" style="background-color: #ccc; color: black; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(confirmBox);
+
+        document.getElementById('confirmLogout').onclick = () => {
+          window.location.href = "logout.php";
+        };
+
+        document.getElementById('cancelarLogout').onclick = () => {
+          document.body.removeChild(confirmBox);
+        };
       });
       </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
  <?php include 'footer.php'; ?>
 </body>
