@@ -18,7 +18,7 @@ $titulo = $_POST['titulo'] ?? '';
 $descripcion = $_POST['descripcion'] ?? '';
 $fecha_evento = $_POST['fecha_evento'] ?? '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'submit_denuncia') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Limpieza
     $titulo = trim($_POST['titulo'] ?? '');
     $descripcion = trim($_POST['descripcion'] ?? '');
@@ -828,7 +828,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <div class="logo">
       <img src="imagenes/logo.png" alt="logo">
     </div>
-    <h3><a class="volverDenuncias" href="denuncia.php">Volver a Denuncias</a></h3>
+    <h3><a class="volverDenuncias" href="denuncia_anonima.php">Volver a Denuncias</a></h3>
   </header>
 
   <div class="contenedor-principal">
