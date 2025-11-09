@@ -3,7 +3,7 @@ $categoria_actual = 'Deportes';
 include 'conexion.php';
 
 // Configuracion de paginacion
-$noticias_por_pagina = 25;
+$noticias_por_pagina = 20;
 $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 $offset = ($pagina_actual - 1) * $noticias_por_pagina;
 
