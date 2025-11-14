@@ -170,6 +170,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'true') {
       color: #403F48;
       margin: 0;
       white-space: nowrap;
+      padding: 28px;
     }
     .linea-divisora {
       flex: 1;
