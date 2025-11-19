@@ -793,7 +793,7 @@ function cambiarImagen(imagen, elemento) {
 
 // Reportar noticia
 function redirigirReporte() {
-    window.location.href = 'formulario_reporte.php?id=<?= $id_noticia ?>';
+    window.location.href = 'reportar.php?id=<?= $id_noticia ?>';
 }
 
 // Comentarios (solo para usuarios registrados)
