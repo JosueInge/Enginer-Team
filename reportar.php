@@ -1,9 +1,109 @@
+<?php
+session_start();
+include 'conexion.php';
+
+// Verificar que el usuario este autenticado
+if (!isset($_SESSION['usuario_id'])) {
+  header("Location: login.php");
+  exit();
+}
+
+// Verificar que se haya proporcionado un ID de noticia
+if (!isset($_GET['id'])) {
+  header("Location: noticias.php");
+  exit();
+}
+
+$id_noticia = intval($_GET['id']);
+$usuario_id = $_SESSION['usuario_id'] ?? null;
+$usuario_nombre = $_SESSION['usuario_nombre'] ?? 'Usuario';
+
+// Obtener datos de la noticia 
+$stmt = $conexion->prepare("SELECT titulo, fecha, autor FROM propuestas_noticias WHERE id = ?");
+$stmt->bind_param("i", $id_noticia);
+$stmt->execute();
+$noticia = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if (!$noticia) {
+  header("Location: noticias.php");
+  exit();
+}
+
+// Procesar el formulario de reporte
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $motivo = trim($_POST['motivo'] ?? '');
+  $comentario = trim($_POST['comentario'] ?? '');
+
+  // Validaciones
+  $errores = [];
+
+  if (empty($motivo)) {
+    $errores[] = "Seleccione un motivo";
+  }
+
+  if (empty($comentario)) {
+    $errores[] = "El comentario es obligatorio";
+  } elseif (strlen($comentario) < 100) {
+    $errores[] = "El comentario debe tener al menos 100 caracteres";
+  } elseif (strlen($comentario) > 1000) {
+    $errores[] = "Haz alcanzado el limite de 1000 caracteres";
+  }
+
+  // Procesar imagenes
+  $evidencias = [];
+  if (isset($_FILES['evidencias']) && is_array($_FILES['evidencias']['name'])) {
+    foreach ($_FILES['evidencias']['name'] as $key => $name) {
+      if ($_FILES['evidencias']['error'][$key] === UPLOAD_ERR_OK) {
+        // Validar tipo de archivo
+        $tipo_archivo = mime_content_type($_FILES['evidencias']['tmp_name'][$key]);
+        if ($tipo_archivo !== 'image/jpeg') {
+          $errores[] = "Solo se permiten archivos JPEG";
+          continue;
+        }
+
+        // Generar nombre unico
+        $extension = pathinfo($name, PATHINFO_EXTENSION);
+        $nombre_archivo = uniqid() . '_' . $usuario_id . '.' . $extension;
+        $ruta_destino = 'imagenes/reportes/' . $nombre_archivo;
+
+        // Crear directotio si no existe
+        if (!is_dir('imagenes/reportes')) {
+          mkdir('imagenes/reportes', 0755, true);
+        }
+
+        // Mover archivo
+        if (move_uploaded_file($_FILES['evidencias']['tmp_name'][$key], $ruta_destino)) {
+          $evidencias[] = $ruta_destino;
+        } else {
+          $errores[] = "Error al cargar la imagen: " . $name;
+        } 
+      }
+    }
+  }
+
+  // Si no hay errores, guardar reporte
+  if (empty($errores)) {
+    $evidencias_string = !empty($evidencias) ? implode(',', $evidencias) : null;
+
+    $stmt = $conexion->prepare("INSERT INTO reportes_denuncias (denuncia_id, titulo_denuncia, fecha_denuncia, motivo, usuario_id, usuario_nombre, evidencias, comentario, fecha_reporte) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->bind_param("isssisss", $id_noticia, $noticia['titulo'], $noticia['fecha'], $motivo, $usuario_id, $usuario_nombre, $evidencias_string, $comentario);
+
+    if ($stmt->execute()) {
+      $mensaje_exito = "Reporte enviado correctamente";
+    } else {
+      $errores[] = "Error al guardar el reporte en la base de datos";
+    }
+   $stmt->close();
+  }
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reportar Noticia - Comunicado Digital</title>
+  <title><?= htmlspecialchars($noticia['titulo']) ?> - Comunicado Digital</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -32,7 +132,7 @@
       line-height: 1.6;
     }
 
-    /* ENCABEZADO */
+/* Encabezado */
     .encabezado-reporte {
       background-color: var(--color-fondo-header);
       padding: 20px 40px;
@@ -45,10 +145,10 @@
     .logo {
       height: 50px;
     }
-
+    
     .volver-detalles {
       font-family: 'Poppins', sans-serif;
-      font-size: 24px;;
+      font-size: 16px;
       font-weight: 600;
       color: var(--color-texto-claro);
       text-decoration: none;
@@ -63,14 +163,14 @@
       background-color: rgba(255,255,255,0.1);
     }
 
-    /* CONTENEDOR PRINCIPAL */
+    /* Contenedor principal */
     .contenedor-reporte {
       max-width: 1300px;
       margin: 40px auto;
-      padding: 0 20px;
+      padding: 0 24px;
     }
 
-    /* TITULO PRINCIPAL */
+    /* Titulo principal */
     .titulo-principal {
       font-family: 'Poppins', sans-serif;
       font-size: 32px;
@@ -80,7 +180,7 @@
       margin-bottom: 40px;
     }
 
-    /* FORMULARIO */
+    /* Formulario */
     .formulario-reporte {
       background-color: white;
       border-radius: 16px;
@@ -91,7 +191,7 @@
     .fila-formulario {
       display: flex;
       gap: 30px;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
 
     .campo-formulario {
@@ -126,7 +226,6 @@
     .input-texto:focus, .input-fecha:focus, .selector:focus, .textarea-comentario:focus {
       border-color: var(--color-secundario);
       box-shadow: 0 0 0 2px rgba(45, 142, 255, 0.1);
-      transform: scale(1.02);
     }
 
     .input-texto:hover, .input-fecha:hover, .selector:hover, .textarea-comentario:hover {
@@ -134,7 +233,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    .contador-fecha {
+    .contenedor-fecha {
       position: relative;
     }
 
@@ -156,8 +255,8 @@
       cursor: pointer;
     }
 
-    /* SECCION EVIDENCIAS */
-    .section-evidencias {
+    /* Seccion evidencias */
+    .seccion-evidencias {
       margin-bottom: 30px;
     }
 
@@ -178,7 +277,7 @@
       border: 1px solid var(--color-borde);
       border-radius: 12px;
       padding: 20px;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       width: 100%;
     }
 
@@ -200,11 +299,9 @@
       font-size: 16px;
       border: none;
       border-radius: 8px;
-      padding: 30px 20px;
+      padding: 12px 20px;
       cursor: pointer;
       transition: all 0.3s ease;
-      width: 135px;
-      height: 35px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -234,8 +331,8 @@
 
     .vista-previa-item {
       position: relative;
-      width: 350px;
-      height: 200px;
+      width: 200px;
+      height: 150px;
       border: 1px solid var(--color-borde);
       border-radius: 12px;
       overflow: hidden;
@@ -265,12 +362,12 @@
       transition: all 0.3s ease;
     }
 
-    .btn-sliminar-archivo:hover {
+    .btn-eliminar-archivo:hover {
       background: white;
       transform: scale(1.1);
     }
 
-    /* CONTADOR DE CARACTERES */
+    /* Contador de caracteres */
     .contenedor-contador {
       position: relative;
     }
@@ -280,7 +377,7 @@
       right: 15px;
       bottom: 15px;
       font-family: 'Inter', sans-serif;
-      font-size: 16px;
+      font-size: 14px;
       color: var(--color-borde);
       display: none;
     }
@@ -298,7 +395,7 @@
       resize: vertical;
     }
 
-    /* BOTON ENVIAR */
+    /* Boton enviar */
     .contenedor-btn-enviar {
       display: flex;
       justify-content: center;
@@ -330,7 +427,7 @@
       transform: scale(0.98);
     }
 
-    /* MODALES */
+    /* Modales */
     .modal {
       position: fixed;
       top: 0;
@@ -338,48 +435,33 @@
       width: 100%;
       height: 100%;
       background-color: rgba(0,0,0,0.5);
-      display: flex;
+      display: none;
       justify-content: center;
       align-items: center;
       z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .modal.activo {
-      opacity: 1;
-      visibility: visible;
     }
 
     .modal-contenido {
       background-color: white;
       border-radius: 12px;
       padding: 30px;
-      width: 90%;
-      max-width: 500px;
+      width: 400px;
+      text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      transform: translateY(-20px);
-      transition: transform 0.3s ease;
-    }
-
-    .modal.activo .modal-contenido {
-      transform: translateY(0);
     }
 
     .modal-titulo {
       font-family: 'Poppins', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--color-texto-oscuro);
-      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #403F48;
       margin-bottom: 15px;
     }
 
     .modal-texto {
       font-family: 'Inter', sans-serif;
       font-size: 16px;
-      color: var(--color-texto-oscuro);
+      color: #404F48;
       text-align: center;
       margin-bottom: 25px;
     }
@@ -413,99 +495,57 @@
 
     .btn-cancelar:hover, .btn-confirmar:hover {
       transform: scale(1.05);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      box-shadow:  0 2px 8px rgba(0,0,0,0.15);
     }
 
-    /* VISTA AMPLIA DE IMAGEN */
-    .vista-amplia {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.9);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1001;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .vista-amplia.activa {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .vista-amplia img {
-      width: 80%;
-      height: auto;
-      max-height: 80vh;
-      object-fit: contain;
-      border-radius: 8px;
-    }
-
-    .btn-cerrar-vista {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: none;
-      border: none;
-      color: var(--color-error);
-      font-size: 30px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .btn-cerrar-vista:hover {
-      transform: scale(1.1);
-    }
-
-    /* MENSAJES DE ERROR */
+    /* Mensajes de error y exito */
     .mensaje-error {
       background-color: #F8D7DA;
       border: 1px solid #F5C2C7;
       color: #842029;
       font-family: 'Inter', sans-serif;
-      font-size: 16px;
+      font-size: 14px;
       padding: 10px 15px;
       border-radius: 6px;
       margin-top: 8px;
       display: none;
-      animation: sacudida 0.5s ease;
     }
 
     .mensaje-error.activo {
       display: block;
     }
 
-    @keyframes sacudida {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
+    .mensaje-exito {
+      background-color: #D1E7DD;
+      border: 1px solid #BADBCC;
+      color: #0F5132;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
     }
 
     .campo-error {
-      border-color: var(--color-error) !important;
-      animation: sacudida 0.5s ease;
+      border-color:var(--color-error) !important;
     }
 
-    /* ALERTA DE EXITO */
+    /* Alerta de exito */
     .alerta-exito {
       position: fixed;
       top: 20px;
       right: 20px;
-      background-color: var(--color-exito);
+      background-color: var(--color-texto);
       color: white;
       padding: 15px 25px;
       border-radius: 8px;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter, sams-serif';
       font-size: 16px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
       z-index: 1002;
       opacity: 0;
-      transform: translateX(100%);
+      transform: translatex(100%);
       transition: all 0.3s ease;
     }
 
@@ -514,20 +554,20 @@
       transform: translateX(0);
     }
 
-    /* RESPONSIVO */
+    /* Responsivo */
     @media (max-width: 1024px) {
       .fila-formulario {
         flex-direction: column;
         gap: 20px;
       }
-      
+
       .contenedor-carga {
         width: 100%;
       }
 
       .vista-previa-item {
         width: 100%;
-        max-width: 350px;
+        max-width: 200px;
       }
     }
 
@@ -539,7 +579,7 @@
       }
 
       .volver-detalles {
-        font-size: 20px;
+        font-size: 14px;
       }
 
       .titulo-principal {
@@ -558,12 +598,7 @@
 
       .modal-contenido {
         padding: 20px;
-      }
-
-      .vista-amplia img {
-        width: 95%;
-        height: auto;
-        max-height: 80vh;
+        margin: 20px;
       }
     }
   </style>
@@ -572,25 +607,37 @@
   <!-- ENCABEZADO -->
    <header class="encabezado-reporte">
     <img src="imagenes/logo.png" alt="Logo Comunicado Digital" class="logo">
-    <a href="#" class="volver-detalles" id="volverDetalles">Volver a detalles</a>
+    <a href="ver_noticia.php?id=<?= $id_noticia ?>" class="volver-detalles" id="volverDetalles">Volver a detalles</a>
   </header>
 
   <!-- CONTENEDOR PRINCIPAL -->
    <div class="contenedor-reporte">
     <h1 class="titulo-principal">Reportar Noticia</h1>
+
+    <?php if (isset($mensaje_exito)): ?>
+      <div class="mensaje-exito">
+        <?= $mensaje_exito ?>
+    </div>
+    <?php endif; ?>
+
+    <?php if (!empty($errores)): ?>
+      <?php foreach ($errores as $error): ?>
+        <div class="mensaje-error activo"><?= $error ?></div>
+      <?php endforeach; ?>
+    <?php endif; ?>
     
-    <form class="formulario-reporte" id="formularioReporte">
+    <form class="formulario-reporte" id="formularioReporte" method="POST" enctype="multipart/form-data">
       <!-- FILA 1: Titulo y Fecha -->
        <div class="fila-formulario">
         <div class="campo-formulario">
           <label class="etiqueta">Título de la noticia</label>
-          <input type="text" class="input-texto" id="tituloNoticia" readonly>
+          <input type="text" class="input-texto" id="tituloNoticia" value="<?= htmlspecialchars($noticia['titulo']) ?>" readonly>
         </div>
 
         <div class="campo-formulario">
           <label class="etiqueta">Fecha de publicación</label>
           <div class="contenedor-fecha">
-            <input type="text" class="input-fecha" id="fechaPublicacion" readonly>
+            <input type="text" class="input-fecha" id="fechaPublicacion" value="<?= date('d/m/Y', strtotime($noticia['fecha'])) ?>" readonly>
             <button type="button" class="icono-calendario">📅</button>
           </div>
         </div>
@@ -600,20 +647,20 @@
        <div class="fila-formulario">
         <div class="campo-formulario">
           <label class="etiqueta">Motivo</label>
-          <select class="selector" id="motivoReporte">
+          <select class="selector" id="motivoReporte" name="motivo" required>
             <option value="">Selecciona un motivo</option>
-            <option value="informacion_erroea">Información errónea</option>
-            <option value="informacion_erroea">Contenido ofensivo</option>
-            <option value="informacion_erroea">Violación de derechos de autor</option>
-            <option value="informacion_erroea">Spam</option>
-            <option value="informacion_erroea">Otro</option>
+            <option value="contenido_inapropiado">Icontenido inapropiado</option>
+            <option value="informacion_falsa">Información falsa</option>
+            <option value="derechos_autor">Derechos de autor</option>
+            <option value="spam">Spam</option>
+            <option value="informacion_erronea">Otro</option>
           </select>
           <div class="mensaje-error" id="errorMotivo"></div>
         </div>
 
         <div class="campo-formulario">
           <label class="etiqueta">Usuario</label>
-          <input type="text" class="input-texto" id="usuarioReporte" readonly>
+          <input type="text" class="input-texto" id="usuarioReporte" value="<?= htmlspecialchars($usuario_nombre) ?>" readonly>
         </div>
       </div>
 
@@ -630,7 +677,7 @@
               <span class="text-archivo" id="textoArchivo">No se ha seleccionado ningún archivo</span>
             </div>
 
-            <input type="file" id="inputArchivo" accept=".jpg,.jpeg" multiple style="display: none;">
+            <input type="file" id="inputArchivo" name="evidencias[]"accept=".jpg,.jpeg" multiple style="display: none;">
 
             <div class="vista-previa-contenedor" id="vistaPreviaContenedor">
               <!-- Las vistas previas se generara aqui dinamicamente -->
@@ -640,9 +687,9 @@
 
         <!-- CAMPO COMENTARIO -->
          <div class="campo-formulario">
-          <label class="etiqueta">Comentario</label>
+          <label class="etiqueta">Comentario *</label>
           <div class="contenedor-contador">
-            <textarea class="textarea-comentario" id="comentarioReporte" placeholder="Escribe un comentario" maxlength="1000"></textarea>
+            <textarea class="textarea-comentario" id="comentarioReporte" name="comentario" placeholder="Describe detalladamente el motivo detu reporte (minimo 100 caracteres)" maxlength="1000" required></textarea>
             <div class="contador-caracteres" id="contadorCaracteres">0/1000</div>
           </div>
           <div class="mensaje-error" id="errorComentario"></div>
@@ -650,89 +697,38 @@
 
         <!-- BOTON ENVIAR -->
          <div class="contenedor-btn-enviar">
-          <button type="button" class="btn-enviar" id="btnEnviarReportar">Enviar reporte</button>
+          <button type="button" class="btn-enviar" id="btnEnviarReporte">Enviar reporte</button>
         </div>
       </form>
     </div>
 
-    <!-- Modal para reportar noticia -->
- <div id="modal-reporte" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; heigth: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; width: 500px; max-width: 500px; max-width: 90%">
-        <h3 style="font-family: 'Poppins', sans-serif; color: #1661AC; margin-bottom: 20px;">Reportar Noticia</h3> 
-
-          <form id="form-reporte">
-            <div style="margin-bottom: 15px;">
-              <label style="display: block; margin-bottom: 5px; font-weight: bold;">Noticia del reporte:</label>
-              <select id="motivo-reporte" style="width: 100%; padding: 8px; border: 1px solid #B1B1B1; border-radius: 4px;">
-                <option value="">Seleccione un motivo</option>
-                <option value="contenido_inapropiado">Contenido inapropiado</option>
-                <option value="informacion_falsa">Información falsa</option>
-                <option value="spam">Spam</ooption>
-                <option value="derechos_autor">Derechos de autor</option>
-                <option value="otro">Otro</option>
-              </select>
-          </div>
-
-          <div style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px; font-weigth: bold;">Evidencias (JPEG):</label>
-            <input type="file" id="evidencias-reporte" accept=".jpg,.jpeg" multiple style="width: 100%;">
-            <small style="color: #74737C;">Puede seleccionar múltiples archivos JPEG</small>
-          </div>
-
-          <div style="margin-bottom: 15px;">
-            <label style="display: blockl margin-bottom: 5px; font-weight: bold;">Comentario (100-1000 caracteres):</label>
-            <textarea id="comentario-reporte" style="width: 100%; height: 120px; padding: 8px; border: 1px solid $B1B1B1; border-radius: 4px; resize: vertical;" placeholder="Describa detalladamente el motivo de su reporte..."></textarea>
-          </div>
-
-          <div style="display: flex; gap: 10px; justify-content: flex-end;">
-            <button type="button" onclick="cerrarModalReporte()" style="padding: 10px 20px; background: #B1B1B1; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
-            <button type="button" id="btn-enviar-reporte" onclick="enviarReporte(<?= $id_noticia ?>)" style="padding: 10px 20px; background: #1661AC; color: while; border: none; border-radius: 4px; cursor: pointer;">Enviar Reporte</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Funcion para abrir e  modal -->
-     <script>
-      function abrirModalReporte() {
-        document.genElementById('modal-reporte').style.display = 'block';
-      }
-      </script>
-
-
-    <!-- MODAL VOLVER A DETALLES -->
-     <div class="modal" id="modalVolver">
-      <div class="modal-contenido">
-        <h3 class="modal-titulo">¿Estás seguro de volver a los detalles de esta noticia?</h3>
-        <div class="modal-botones">
-          <button class="btn-modal btn-cancelar" id="btnCancelarVolver">Cancelar</button>
-          <button class="btn-modal btn-confirmar" id="btnConfirmarVolver">Confirmar</button>
-        </div>
-      </div>
-    </div> 
-
     <!-- MODAL CONFIRMAR ENVIO -->
      <div class="modal" id="modalEnviar">
       <div class="modal-contenido">
-        <h3 class="modal-titulo">¿Estás seguro de enciar tu reporte?</h3>
-        <p class="modal-texto">Tu reporte será  enviado a los administradores para que sea revisado</p>
+        <h3 class="modal-titulo">¿Estás seguro de enviar tu reporte?</h3>
+        <p class="modal-texto">Una vez enviado, no podrás modificar el reporte.</p>
         <div class="modal-botones">
           <button class="btn-modal btn-cancelar" id="btnCancelarEnviar">Cancelar</button>
           <button class="btn-modal btn-confirmar" id="btnConfirmarEnviar">Confirmar</button>
-        </div>
       </div>
     </div>
+  </div>
 
-    <!-- VISTA AMPLIA DE IMAGEN -->
-     <div class="vista-amplia" id="vistaAmplia">
-      <button class="btn-cerrar-vista" id="btnCerrarVista">x</button>
-      <img id="imagenAmpliada" src="" alt="vista ampliada">
+  <!-- MODAL VOLVER A DETALLES -->
+   <div class="modal" id="modalVolver">
+    <div class="modal-contenido">
+      <h3 class="modal-titulo">¿Estás seguro de volver a los detalles de esta noticia?</h3>
+      <div class="modal-botones">
+        <button class="btn-modal btn-cancelar" id="btnCancelarVolver">Cancelar</button>
+        <button class="btn-modal btn-confirmar" id="btnConfirmarVolver">Confirmar</button>
+      </div>
     </div>
+  </div>
 
-    <!-- ALERTA DE EXITO -->
-    <div class="alerta-exito" id="alertaExito">
-      ¡Tu reporte fue enviado a los administradores!
-    </div>
+  <!-- ALERTA DE EXITO -->
+   <div class="alerta-exito" id="alertaExito">
+    ¡Tu reporte fue enviado a los administradores!
+  </div>
 
     <script>
       // Variables globales
@@ -740,63 +736,30 @@
       const maxArchivos = 3;
 
       // Elementos del DOM
-      const volverDetalles = document.getElementById('volverDetalles');
-      const modalVolver = document.getElementById('modalVolver');
-      const btnCancelarVolver = document.getELementById('btnCancelarVolver');
-      const btnConfirmarVolver = document.getElementById('btnConfirmarVolver');
-      
+      const formularioReporte = document.getElementById('formularioReporte');
       const btnElegirArchivo = document.getElementById('btnElegirArchivo');
       const inputArchivo = document.getElementById('inputArchivo');
       const textoArchivo = document.getElementById('textoArchivo');
       const vistaPreviaContenedor = document.getElementById('vistaPreviaContenedor');
-
       const comentarioReporte = document.getElementById('comentarioReporte');
-      const contadorCaracteres = document.getElemenById('contadorCaracteres');
-      const motivoReporte = document.getElemenById('motivoReporte');
-
+      const contadorCaracteres = document.getElementById('contadorCaracteres');
+      const motivoReporte = document.getElementById('motivoReporte');
       const btnEnviarReporte = document.getElementById('btnEnviarReporte');
-      const modalEnviar = document.getElemenById('modalEnviar');
-      const btnCancelarEnviar = document.getElemenById('btnCancelarEnviar');
-      const btnConfirmarEnviar = document.getElemenById('btnConfirmarEnviar');
-
-      const vistaAmplia = document.getElemenById('vistaAmplia');
-      const imagenAmpliada = document.getElemenById('imagenAmpliada');
-      const btnCerrarVista = document.getElemenById('btnCerrarVista');
-
-      const alertaExito = document.getElemenById('alertaExito');
-
-      const errorMotivo = document.getElemenById('errorMotivo');
-      const errorComentario = document.getElemenById('errorComentario');
+      const modalEnviar = document.getElementById('modalEnviar');
+      const btnCancelarEnviar = document.getElementById('btnCancelarEnviar');
+      const btnConfirmarEnviar = document.getElementById('btnConfirmarEnviar');
+      const alertaExito = document.getElementById('alertaExito');
+      const errorMotivo = document.getElementById('errorMotivo');
+      const errorComentario = document.getElementById('errorComentario');
 
       // Inicializacion
       document.addEventListener('DOMContentLoaded', function() {
-        //Simular datos de la noticias 
-        document.getElementById('tituloNoticia').value = 'Titulo de la noticia de ejemplo';
-        document.getElementById('fechaPublicacion').value = '15/03/2024';
-        document.getElementById('usuarioReporte').value = 'Usuario Actual';
-
-        // Configurar eventos
         configurarEventos();
       });
 
       function configurarEventos() {
-        // Modal volver a detalles
-        volverDetalles.addEventListener('click', function(e) {
-          e.preventDefault();
-          mostrarModal(modalVolver);
-        });
-
-        btnCancelarVolver.addEventListener('click', function() {
-          ocultarModal(modalVolver);
-        });
-
-        btnConfirmarVolver.addEventListener('click', function() {
-          // Redirigir a detalles de noticia (dimulado, no backend)
-          window.location.href = 'detalles_noticias.html';
-        });
-
         // Gestion de archivos
-        btnElegirArchivo.addEventListener('click', function() {
+        btnElegirArchivo.addEventListener('click', function(e) {
           if (archivosSeleccionados.length < maxArchivos) {
             inputArchivo.click();
           }
@@ -807,13 +770,13 @@
         });
 
         // Contador de caracteres
-        comentarReporte.addEventListener('focus', function() {
-          contadorCaracteres.classList.add('visible');
+        comentarioReporte.addEventListener('focus', function() {
+          contadorCaracteres.style.display = 'block';
         });
 
-        comentarReporte.addEventListener('blur', function() {
+        comentarioReporte.addEventListener('blur', function() {
           if (this.value.length === 0) {
-            contadorCaracteres.classList.remove('visible');
+            contadorCaracteres.style.display = 'none';
           }
         });
 
@@ -826,27 +789,61 @@
           } else {
             contadorCaracteres.classList.remove('error');
           }
-        }); 
+
+          // Auto-expandir
+          this.style.height = 'auto';
+          this.style.height = (this.scrollHeight) + 'px';
+        });
 
         // Envio del formulario
         btnEnviarReporte.addEventListener('click', function() {
           if (validarFormulario()) {
-            enviarReporteBackend(1);
+            mostrarModal(modalEnviar);
           }
         });
 
-        btnCancelarEnviar.addEventListener('click', function() {
+        btnConfirmarEnviar.addEventListener('click', function() {
           ocultarModal(modalEnviar);
         });
 
         btnConfirmarEnviar.addEventListener('click', function() {
-          enviarReporte();
+          enviarFormulario();
         });
 
-        // Vista ampliada de imagen
-        btnCerrarVista.addEventListener('click', function() {
-          ocultarVistaAmplia();
+        // Cerrar modal al hacer click fuera 
+        modalEnviar.addEventListener('click', function(e) {
+          if (e.target === this) {
+            ocultarModal(modalEnviar);
+          }
         });
+
+         // Modal volver a detalles 
+        const volverLink = document.getElementById('volverDetalles');
+        const modalVolver = document.getElementById('modalVolver');
+        const btnCancelarVolver = document.getElementById('btnCancelarVolver');
+        const btnConfirmarVolver = document.getElementById('btnConfirmarVolver');
+
+        if (volverLink && modalVolver && btnCancelarVolver && btnConfirmarVolver) {
+          volverLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            mostrarModal(modalVolver);
+          });
+
+          btnCancelarVolver.addEventListener('click', function() {
+            ocultarModal(modalVolver);
+          });
+
+          btnConfirmarVolver.addEventListener('click', function() {
+            window.location.href = 'ver_noticia.php?id=<?= $id_noticia ?>';
+          });
+
+          // Cerrar modal al hacer click afuera
+          modalVolver.addEventListener('click', function(e) {
+            if (e.target === this) {
+              ocultarModal(modalVolver);
+            }
+          });
+        }
       }
 
       function manejarSeleccionArchivos(archivos) {
@@ -855,7 +852,11 @@
         const archivosAProcesar = archivosArray.slice(0, archivosRestantes);
 
         archivosAProcesar.forEach(archivo => {
-          if (archivo.type.startWith('image/') && (archivo.type === 'image/jpeg' || archivo.name.toLowerCase().endsWith('.jpg') || archivo.name.toLowerCase().endWith('.jpeg'))) {
+          // Validar que sea imagen JPEG
+          if (archivo.type.startsWith('image/') &&
+              (archivo.type === 'image/jpeg' ||
+                archivo.name.toLowerCase().endswith('.jpg') ||
+                archivo.name.toLowerCase().endswith('jpeg'))) {
             archivosSeleccionados.push(archivo);
 
             const reader = new FileReader();
@@ -863,10 +864,14 @@
               crearVistaPrevia(archivo.name, e.target.result);
             };
             reader.readAsDataURL(archivo);
+          } else {
+            mostrarError(errorComentario, 'Solo se permiten archivos JPEG');
           }
         });
 
         actualizarInterfazArchivos();
+
+        inputArchivo.value = '';
       }
 
       function crearVistaPrevia(nombreArchivo, url) {
@@ -876,9 +881,6 @@
         const img = document.createElement('img');
         img.src = url;
         img.alt = nombreArchivo;
-        img.addEventListener('click', function() {
-          mostrarVistaAmplia(url);
-        });
 
         const btnEliminar = document.createElement('button');
         btnEliminar.className = 'btn-eliminar-archivo';
@@ -898,7 +900,7 @@
 
         // Recrear todas las vistas previas
         vistaPreviaContenedor.innerHTML = '';
-        archivoSeleccionados.forEach(archivo => {
+        archivosSeleccionados.forEach(archivo => {
           const reader = new FileReader();
           reader.onload = function(e) {
             crearVistaPrevia(archivo.name, e.target.result);
@@ -915,9 +917,9 @@
         if (cantidad === 0) {
           textoArchivo.textContent = 'No se ha seleccionado ningún archivo';
         } else if (cantidad === 1) {
-          textoArchivo.textContent = '1 archivos seleccionado';
+          textoArchivo.textContent = '1 archivo seleccionado';
         } else {
-          textoArchivo.textContent = `${cantidad} archivos seleccionados`;
+          textoArchivo.textContent = `${cantidad} archivos seleccionados`; 
         }
 
         if (cantidad >= maxArchivos) {
@@ -928,22 +930,13 @@
           btnElegirArchivo.disabled = false;
         }
       }
-      
-      function mostrarVistaAmplia(url) {
-        imagenAmpliada.src = url;
-        vistaAmplia.classList.add('activa');
-      }
 
-      function ocultarVistaAmplia() {
-        vistaAmplia.classList.remove('activa');
-      }
-
-      function motrarModal(modal) {
-        modal.classList.add('activo');
+      function mostrarModal(modal) {
+        modal.style.display = 'flex';
       }
 
       function ocultarModal(modal) {
-        modal.classList.remove('activo');
+        modal.style.display = 'none';
       }
 
       function validarFormulario() {
@@ -951,9 +944,9 @@
 
         // Validar motivo
         if (!motivoReporte.value) {
-          mostrarError(errorMotivo, 'Seleccione un motivo');
+          mostrarError(errorMotivo, 'Selecciona un motivo');
           motivoReporte.classList.add('campo-error');
-          valido = false;;
+          valido = false;
         } else {
           ocultarError(errorMotivo);
           motivoReporte.classList.remove('campo-error');
@@ -984,140 +977,63 @@
       function mostrarError(elemento, mensaje) {
         elemento.textContent = mensaje;
         elemento.classList.add('activo');
-
-        // Ocultar automaticamente despues de 5 segundos
-        setTimeout(() => {
-          elemento.classList.remove('activo');
-        }, 5000)
       }
 
       function ocultarError(elemento) {
         elemento.classList.remove('activo');
       }
 
-      function enviarReporte() {
-        // Simular envio del formulario
-        console.log('Enviando reporte...');
-        console.log('Motivo:', motivoReporte.value);
-        console.log('Comentario:', comentarioReporte.value);
-        console.log('Archivos:', archivosSeleccionados.length);
+      function enviarFormulario() {
+        // Crear FormData para enviar archivos
+        const formData = new FormData(formularioReporte);
 
-        // Cerrar modal
-        ocultarModal(modalEnviar);
-
-        // Mostrar alerta de exito
-        alertaExito.classList.add('activa');
-
-        // Redirigir despues de 2 segundos
-        setTimeOut(() => {
-          alertaExito.classList.remove('activa');
-          // Redirigir a detalles de noticia (simular)
-          window.location.href = 'ver_noticia.html'
-        }, 2000);
-      }
-
-      // Funcion para manejar el envio de reportes
-      function enviarReporteBackend(noticiaId) {
-        const motivo = document.getElementById('motivoReporte').value;
-        const comentario = document.getElementById('comentarioReporte').value;
-
-        // Validaciones basicas en el frontend
-        if (!motivo) {
-          alert('Selecciona un motivo');
-          return;
-        }
-
-        if (!comentario) {
-          alert('El comentario es obligatorio');
-          return;
-        }
-
-        if (comentario.length < 100) {
-          alert('El comentario debe tener al menos 100 caracteres.');
-          return;
-        }
-
-        if (comentario.length > 1000) {
-          alert('Haz alcanzado el límite de 1000 caracteres')ñ
-          return;
-        }
-
-        // Crear FormData 
-        const formData = new FormData();
-        formData.append('noticia_id', noticiaId);
-        formData.append('motivo', motivo);
-        formData.append('comentario', comentario);
-
-        // Agregar archivos de evidencia
-        archivosSeleccionados.forEach(archivo => {
+        // Agregar archivos seleccionados
+        archivosSeleccionados.forEach((archivo, index) => {
           formData.append('evidencias[]', archivo);
         });
 
         // Mostrar loading
-        const btnEnviar = document.getElementById('btnEnviarReportar');
-        const originalText = btnEnviar.innerHTML;
-        btnEnviar.innerHTML = 'Enviando...';
-        btnEnviar.disabled = true;
+        btnEnviarReporte.disabled = true;
+        btnEnviarReporte.textContent = 'Enviando...';
+        ocultarModal(modalEnviar);
 
-        // Enviar peticion
-        fetch('/api/reportes_noticias.php', {
+        // Enviar formulario
+        fetch('', {
           method: 'POST',
           body: formData
         })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            alert('Reporte enviado correctamente');
-            // Cerrar modal o limpiar formulario
-            windows.location.href = 'ver_noticia.php?id=' + noticiaId;
-          } else {
-            alert('Error: ' + data.message);
-          }
+        .then(response => {
+            if (!response.ok) {
+              throw new Error('Error en la respuesta del servidor');
+            }
+            return response.text();
+        })
+        .then(html => {
+          // Recargar la pagina para mostrar mensaje de exito o error
+          location.reload();
         })
         .catch(error => {
           console.error('Error:', error);
           alert('Error al enviar el reporte');
-        })
-        .finally(() => {
-          btnEnviar.innerHTML = originalText;
-          btnEnviar.disabled = false;
+          btnEnviarReporte.disabled = false;
+          btnEnviarReporte.textContent = 'Enviar reporte';
         });
       }
 
-      // Funcion para cerrar modal de reporte 
-      function cerrarModalReporte() {
-        const modal = document.getElementById('modal-reporte');
-        if (modal) {
-          modal.style.display = 'none';
-        }
-
-        // Limpiar formulario
-        document.getElementById('motivo-reporte').value = '';
-        document.getElementById('comentario-reporte').value = '';
-        document.getElementById('evidencias-reporte').value = '';
-        document.getElementById('contador-caracteres').textContent = '0/1000';
-      }
-
-      // Contador de caracteres para el comentario
-      document.addEventListener('DOMContentLoaded', function() {
-        const comentarioTextarea = document.getElementById('comentario-reporte');
-        const contador = document.getElementById('contador-caracteres');
-
-        if (comentarioTextarea && contador) {
-          comentarioTextarea.addEventListener('input', function() {
-            const caracteres = this.value.length;
-            contador.textContent = `${caracteres}/1000`;
-
-            if (caracteres < 100) {
-              contador.style.color = '#ff0000';
-            } else if (caracteres > 1000) {
-              contador.style.color = '#ff0000';
-            } else {
-              contador.style.color = '#74737C';
-            }
-          });
-        }
+      // Modal volver a detalles
+      document.getElementById('volverDetalles').addEventListener('click', function(e) {
+        e.preventDefault();
+        mostrarModal(modalVolver);
       });
+
+      document.getElementById('btnCancelarVolver').addEventListener('click', function() {
+        ocultarModal(modalVolver);
+      });
+
+      document.getELementById('btnConfirmarVolver').addEventListener('click', function() {
+        window.location.href = 'ver_noticia.php?id=<?= $id_noticia ?>';
+      });
+
     </script>
   </body>
   </html>
