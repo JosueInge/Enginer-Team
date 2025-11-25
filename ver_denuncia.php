@@ -1102,7 +1102,7 @@ body {
 
     // Reportar denuncia
     function redirigirReporte() {
-        window.location.href = 'formulario_reporte.php?id=<?= $id_noticia ?>';
+        window.location.href = 'reportarDenuncia.php?id=<?= $id_noticia ?>';
     }
 
     // Modal Cerrar Sesión - SOLO PARA POBLADORES
