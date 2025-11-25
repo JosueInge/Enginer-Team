@@ -144,7 +144,7 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
       </div>
 
       <!-- Línea separadora -->
-      <hr class="linea-separadora">
+      <div class="linea-separadora"></div>
 
       <!-- Categorías -->
       <div class="seccion-categorias">
@@ -158,7 +158,7 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
       </div>
 
       <!-- Línea separadora -->
-      <hr class="linea-separadora">
+      <div class="linea-separadora"></div>
 
       <!-- Enlaces secundarios -->
       <div class="seccion-secundarios">
@@ -479,10 +479,11 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
     filter: brightness(0) saturate(100%) invert(56%) sepia(74%) saturate(2481%) hue-rotate(194deg) brightness(99%) contrast(98%);
   }
   .linea-separadora {
-      border: none;
-      border-top: 1px solid #2F8EFF;
-      margin: 15px 0;
+    border: none;
+    border-top: 2px solid #2F8EFF;
+    margin: 15px 0;
   }
+
   .seccion-categorias a, .seccion-secundarios a {
       display: block;
       font-family: 'Montserrat', sans-serif;
