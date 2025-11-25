@@ -805,12 +805,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           }
         });
 
-        btnConfirmarEnviar.addEventListener('click', function() {
+        btnCancelarEnviar.addEventListener('click', function() {
           ocultarModal(modalEnviar);
         });
 
         btnConfirmarEnviar.addEventListener('click', function() {
-          enviarFormulario();
+          ocultarModal();
         });
 
         // Cerrar modal al hacer click fuera 
@@ -984,6 +984,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setTimeout(() => {
           ocultarError(elemento);
         }, 5000);
+      }
+
+      function ocultarError(elemento) {
+        elemento.classList.remove('activo');
+        elemento.textContent = '';
       }
 
       function enviarFormulario() {
