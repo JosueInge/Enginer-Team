@@ -1,3 +1,5 @@
+enviar_denuncia_anonima.php
+
 <?php
 session_start();
 include 'conexion.php'; // debe definir $conexion (mysqli)

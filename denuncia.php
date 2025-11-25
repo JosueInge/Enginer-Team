@@ -261,7 +261,7 @@ $result_denuncias = obtenerDenuncias($conexion);
 <body>
 
   <div class="container-fluid">
-    <section class="seccion-ultimas-denuncias" style="border: 3px solid #e5e8ebff; border-radius: 10px; padding: 15px; background-color: #fff;">
+    <section class="seccion-ultimas-denuncias" style="border: none; border-radius: 10px; padding: 15px; background-color: #fff;">
       <h2 class="titulo-ultimas-denuncias">Denuncias ciudadanas</h2>
 
       <div class="contenedor-ultimas-denuncias">
@@ -325,6 +325,46 @@ $result_denuncias = obtenerDenuncias($conexion);
     <a href="enviar_denuncia.php" class="boton-publicar">Enviar una denuncia</a>
   <?php endif; ?>
 <?php endif; ?>
+
+<!-- Cierre de sesion -->
+ <script>
+  document.getElementById('btnSesion')?.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    const confirmBox = document.createElement('div');
+    confirmBox.style.position = 'fixed';
+    confirmBox.style.top = '0';
+    confirmBox.style.left = '0';
+    confirmBox.style.width = '100%';
+    confirmBox.style.height = '100%';
+    confirmBox.style.background = 'rgba(0,0,0,0.5)';
+    confirmBox.style.display = 'flex';
+    confirmBox.style.alignItems = 'center';
+    confirmBox.style.justifyContent = 'center';
+    confirmBox.style.zIndex = '9999';
+
+     confirmBox.innerHTML = `
+          <div style="background: white; padding: 20px 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 300px;">
+            <h3>¿Cerrar sesión?</h3>
+            <p>¿Estás seguro de cerrar sesión?</p>
+            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+              <button id="confirmLogout" style="background-color: #d9534f; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cerrar sesión</button>
+              <button id="cancelarLogout" style="background-color: #ccc; color: black; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(confirmBox);
+
+        document.getElementById('confirmLogout').onclick = () => {
+          window.location.href = "logout.php";
+        };
+
+        document.getElementById('cancelarLogout').onclick = () => {
+          document.body.removeChild(confirmBox);
+        };
+  });
+  </script>
 
 <script src="https://kit.fontawesome.com/3d3e3e3d3e.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

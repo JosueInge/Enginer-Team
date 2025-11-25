@@ -4,7 +4,7 @@ include 'conexion.php';
 include 'chatbot.php';
 
 /* Funcion para obtener denunicas */
-function obtenerDenuncias($conexion) {
+function obtenerDenuncias($conexion, $limit = 12, $offset = 0) {
   $sql = "
     SELECT
       pd.id,
@@ -18,10 +18,26 @@ function obtenerDenuncias($conexion) {
     LEFT JOIN usuarios u ON pd.usuario_id = u.id
     WHERE pd.estado = 'aprobada'
     ORDER BY pd.fecha DESC
-    LIMIT 8
+    LIMIT ? OFFSET ?
   ";
 
-  return $conexion->query($sql);
+  $stmt = $conexion->prepare($sql);
+  $stmt->bind_param("ii", $limit, $offset);
+  $stmt->execute();
+  return $stmt->get_result();
+}
+
+// Funcion para obtener el total de denuncias
+function contarDenuncias($conexion) {
+  $sql = "
+    SELECT COUNT(*) as total
+    FROM propuestas_denuncias
+    WHERE estado = 'aprobada'
+  ";
+
+  $result = $conexion->query($sql);
+  $row = $result->fetch_assoc();
+  return $row['total'];
 }
 
 //Funcion para obtener imagenes de una denuncia 
@@ -35,7 +51,76 @@ function obtenerImagenes($denuncia) {
   return $imagenes;
 }
 
-$result_denuncias = obtenerDenuncias($conexion);
+// Obtener parametros de paginacion
+$pagina_actual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
+$denuncias_por_pagina = 8;
+$offset = ($pagina_actual - 1) * $denuncias_por_pagina;
+
+// Obtener denuncias para la pagina actual
+$result_denuncias = obtenerDenuncias($conexion, $denuncias_por_pagina, $offset);
+
+// Contar total de denuncias
+$total_denuncias = contarDenuncias($conexion);
+$total_paginas = ceil($total_denuncias / $denuncias_por_pagina); 
+
+// Verificar si hay mas denuncias para mostrar
+$hay_mas_denuncias = $total_denuncias > $denuncias_por_pagina;
+
+// Manejar peticiones AJAX
+if (isset($_GET['ajax']) && $_GET['ajax'] == 1) {
+  // Solo devolver el HTML de las denuncias para AJAX
+  while ($denuncia = $result_denuncias->fetch_assoc()):
+    $imagenes = obtenerImagenes($denuncia);
+  ?>
+  <div class="tarjeta-ultima-denuncia">
+  <!-- Carrusel de imagenes -->
+   <div id="carouselUltimas<?= $denuncia['id'] ?>" class="carousel slide carrusel-ultimas" data-bs-ride="carousel" data-bs-interval="5000">
+    <div class="carousel-inner">
+      <?php if (!empty($imagenes)): ?>
+        <?php foreach ($imagenes as $index => $imagen): ?>
+          <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+            <a href="ver_denuncia.php?id=<?= $denuncia['id'] ?>">
+              <img src="imagenes/denuncias/<?= $imagen ?>" alt="<?= htmlspecialchars($denuncia['titulo']) ?>">
+        </a>
+        </div>
+        <?php endforeach; ?>
+        <?php else: ?>
+          <div class="carousel-item active">
+            <div class="imagen-placeholder">Sin imagen</div>
+        </div>
+        <?php endif; ?>
+        </div>
+
+        <?php if (count($imagenes) > 1): ?>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselUltimas<?= $denuncia['id'] ?>" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" bada-bs-target="#carouselUltimas<?= $denuncia['id'] ?>" data-bs-slide="next">
+          <span class="corusel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Siguiente</span>
+        </button>
+        <?php endif; ?>
+        </div>
+
+        <!-- Contenido -->
+         <div class="contenido-ultima-denuncia">
+          <h3 class="titulo-ultima-denuncia">
+            <a href="ver_denuncia.php?id=<?= $denuncia['id'] ?>">
+              <?= htmlspecialchars($denuncia['titulo']) ?>
+        </a>
+        </h3>
+        <div class="info-ultima-denuncia">
+          <span><?= date('d/m/Y', strtotime($denuncia['fecha_publicacion'])) ?></span>
+          <span>|</span>
+          <span><?= !empty($denuncia['autor']) ? htmlspecialchars($denuncia['autor']) : 'Anónimo' ?></span>
+        </div>
+        </div>
+        </div>
+        <?php 
+        endwhile;
+        exit;
+}
 ?>
 
 <script src="buscador.js" defer></script>
@@ -180,6 +265,62 @@ $result_denuncias = obtenerDenuncias($conexion);
         font-weight: 600;
       }
 
+      /* Boton ver mas */
+      .contenedor-btn-ver-mas {
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+        margin-bottom: 20px;
+      }
+
+      .btn-ver-mas {
+        width: 275px;
+        height: 50px;
+        background-color: #1661AC;
+        color: #FFF;
+        font-family: 'One Sans', sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-ver-mas:hover {
+        background-color: #2D8EFF;
+      }
+
+      .btn-ver-mas:disabled {
+        background-color: #B1B1B1;
+        cursor: not-allowed;
+      }
+
+      .cargando {
+        display: none;
+        text-align: center;
+        padding: 20px;
+        color: #74737C;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #1661AC;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+        margin: 0 auto 10px; 
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(30deg); }
+      }
+
       /* Responsivo */
       @media (max-width: 1200px) {
         .contenedor-ultimas-denuncias {
@@ -311,6 +452,21 @@ $result_denuncias = obtenerDenuncias($conexion);
         </div>
       <?php endwhile; ?>
     </div>
+
+    <!-- Indicador de carga -->
+     <div class="cargando" id="cargando">
+      <div class="spinner"></div>
+      <p>Cargando más denuncias...</p>
+    </div>
+
+    <!-- Boton ver mas -->
+     <?php if ($total_denuncias > $denuncias_por_pagina): ?>
+      <div class="contenedor-btn-ver-mas">
+        <button class="btn-ver-mas" id="btn-ver-mas" data-pagina-actual="1" data-total-paginas="<?= $total_paginas ?>">
+          Ver mas denuncias
+     </button>
+     </div>
+     <?php endif; ?>
 </section>
 </div>
 
@@ -326,6 +482,73 @@ $result_denuncias = obtenerDenuncias($conexion);
 
 <script src="https://kit.fontawesome.com/3d3e3e3d3e.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const btnVerMas = document.getElementById('btn-ver-mas');
+    const contenedorDenuncias = document.getElementById('contenedor-denuncias');
+    const cargando = document.getElement.getElementById('cargando');
+
+    if (btnVerMas) {
+      btnVerMas.addEventListener('click', function() {
+        const paginaActual = parseInt(this.getAttribute('data-pagina-actual'));
+        const totalPaginas = parseInt(this.getAttribute('data-total-paginas'));
+        const siguientePagina = paginaActual + 1;
+
+        // Mostrar indicador de carga
+        cargando.style.display = 'block';
+        btnVerMas.disabled = true;
+        btnVerMas .textContent = 'Cargando...';
+
+        // Realizar peticion AJAX
+        fetch(`?pagina=${siguientePagina}&ajax=1`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+          }
+          return response.text();
+        })
+        .then(html => {
+          // Ocultar indicador de carga
+          cargando.style.display = 'none';
+          btnVerMas.disabled = false;
+
+          if (html.trim() === '') {
+            // No hay mas denuncias
+            btnVerMas.style.display = 'none';
+            return;
+          }
+
+          //Agregar nuevas denuncias al contenedor
+          contenedorDenuncias.innerHTML += html;
+
+          // Actualizar contador de pagina
+          this.setAttribute('data-pagina-actual', siguientePagina);
+
+          // ocultar boton si no hay mas paginas
+          if (siguientePagina >= totalPaginas) {
+            this.style.display = 'none';
+          } else {
+            this.textContent = 'Ver más denuncias';
+          }
+
+          // Reinicializar carruseles de Bootstrap
+          const carruseles = contenedorDenuncias.querySelectorAll('.carousel');
+          carruseles.forEach(carrusel => {
+            new bootstrap.Carousel(carrusel);
+          });
+        })
+        .catch(error => {
+          console.error('Error al cargar más denuncias:', error);
+          cargando.style.display = 'none';
+          btnVerMas.disabled = false;
+          btnVerMas.textContent = 'Ver más denuncias';
+          alert('Error al cargar más denuncias. Por favor, intenta nuevamente.');
+        });
+      });
+    }
+  });
+  </script>
 
 <?php include 'footer.php'; ?>
 </body>
