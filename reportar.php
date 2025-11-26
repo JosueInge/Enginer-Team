@@ -977,12 +977,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       function mostrarError(elemento, mensaje) {
         elemento.textContent = mensaje;
         elemento.classList.add('activo');
-      }
 
+        // Ocultar mensaje despues de 5 segundos
+       setTimeout(() => {
+        ocultarError(elemento);
+      }, 5000);
+    }
       function ocultarError(elemento) {
         elemento.classList.remove('activo');
+        elemento.textContent = '';
       }
-
+      
       function enviarFormulario() {
         // Crear FormData para enviar archivos
         const formData = new FormData(formularioReporte);
