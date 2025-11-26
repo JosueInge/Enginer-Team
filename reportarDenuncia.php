@@ -81,20 +81,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
     }
   }
+}
 
   // Si no hay errores, guardar reporte
   if (empty($errores)) {
     $evidencias_string = !empty($evidencias) ? implode(',', $evidencias) : null;
 
-    $stmt = $conexion->prepare("INSERT INTO reportes_denuncias (denuncia_id, titulo_denuncia, fecha_denuncia, motivo, usuario_id, usuario_nombre, evidencias, comentario, fecha_reporte) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-    $stmt->bind_param("isssisss", $id_denuncia, $denuncia['titulo'], $denuncia['fecha'], $motivo, $usuario_id, $usuario_nombre, $evidencias_string, $comentario);
+    if (empty($denuncia['titulo']) || empty($denuncia['fecha'])) {
+      $errores[] = "Datos de la noticia incompletos";
+    } else {
+      $stmt = $conexion->prepare("INSERT INTO reportes_denuncias (denuncia_id, titulo_denuncia, fecha_denuncia, motivo, usuario_id, usuario_nombre, evidencias, comentario, fecha_reporte) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
 
-    if ($stmt->execute()) {
-      $mensaje_exito = "Reporte enviado correctamente";
+      if ($stmt) {
+        $stmt->bind_param("isssisss", $id_denuncia, $denuncia['titulo'], $denuncia['fecha'], $motivo, $usuario_id, $usuario_nombre, $evidencias_string, $comentario);
+        
+        if ($stmt->execute()) {
+          $mensaje_exito = "Reporte enviado correctamente";
+          // Limpiar el formulario despues del envio exitoso
+          $motivo = '';
+          $comentario = '';
     } else {
       $errores[] = "Error al guardar el reporte en la base de datos";
     }
    $stmt->close();
+    } else {
+      $errores[] = "Error al preparar la consulta: " . $conexion->error;
+    }
   }
 }
 ?>
