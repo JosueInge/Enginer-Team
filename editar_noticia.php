@@ -13,9 +13,16 @@ $error = null;
 if (!isset($_GET['id'])) { header("Location: noticias.php"); exit(); }
 
 $id_noticia = intval($_GET["id"]);
+$fuente = $_GET['fuente'] ?? 'noticia'; // 'noticia' o 'propuestas'
 
-// Obtener noticia
-$stmt = $conexion->prepare("SELECT * FROM propuestas_noticias WHERE id = ?");
+// Obtener noticia según la fuente
+if ($fuente === 'propuestas') {
+    $sql = "SELECT * FROM propuestas_noticias WHERE id = ?";
+} else {
+    $sql = "SELECT * FROM noticias WHERE id = ?";
+}
+
+$stmt = $conexion->prepare($sql);
 $stmt->bind_param("i", $id_noticia);
 $stmt->execute();
 $noticia = $stmt->get_result()->fetch_assoc();
@@ -44,10 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $imagenes_para_borrar = json_decode($_POST['imagenes_para_borrar'] ?? '[]', true);
     if (!is_array($imagenes_para_borrar)) $imagenes_para_borrar = [];
 
-    // Actualizar datos
-    $stmt = $conexion->prepare(
-        "UPDATE propuestas_noticias SET categoria = ?, titulo = ?, descripcion = ?, fecha = ? WHERE id = ?"
-    );
+    // Actualizar datos en la tabla correcta según la fuente
+    if ($fuente === 'propuestas') {
+        $sql_update = "UPDATE propuestas_noticias SET categoria = ?, titulo = ?, descripcion = ?, fecha = ? WHERE id = ?";
+    } else {
+        $sql_update = "UPDATE noticias SET categoria = ?, titulo = ?, descripcion = ?, fecha = ? WHERE id = ?";
+    }
+    
+    $stmt = $conexion->prepare($sql_update);
     $stmt->bind_param("ssssi", $categoria, $titulo, $descripcion, $fecha, $id_noticia);
     if (!$stmt->execute()) { $error = "Error al actualizar: " . $conexion->error; }
     $stmt->close();
@@ -61,7 +72,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         foreach ($cols as $col) {
             if ($noticia[$col] === $imgNombre) {
-                $stmt2 = $conexion->prepare("UPDATE propuestas_noticias SET $col = NULL WHERE id = ?");
+                if ($fuente === 'propuestas') {
+                    $sql_delete_img = "UPDATE propuestas_noticias SET $col = NULL WHERE id = ?";
+                } else {
+                    $sql_delete_img = "UPDATE noticias SET $col = NULL WHERE id = ?";
+                }
+                
+                $stmt2 = $conexion->prepare($sql_delete_img);
                 $stmt2->bind_param("i", $id_noticia);
                 $stmt2->execute();
                 $stmt2->close();
@@ -73,8 +90,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     //  Subir nuevas imágenes
     if (!empty($_FILES['imagenes']['name'][0])) {
 
-        // Obtener columnas disponibles actualizadas
-        $stmt = $conexion->prepare("SELECT imagen, imagen2, imagen3 FROM propuestas_noticias WHERE id = ?");
+        // Obtener columnas disponibles actualizadas de la tabla correcta
+        if ($fuente === 'propuestas') {
+            $sql_img = "SELECT imagen, imagen2, imagen3 FROM propuestas_noticias WHERE id = ?";
+        } else {
+            $sql_img = "SELECT imagen, imagen2, imagen3 FROM noticias WHERE id = ?";
+        }
+        
+        $stmt = $conexion->prepare($sql_img);
         $stmt->bind_param("i", $id_noticia);
         $stmt->execute();
         $imagenesActuales = $stmt->get_result()->fetch_assoc();
@@ -100,7 +123,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Guardar nombre original según columna (imagen_nombre_original, imagen2_nombre_original, ...)
                     $col_nombre_original = $col . "_nombre_original";
 
-                    $stmt = $conexion->prepare("UPDATE propuestas_noticias SET $col = ?, $col_nombre_original = ? WHERE id = ?");
+                    if ($fuente === 'propuestas') {
+                        $sql_insert_img = "UPDATE propuestas_noticias SET $col = ?, $col_nombre_original = ? WHERE id = ?";
+                    } else {
+                        $sql_insert_img = "UPDATE noticias SET $col = ?, $col_nombre_original = ? WHERE id = ?";
+                    }
+                    
+                    $stmt = $conexion->prepare($sql_insert_img);
                     $stmt->bind_param("ssi", $nuevoNombre, $nombreOriginal, $id_noticia);
                     $stmt->execute();
                     $stmt->close();
@@ -1590,7 +1619,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (toastEl) {
                 toastEl.style.opacity = "1";
                 setTimeout(() => { toastEl.style.opacity = "0"; }, 4000);
-                setTimeout(() => { window.location.href = "inicio.php"; }, 4000);
+                setTimeout(() => { window.location.href = "ver_noticia.php?id=<?= $id_noticia ?>&fuente=<?= $fuente ?>"; }, 4000);
             }
 
             // Inicializar contadores con valores iniciales si el campo ya tiene texto.
