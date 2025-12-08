@@ -1,6 +1,7 @@
 <?php
 session_start();
 include 'conexion.php';
+include 'menu3.php';
 
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.php");
@@ -44,31 +45,9 @@ foreach ($resultadoRepetidos as $item) {
             margin: 0;
             color: #333;
         }
-        header {
-            background-color: #0d5c9b;
-            color: white;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .logo img {
-            height: 50px;
-            margin-right: 10px;
-        }
-        .informacion a{
-            color: white;
-            margin-left: 20px;
-            text-decoration: none;
-            font-size: 14px;
-        }
         .contenedor {
             max-width: 1200px;
-            margin: 30px auto;
+            margin: 120px auto 30px;
             padding: 0 20px;
         }
         .titulo-seccion {
@@ -221,18 +200,7 @@ foreach ($resultadoRepetidos as $item) {
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <img src="imagenes/logo.png" alt="logo">
-        </div>
-        <div class="informacion">
-            <a href="inicio.php">Inicio</a>
-            <a href="revision_noticias.php">Revision</a>
-            <a href="perfil.php">Mi perfil</a>
-            <a href="logout.php">Cerrar Sesion</a>
-        </div>
-    </header>
-
+    
         <div class="contenedor">
             <div style="display: flex; justify-content: flex-start; align-items: center; gap: 10px;">
             <div class="tooltip" style="margin-left: -60px;">

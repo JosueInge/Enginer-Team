@@ -192,3 +192,11 @@
 [2025-12-08 01:34:39] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
 [2025-12-08 01:34:48] GET id=43, fuente=noticia
 [2025-12-08 01:34:48] ✓ Noticia encontrada: ID=43, Título=5 actividades que podés disfrutar este fin de semana en el Centro Histórico de San Salvador
+[2025-12-08 04:43:20] GET id=50, fuente=noticia
+[2025-12-08 04:43:20] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-08 04:43:27] GET id=64, fuente=noticia
+[2025-12-08 04:43:27] ✗ Noticia NO encontrada para id=64 en tabla noticia
+[2025-12-08 04:43:30] GET id=39, fuente=noticia
+[2025-12-08 04:43:30] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-08 04:43:46] GET id=54, fuente=noticia
+[2025-12-08 04:43:46] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
