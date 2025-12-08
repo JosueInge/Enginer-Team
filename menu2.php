@@ -144,7 +144,7 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
       </div>
 
       <!-- Línea separadora -->
-      <hr class="linea-separadora">
+      <div class="linea-separadora"></div>
 
       <!-- Categorías -->
       <div class="seccion-categorias">
@@ -158,7 +158,7 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
       </div>
 
       <!-- Línea separadora -->
-      <hr class="linea-separadora">
+      <div class="linea-separadora"></div>
 
       <!-- Enlaces secundarios -->
       <div class="seccion-secundarios">
@@ -414,7 +414,7 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
   .menu-lateral {
       position: fixed;
       top: 70px;
-      left: -525px; /*oculto por defecto*/
+      left: -625px; /*oculto por defecto*/
       width: 525px;
       max-width: 100%;
       height: calc(100% - 70px);
@@ -479,10 +479,11 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
     filter: brightness(0) saturate(100%) invert(56%) sepia(74%) saturate(2481%) hue-rotate(194deg) brightness(99%) contrast(98%);
   }
   .linea-separadora {
-      border: none;
-      border-top: 1px solid #2F8EFF;
-      margin: 15px 0;
+    border: none;
+    border-top: 2px solid #2F8EFF;
+    margin: 15px 0;
   }
+
   .seccion-categorias a, .seccion-secundarios a {
       display: block;
       font-family: 'Montserrat', sans-serif;
@@ -700,14 +701,14 @@ if ($usuarioLogueado && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_ro
 
   // Cerrar menú
   btnCerrarMenu.addEventListener('click', () => {
-      menuLateral.style.left = '-525px';
+      menuLateral.style.left = '-625px';
       document.body.style.overflow = '';
   });
 
   // Cerrar menú al hacer clic fuera
   document.addEventListener('click', (e) => {
       if (!menuLateral.contains(e.target) && !btnHamburguesa.contains(e.target)) {
-          menuLateral.style.left = '-525px';
+          menuLateral.style.left = '-625px';
           document.body.style.overflow = '';
       }
   });

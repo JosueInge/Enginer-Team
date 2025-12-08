@@ -11,16 +11,33 @@ if (isset($_SESSION['usuario_id'])) {
 
 // Obtener ID de noticia
 $id_noticia = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$fuente = $_GET['fuente'] ?? 'noticia'; // 'noticia' o 'propuestas'
 $usuario_id = $_SESSION['usuario_id'] ?? null;
 $es_admin = ($_SESSION['usuario_rol'] ?? '') === 'Administrador';
 
-// Obtener datos de la noticia
-$sql = "SELECT * FROM noticias WHERE id = ?";
+// DEBUG: Escribir en log qué parámetros se reciben
+$debug_log = __DIR__ . '/debug_ver_noticia.log';
+file_put_contents($debug_log, "[" . date('Y-m-d H:i:s') . "] GET id=$id_noticia, fuente=$fuente\n", FILE_APPEND);
+
+// Obtener datos de la noticia según la fuente
+if ($fuente === 'propuestas') {
+    $sql = "SELECT * FROM propuestas_noticias WHERE id = ?";
+} else {
+    $sql = "SELECT * FROM noticias WHERE id = ?";
+}
+
 $stmt = $conexion->prepare($sql);
 $stmt->bind_param("i", $id_noticia);
 $stmt->execute();
 $resultado = $stmt->get_result();
 $noticia = $resultado->fetch_assoc();
+
+// DEBUG: Log si se encontró la noticia
+if ($noticia) {
+    file_put_contents($debug_log, "[" . date('Y-m-d H:i:s') . "] ✓ Noticia encontrada: ID={$noticia['id']}, Título={$noticia['titulo']}\n", FILE_APPEND);
+} else {
+    file_put_contents($debug_log, "[" . date('Y-m-d H:i:s') . "] ✗ Noticia NO encontrada para id=$id_noticia en tabla $fuente\n", FILE_APPEND);
+}
 
 // Si no existe la noticia
 if (!$noticia) {
@@ -30,6 +47,40 @@ if (!$noticia) {
 
 // Manejar acciones AJAX para comentarios
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Eliminar noticia (nuevo POST handler)
+    if (isset($_POST['eliminar']) && isset($_POST['id_noticia']) && isset($_POST['fuente'])) {
+        $id_eliminar = intval($_POST['id_noticia']);
+        $fuente_eliminar = trim($_POST['fuente']);
+        
+        // Eliminar comentarios
+        $stmt = $conexion->prepare("DELETE FROM comentarios WHERE propuestas_noticias_id = ?");
+        $stmt->bind_param("i", $id_eliminar);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Eliminar reportes
+        $stmt = $conexion->prepare("DELETE FROM reportes WHERE propuestas_noticias_id = ?");
+        $stmt->bind_param("i", $id_eliminar);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Eliminar noticia
+        if ($fuente_eliminar === 'propuestas') {
+            $sql_delete = "DELETE FROM propuestas_noticias WHERE id = ?";
+        } else {
+            $sql_delete = "DELETE FROM noticias WHERE id = ?";
+        }
+        
+        $stmt = $conexion->prepare($sql_delete);
+        $stmt->bind_param("i", $id_eliminar);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Redirigir a inicio
+        header("Location: inicio.php");
+        exit();
+    }
+    
     if (isset($_POST['eliminar_id'])) {
         $id_comentario = intval($_POST['eliminar_id']);
         $stmt = $conexion->prepare("DELETE FROM comentarios WHERE id = ? AND (usuario_id = ? OR ? = 1)");
@@ -102,8 +153,8 @@ body {
     align-items: flex-start;
     gap: 30px;
     max-width: 1300px;
-    margin: 40px auto;
-    padding: 20px;
+    margin: 160px auto;
+    padding: 30px;
 }
 
 /* COLUMNA DE NOTICIA */
@@ -121,6 +172,41 @@ body {
     text-align: left;
     margin: 20px 0 10px 0;
     line-height: 1.3;
+}
+
+/* Título + Iconos alineados */
+.contenedor-titulo-acciones {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.titulo-noticia {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 32px;
+    color: #044372;
+    margin: 0;
+}
+
+/* Iconos a la derecha */
+.acciones-noticia {
+    display: flex;
+    gap: 12px;
+}
+
+/* Estilo de iconos */
+.icono-accion {
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: transform .2s, opacity .2s;
+}
+
+.icono-accion:hover {
+    transform: scale(1.15);
+    opacity: 0.85;
 }
 
 /* META INFO */
@@ -173,25 +259,25 @@ body {
 /* FECHA DEL HECHO + DESCRIPCIÓN */
 .detalle-descripcion {
     margin-top: 30px;
-    display: flex;
-    gap: 30px;
-    align-items: flex-start;
 }
+
+.detalle-descripcion span {
+    display: inline;
+}
+
 .fecha-hecho {
     font-family: 'Inter', sans-serif;
     font-weight: 700;
     font-size: 20px;
     color: #403F48;
-    flex: 1;
-    min-width: 200px;
 }
+
 .descripcion {
     font-family: 'Inter', sans-serif;
     font-size: 18px;
     color: #403F48;
     line-height: 1.8;
     text-align: justify;
-    flex: 2;
     text-justify: inter-word;
 }
 
@@ -590,6 +676,121 @@ body {
     text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     z-index: 2;
 }
+
+/* MODAL ELIMINACIÓN - ESTILOS PERSONALIZADOS */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-overlay.activo {
+    display: flex;
+}
+
+.modal-contenedor {
+    background-color: #FFFFFF;
+    padding: 40px;
+    border-radius: 12px;
+    width: 400px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-titulo {
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: #403F48;
+    text-align: center;
+    margin: 0 0 30px 0;
+    line-height: 1.5;
+}
+
+.modal-botones {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.btn-modal {
+    flex: 1;
+    height: 45px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-cancelar {
+    background-color: #EB7373;
+    color: #061F3E;
+}
+
+.btn-cancelar:hover {
+    background-color: #d45c5c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(235, 115, 115, 0.3);
+}
+
+.btn-confirmar {
+    background-color: #61C9A8;
+    color: #FFFFFF;
+}
+
+.btn-confirmar:hover {
+    background-color: #4ab894;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(97, 201, 168, 0.3);
+}
+
+/* ALERTA DE ÉXITO */
+.alerta-exito {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #28a745;
+    color: white;
+    padding: 20px 40px;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.alerta-exito.mostrar {
+    display: block;
+    opacity: 1;
+}
+
 /* RESPONSIVO */
 @media (max-width: 1024px) {
     .contenedor-detalle {
@@ -637,15 +838,33 @@ body {
 <div class="contenedor-detalle">
     <!-- Columna izquierda: contenido -->
     <div class="columna-noticia">
-        <h1 class="titulo-noticia"><?= htmlspecialchars($noticia['titulo']) ?></h1>
+        <div class="contenedor-titulo-acciones">
+            <h1 class="titulo-noticia"><?= htmlspecialchars($noticia['titulo']) ?></h1>
+
+            <?php if(isset($_SESSION['usuario_id']) && $es_admin): ?>
+            <div class="acciones-noticia">
+                <a href="editar_noticia.php?id=<?= $noticia['id'] ?>&fuente=<?= $fuente ?>">
+                    <img src="imagenes/Lapiz.png" alt="Editar" class="icono-accion">
+                </a>
+
+                <button onclick="abrirModalEliminarNoticia()" style="background: none; border: none; padding: 0; cursor: pointer;">
+                    <img src="imagenes/Basurero.png" alt="Eliminar" class="icono-accion">
+                </button>
+                
+                <!-- Formulario oculto para enviar eliminación -->
+                <form id="formEliminarNoticia" method="POST" style="display: none;">
+                    <input type="hidden" name="id_noticia" value="<?= $noticia['id'] ?>">
+                    <input type="hidden" name="fuente" value="<?= $fuente ?>">
+                    <input type="hidden" name="eliminar" value="1">
+                </form>
+            </div>
+            <?php endif; ?>
+        </div>
 
         <div class="meta-noticia">
-            <span><?= htmlspecialchars($noticia['categoria']) ?></span>
-            <span>|</span>
             <span><?= htmlspecialchars($noticia['autor']) ?></span>
             <span>|</span>
-            <span><?= date('d/m/Y', strtotime($noticia['fecha'])) ?></span>
-            <span>|</span>
+            <span><?= date('d-m-Y', strtotime($noticia['fecha'])) ?></span>
             <span><?= date('H:i', strtotime($noticia['fecha'])) ?></span>
         </div>
 
@@ -666,12 +885,17 @@ body {
 
         <!-- Fecha del hecho y Descripción -->
         <div class="detalle-descripcion">
-            <div class="fecha-hecho">
-                Fecha del hecho: <?= date('d/m/Y', strtotime($noticia['fecha_hecho'] ?? $noticia['fecha'])) ?>
-            </div>
-            <div class="descripcion">
+            <span class="fecha-hecho">
+                <?php
+                setlocale(LC_TIME, 'es_ES.UTF-8', 'es_ES', 'Spanish_Spain');
+                $fecha = strftime("%d de %B de %Y", strtotime($noticia['fecha_hecho'] ?? $noticia['fecha']));
+                echo ucfirst($fecha) . ". -";
+                ?>
+            </span>
+
+            <span class="descripcion">
                 <?= nl2br(htmlspecialchars($noticia['descripcion'])) ?>
-            </div>
+            </span>
         </div>
 
         <!-- Icono Reportar -->
@@ -763,20 +987,71 @@ body {
     <img src="imagenes/cinemark.jpeg" alt="Anuncio Cinemark XD" class="anuncio-imagen">
 </div>
 
-<!-- Modal Eliminar -->
-<div class="modal-overlay" id="modalEliminar">
-    <div class="modal-eliminar">
-        <div class="modal-titulo">¿Estás seguro de eliminar tu comentario?</div>
+<!-- Modal Eliminación de Noticia -->
+<div class="modal-overlay" id="modalEliminarNoticia">
+    <div class="modal-contenedor">
+        <h2 class="modal-titulo">¿Estás seguro de eliminar esta noticia?</h2>
         <div class="modal-botones">
-            <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
-            <button class="btn-confirmar" onclick="eliminarComentario()">Confirmar</button>
+            <button class="btn-modal btn-cancelar" onclick="cerrarModalEliminarNoticia()">Cancelar</button>
+            <button class="btn-modal btn-confirmar" onclick="confirmarEliminarNoticia()">Confirmar</button>
         </div>
     </div>
+</div>
+
+<!-- Alerta de Éxito -->
+<div id="alertaExito" class="alerta-exito">
+    Noticia eliminada correctamente
 </div>
 
 <script>
 let comentarioAEliminar = null;
 let comentariosCargados = 5;
+let noticiaAEliminar = null;
+let fuenteNoticia = null;
+
+// Función para abrir modal de eliminación de noticia
+function abrirModalEliminarNoticia() {
+    document.getElementById('modalEliminarNoticia').classList.add('activo');
+}
+
+// Función para cerrar modal de eliminación de noticia
+function cerrarModalEliminarNoticia() {
+    document.getElementById('modalEliminarNoticia').classList.remove('activo');
+}
+
+// Función para confirmar eliminación de noticia
+function confirmarEliminarNoticia() {
+    // Cerrar el modal
+    cerrarModalEliminarNoticia();
+    
+    // Mostrar alerta de éxito
+    const alerta = document.getElementById('alertaExito');
+    alerta.classList.add('mostrar');
+    
+    // Enviar la eliminación por AJAX
+    const form = document.getElementById('formEliminarNoticia');
+    const formData = new FormData(form);
+    
+    setTimeout(() => {
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        })
+        .then(() => {
+            // Redirigir a inicio después de que se complete la eliminación
+            setTimeout(() => {
+                window.location.href = 'inicio.php';
+            }, 1000);
+        });
+    }, 1000);
+}
+
+// Cerrar modal al hacer click fuera
+document.getElementById('modalEliminarNoticia').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarModalEliminarNoticia();
+    }
+});
 
 // Galería de imágenes
 function cambiarImagen(imagen, elemento) {
@@ -917,30 +1192,29 @@ function guardarEdicion(comentarioId) {
 
 // Eliminar comentario
 function mostrarModalEliminar(comentarioId) {
-    comentarioAEliminar = comentarioId;
-    document.getElementById('modalEliminar').style.display = 'flex';
+    if (confirm('¿Estás seguro de eliminar este comentario?')) {
+        eliminarComentario(comentarioId);
+    }
 }
 
 function cerrarModal() {
-    document.getElementById('modalEliminar').style.display = 'none';
-    comentarioAEliminar = null;
+    // No hay modal para comentarios
 }
 
-function eliminarComentario() {
-    if (!comentarioAEliminar) return;
+function eliminarComentario(comentarioId) {
+    if (!comentarioId) return;
     
     fetch('', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: 'eliminar_id=' + comentarioAEliminar
+        body: 'eliminar_id=' + comentarioId
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            document.getElementById('comentario-' + comentarioAEliminar).remove();
-            cerrarModal();
+            document.getElementById('comentario-' + comentarioId).remove();
         }
     });
 }
@@ -952,12 +1226,12 @@ function verMasComentarios() {
     alert('Funcionalidad de "Ver más comentarios" en desarrollo');
 }
 
-// Cerrar modal al hacer click fuera
-document.getElementById('modalEliminar').addEventListener('click', function(e) {
-    if (e.target === this) {
-        cerrarModal();
-    }
-});
+// NO DESCOMENTAR - Este código intenta acceder a un modal que no existe
+// document.getElementById('modalEliminar').addEventListener('click', function(e) {
+//     if (e.target === this) {
+//         cerrarModal();
+//     }
+// });
 </script>
 
 </body>
