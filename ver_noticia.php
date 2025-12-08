@@ -153,7 +153,7 @@ body {
     align-items: flex-start;
     gap: 30px;
     max-width: 1300px;
-    margin: 150px auto;
+    margin: 160px auto;
     padding: 30px;
 }
 

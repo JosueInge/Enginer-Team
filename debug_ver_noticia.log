@@ -1,0 +1,194 @@
+[2025-12-08 00:11:58] GET id=39, fuente=noticia
+[2025-12-08 00:11:58] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-08 00:12:08] GET id=40, fuente=noticia
+[2025-12-08 00:12:08] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-08 00:12:21] GET id=39, fuente=noticia
+[2025-12-08 00:12:21] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-08 00:12:47] GET id=40, fuente=noticia
+[2025-12-08 00:12:47] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-08 00:13:02] GET id=68, fuente=noticia
+[2025-12-08 00:13:02] ✗ Noticia NO encontrada para id=68 en tabla noticia
+[2025-12-08 00:13:05] GET id=52, fuente=noticia
+[2025-12-08 00:13:05] ✓ Noticia encontrada: ID=52, Título=Tormentas de arena avanzan sobre América del Sur y el Caribe
+[2025-12-08 00:13:42] GET id=42, fuente=noticia
+[2025-12-08 00:13:42] ✓ Noticia encontrada: ID=42, Título=¿Cómo reservar una cabaña en el Club de Playa del Instituto Salvadoreño de Pensiones?
+[2025-12-08 00:22:12] GET id=50, fuente=noticia
+[2025-12-08 00:22:12] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-08 00:22:23] GET id=45, fuente=noticia
+[2025-12-08 00:22:23] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 00:23:07] GET id=51, fuente=noticia
+[2025-12-08 00:23:07] ✓ Noticia encontrada: ID=51, Título=Selecta Sub 17 alista su debut ante Corea del Norte en el Mundial de Catar 2025
+[2025-12-08 00:23:10] GET id=39, fuente=noticia
+[2025-12-08 00:23:10] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-08 00:23:13] GET id=45, fuente=noticia
+[2025-12-08 00:23:13] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 00:23:18] GET id=40, fuente=noticia
+[2025-12-08 00:23:18] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-08 00:23:52] GET id=39, fuente=noticia
+[2025-12-08 00:23:52] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-08 00:24:23] GET id=29, fuente=noticia
+[2025-12-08 00:24:23] ✓ Noticia encontrada: ID=29, Título=Eliminatorias Concacaf al Mundial 2026: cómo va la tabla de posiciones de los grupos A, B y C en la fecha FIFA de octubre
+[2025-12-08 00:31:57] GET id=42, fuente=noticia
+[2025-12-08 00:31:57] ✓ Noticia encontrada: ID=42, Título=¿Cómo reservar una cabaña en el Club de Playa del Instituto Salvadoreño de Pensiones?
+[2025-12-08 00:33:33] GET id=29, fuente=noticia
+[2025-12-08 00:33:33] ✓ Noticia encontrada: ID=29, Título=Eliminatorias Concacaf al Mundial 2026: cómo va la tabla de posiciones de los grupos A, B y C en la fecha FIFA de octubre
+[2025-12-08 00:34:07] GET id=39, fuente=noticia
+[2025-12-08 00:34:07] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-08 00:34:14] GET id=50, fuente=noticia
+[2025-12-08 00:34:14] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-08 00:34:37] GET id=29, fuente=noticia
+[2025-12-08 00:34:37] ✓ Noticia encontrada: ID=29, Título=Eliminatorias Concacaf al Mundial 2026: cómo va la tabla de posiciones de los grupos A, B y C en la fecha FIFA de octubre
+[2025-12-08 00:38:09] GET id=39, fuente=noticia
+[2025-12-08 00:38:09] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-08 00:38:27] GET id=55, fuente=noticia
+[2025-12-08 00:38:27] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-08 00:49:07] GET id=40, fuente=noticia
+[2025-12-08 00:49:07] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-08 00:49:30] GET id=45, fuente=noticia
+[2025-12-08 00:49:30] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:05:39] GET id=43, fuente=noticia
+[2025-12-08 01:05:39] ✓ Noticia encontrada: ID=43, Título=5 actividades que podés disfrutar este fin de semana en el Centro Histórico de San Salvador
+[2025-12-08 01:06:08] GET id=40, fuente=noticia
+[2025-12-08 01:06:08] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-08 01:08:38] GET id=50, fuente=noticia
+[2025-12-08 01:08:38] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-08 01:09:16] GET id=50, fuente=noticia
+[2025-12-08 01:09:16] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-08 01:09:26] GET id=64, fuente=noticia
+[2025-12-08 01:09:26] ✗ Noticia NO encontrada para id=64 en tabla noticia
+[2025-12-08 01:09:30] GET id=54, fuente=noticia
+[2025-12-08 01:09:30] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:09:59] GET id=42, fuente=noticia
+[2025-12-08 01:09:59] ✓ Noticia encontrada: ID=42, Título=¿Cómo reservar una cabaña en el Club de Playa del Instituto Salvadoreño de Pensiones?
+[2025-12-08 01:10:59] GET id=45, fuente=noticia
+[2025-12-08 01:10:59] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:12:59] GET id=40, fuente=noticia
+[2025-12-08 01:12:59] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-08 01:13:14] GET id=29, fuente=noticia
+[2025-12-08 01:13:14] ✓ Noticia encontrada: ID=29, Título=Eliminatorias Concacaf al Mundial 2026: cómo va la tabla de posiciones de los grupos A, B y C en la fecha FIFA de octubre
+[2025-12-08 01:13:39] GET id=53, fuente=noticia
+[2025-12-08 01:13:39] ✓ Noticia encontrada: ID=53, Título=Por qué la mayoría de los plásticos no se puede reciclar
+[2025-12-08 01:14:55] GET id=40, fuente=noticia
+[2025-12-08 01:14:55] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-08 01:15:03] GET id=45, fuente=noticia
+[2025-12-08 01:15:03] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:15:42] GET id=45, fuente=noticia
+[2025-12-08 01:15:42] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:15:44] GET id=45, fuente=noticia
+[2025-12-08 01:15:44] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:15:45] GET id=45, fuente=noticia
+[2025-12-08 01:15:45] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:15:46] GET id=45, fuente=noticia
+[2025-12-08 01:15:46] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:15:50] GET id=45, fuente=noticia
+[2025-12-08 01:15:50] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:15:54] GET id=45, fuente=noticia
+[2025-12-08 01:15:54] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:16:02] GET id=45, fuente=noticia
+[2025-12-08 01:16:02] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:16:03] GET id=45, fuente=noticia
+[2025-12-08 01:16:03] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:16:03] GET id=45, fuente=noticia
+[2025-12-08 01:16:03] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:16:03] GET id=45, fuente=noticia
+[2025-12-08 01:16:03] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:16:04] GET id=45, fuente=noticia
+[2025-12-08 01:16:04] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:16:04] GET id=45, fuente=noticia
+[2025-12-08 01:16:04] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:16:09] GET id=40, fuente=noticia
+[2025-12-08 01:16:09] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-08 01:16:12] GET id=51, fuente=noticia
+[2025-12-08 01:16:12] ✓ Noticia encontrada: ID=51, Título=Selecta Sub 17 alista su debut ante Corea del Norte en el Mundial de Catar 2025
+[2025-12-08 01:16:31] GET id=51, fuente=noticia
+[2025-12-08 01:16:31] ✓ Noticia encontrada: ID=51, Título=Selecta Sub 17 alista su debut ante Corea del Norte en el Mundial de Catar 2025
+[2025-12-08 01:16:32] GET id=51, fuente=noticia
+[2025-12-08 01:16:32] ✓ Noticia encontrada: ID=51, Título=Selecta Sub 17 alista su debut ante Corea del Norte en el Mundial de Catar 2025
+[2025-12-08 01:16:32] GET id=51, fuente=noticia
+[2025-12-08 01:16:32] ✓ Noticia encontrada: ID=51, Título=Selecta Sub 17 alista su debut ante Corea del Norte en el Mundial de Catar 2025
+[2025-12-08 01:16:32] GET id=51, fuente=noticia
+[2025-12-08 01:16:32] ✓ Noticia encontrada: ID=51, Título=Selecta Sub 17 alista su debut ante Corea del Norte en el Mundial de Catar 2025
+[2025-12-08 01:16:36] GET id=45, fuente=noticia
+[2025-12-08 01:16:36] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:16:46] GET id=45, fuente=noticia
+[2025-12-08 01:16:46] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:16:47] GET id=45, fuente=noticia
+[2025-12-08 01:16:47] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:16:51] GET id=50, fuente=noticia
+[2025-12-08 01:16:51] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-08 01:16:56] GET id=39, fuente=noticia
+[2025-12-08 01:16:56] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-08 01:17:28] GET id=54, fuente=noticia
+[2025-12-08 01:17:28] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:17:31] GET id=54, fuente=noticia
+[2025-12-08 01:17:31] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:17:32] GET id=54, fuente=noticia
+[2025-12-08 01:17:32] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:17:32] GET id=54, fuente=noticia
+[2025-12-08 01:17:32] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:17:32] GET id=54, fuente=noticia
+[2025-12-08 01:17:32] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:17:32] GET id=54, fuente=noticia
+[2025-12-08 01:17:32] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:17:33] GET id=54, fuente=noticia
+[2025-12-08 01:17:33] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:17:46] GET id=54, fuente=noticia
+[2025-12-08 01:17:46] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:18:07] GET id=50, fuente=noticia
+[2025-12-08 01:18:07] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-08 01:18:10] GET id=39, fuente=noticia
+[2025-12-08 01:18:10] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-08 01:18:24] GET id=54, fuente=noticia
+[2025-12-08 01:18:24] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:18:30] GET id=42, fuente=noticia
+[2025-12-08 01:18:30] ✓ Noticia encontrada: ID=42, Título=¿Cómo reservar una cabaña en el Club de Playa del Instituto Salvadoreño de Pensiones?
+[2025-12-08 01:19:30] GET id=42, fuente=noticia
+[2025-12-08 01:19:30] ✓ Noticia encontrada: ID=42, Título=¿Cómo reservar una cabaña en el Club de Playa del Instituto Salvadoreño de Pensiones?
+[2025-12-08 01:21:24] GET id=45, fuente=noticia
+[2025-12-08 01:21:24] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-08 01:21:43] GET id=54, fuente=noticia
+[2025-12-08 01:21:43] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:22:07] GET id=64, fuente=noticia
+[2025-12-08 01:22:07] ✗ Noticia NO encontrada para id=64 en tabla noticia
+[2025-12-08 01:22:12] GET id=46, fuente=noticia
+[2025-12-08 01:22:12] ✓ Noticia encontrada: ID=46, Título=El Salvador vs. Corea del Norte: ¿A qué hora y cómo ver por TV y ONLINE el debut de La Selecta? Mundial Sub 17 Qatar 2025
+[2025-12-08 01:29:56] GET id=55, fuente=noticia
+[2025-12-08 01:29:56] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-08 01:30:16] GET id=50, fuente=noticia
+[2025-12-08 01:30:16] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-08 01:30:21] GET id=53, fuente=noticia
+[2025-12-08 01:30:21] ✓ Noticia encontrada: ID=53, Título=Por qué la mayoría de los plásticos no se puede reciclar
+[2025-12-08 01:30:28] GET id=40, fuente=noticia
+[2025-12-08 01:30:28] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-08 01:30:35] GET id=28, fuente=noticia
+[2025-12-08 01:30:35] ✓ Noticia encontrada: ID=28, Título=Miles de dólares en juego: todo El Salvador consternado por el escándalo que genera una crisis en la Fesfut
+[2025-12-08 01:30:43] GET id=42, fuente=noticia
+[2025-12-08 01:30:43] ✓ Noticia encontrada: ID=42, Título=¿Cómo reservar una cabaña en el Club de Playa del Instituto Salvadoreño de Pensiones?
+[2025-12-08 01:32:27] GET id=55, fuente=noticia
+[2025-12-08 01:32:27] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-08 01:32:35] GET id=49, fuente=noticia
+[2025-12-08 01:32:35] ✓ Noticia encontrada: ID=49, Título=Cómo es el nuevo formato del Mundial Sub 17: 48 equipos, más partidos y cambios históricos de FIFA en Qatar 2025
+[2025-12-08 01:32:40] GET id=53, fuente=noticia
+[2025-12-08 01:32:40] ✓ Noticia encontrada: ID=53, Título=Por qué la mayoría de los plásticos no se puede reciclar
+[2025-12-08 01:32:46] GET id=41, fuente=noticia
+[2025-12-08 01:32:46] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-08 01:32:51] GET id=31, fuente=noticia
+[2025-12-08 01:32:51] ✗ Noticia NO encontrada para id=31 en tabla noticia
+[2025-12-08 01:32:54] GET id=24, fuente=noticia
+[2025-12-08 01:32:54] ✓ Noticia encontrada: ID=24, Título=¿Es saludable dormir con un gato?: la respuesta de los expertos
+[2025-12-08 01:32:58] GET id=16, fuente=noticia
+[2025-12-08 01:32:58] ✗ Noticia NO encontrada para id=16 en tabla noticia
+[2025-12-08 01:33:02] GET id=36, fuente=noticia
+[2025-12-08 01:33:02] ✓ Noticia encontrada: ID=36, Título=Berlín, el tesoro turístico escondido en Usulután
+[2025-12-08 01:33:48] GET id=55, fuente=noticia
+[2025-12-08 01:33:48] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-08 01:34:02] GET id=54, fuente=noticia
+[2025-12-08 01:34:02] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:34:17] GET id=54, fuente=noticia
+[2025-12-08 01:34:17] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-08 01:34:32] GET id=50, fuente=noticia
+[2025-12-08 01:34:32] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-08 01:34:39] GET id=40, fuente=noticia
+[2025-12-08 01:34:39] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-08 01:34:48] GET id=43, fuente=noticia
+[2025-12-08 01:34:48] ✓ Noticia encontrada: ID=43, Título=5 actividades que podés disfrutar este fin de semana en el Centro Histórico de San Salvador
