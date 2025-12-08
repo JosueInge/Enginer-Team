@@ -15,7 +15,7 @@ if (!isset($_GET['id'])) { header("Location: noticias.php"); exit(); }
 $id_noticia = intval($_GET["id"]);
 
 // Obtener noticia
-$stmt = $conexion->prepare("SELECT * FROM propuestas_noticias WHERE id = ?");
+$stmt = $conexion->prepare("SELECT * FROM propuestas_denuncias WHERE id = ?");
 $stmt->bind_param("i", $id_noticia);
 $stmt->execute();
 $noticia = $stmt->get_result()->fetch_assoc();
@@ -23,22 +23,19 @@ $stmt->close();
 
 if (!$noticia) { header("Location: noticia.php"); exit(); }
 
-if ($noticia['fecha'] === '0000-00-00' || empty($noticia['fecha'])) {
-    $noticia['fecha'] = '';
+if ($noticia['fecha_evento'] === '0000-00-00' || empty($noticia['fecha_evento'])) {
+    $noticia['fecha_evento'] = '';
 }
 
-$categoria = $noticia['categoria'] ?? '';
-
-$rutaBase = 'imagenes/noticias/';
+$rutaBase = 'imagenes/denuncias/';
 $cols = ['imagen', 'imagen2', 'imagen3']; // columnas válidas
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Datos principales
-    $categoria = $_POST['categoria'] ?? '';
     $titulo = $_POST['titulo'] ?? '';
     $descripcion = $_POST['descripcion'] ?? '';
-    $fecha = $_POST['fecha'] ?? '';
+    $fecha_evento = $_POST['fecha_evento'] ?? '';
 
     // Imágenes a borrar
     $imagenes_para_borrar = json_decode($_POST['imagenes_para_borrar'] ?? '[]', true);
@@ -46,9 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Actualizar datos
     $stmt = $conexion->prepare(
-        "UPDATE propuestas_noticias SET categoria = ?, titulo = ?, descripcion = ?, fecha = ? WHERE id = ?"
+        "UPDATE propuestas_denuncias SET titulo = ?, descripcion = ?, fecha_evento = ? WHERE id = ?"
     );
-    $stmt->bind_param("ssssi", $categoria, $titulo, $descripcion, $fecha, $id_noticia);
+    $stmt->bind_param("sssi", $titulo, $descripcion, $fecha_evento, $id_noticia);
     if (!$stmt->execute()) { $error = "Error al actualizar: " . $conexion->error; }
     $stmt->close();
 
@@ -61,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         foreach ($cols as $col) {
             if ($noticia[$col] === $imgNombre) {
-                $stmt2 = $conexion->prepare("UPDATE propuestas_noticias SET $col = NULL WHERE id = ?");
+                $stmt2 = $conexion->prepare("UPDATE propuestas_denuncias SET $col = NULL WHERE id = ?");
                 $stmt2->bind_param("i", $id_noticia);
                 $stmt2->execute();
                 $stmt2->close();
@@ -74,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($_FILES['imagenes']['name'][0])) {
 
         // Obtener columnas disponibles actualizadas
-        $stmt = $conexion->prepare("SELECT imagen, imagen2, imagen3 FROM propuestas_noticias WHERE id = ?");
+        $stmt = $conexion->prepare("SELECT imagen, imagen2, imagen3 FROM propuestas_denuncias WHERE id = ?");
         $stmt->bind_param("i", $id_noticia);
         $stmt->execute();
         $imagenesActuales = $stmt->get_result()->fetch_assoc();
@@ -100,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Guardar nombre original según columna (imagen_nombre_original, imagen2_nombre_original, ...)
                     $col_nombre_original = $col . "_nombre_original";
 
-                    $stmt = $conexion->prepare("UPDATE propuestas_noticias SET $col = ?, $col_nombre_original = ? WHERE id = ?");
+                    $stmt = $conexion->prepare("UPDATE propuestas_denuncias SET $col = ?, $col_nombre_original = ? WHERE id = ?");
                     $stmt->bind_param("ssi", $nuevoNombre, $nombreOriginal, $id_noticia);
                     $stmt->execute();
                     $stmt->close();
@@ -124,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Comunicado Digital</title>
+    <title>Editar Denuncia</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Inter&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -311,33 +308,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         user-select: none;
         font-family: 'Poppins', sans-serif;
         text-align: left;
-      }
-
-      /*campo categoria*/
-      .selectCategoria {
-        width:100%; 
-        padding:10px 12px; 
-        border:1px solid #ADEBFF; 
-        background-color: #ADEBFF;
-        border-radius:10px; 
-        font-size:15px; 
-        outline:none;
-        transition: box-shadow .12s, border-color .12s;
-        padding-right:60px;     
-      }
-
-      .selectCategoria:hover {
-        border-color:#2D8EFF; 
-        box-shadow: 0 4px 14px rgba(45,142,255,0.08);
-        transform: scale(1.01);
-        transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
-      }
-
-      .selectCategoria:focus {
-        border-color:#2D8EFF; 
-        box-shadow: 0 4px 14px rgba(45,142,255,0.08);
-        transform: scale(1.01);
-        transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
       }
 
       /*campo titulo*/
@@ -1101,36 +1071,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <img src="imagenes/logo.png" alt="logo" />
     </div>
     <nav class="informacion">
-      <a href="#" id="btnVolver">Volver a detalles</a>
+      <a href="#" id="btnVolver">Volver a Denuncias</a>
     </nav>
 </header>
 
 <div class="contenedor-principal">
-    <h1>Editar Noticia</h1>
+    <h1>Editar Denuncia</h1>
 
     <?php if ($error): ?>
         <div class="error"><?php echo htmlspecialchars($error); ?></div>
     <?php endif; ?>
 
     <form method="POST" novalidate enctype="multipart/form-data">
-
-        <div class="campo">
-            <label for="categoria" class="requerido">Categoría:</label>
-            <select id="categoria" name="categoria" class="selectCategoria" required>
-                <option value="Deportes" <?= ($categoria == "Deportes") ? 'selected' : '' ?>>Deportes</option>
-                <option value="Clima" <?= ($categoria == "Clima") ? 'selected' : '' ?>>Clima</option>
-                <option value="Educacion" <?= ($categoria == "Educacion") ? 'selected' : '' ?>>Educación</option>
-                <option value="Turismo" <?= ($categoria == "Turismo") ? 'selected' : '' ?>>Turismo</option>
-                <option value="Politica" <?= ($categoria == "Politica") ? 'selected' : '' ?>>Politica</option>
-                <option value="Cultura" <?= ($categoria == "Cultura") ? 'selected' : '' ?>>Cultura</option>
-                <option value="Entretenimiento" <?= ($categoria == "Entretenimiento") ? 'selected' : '' ?>>Entretenimiento</option>
-                <option value="Social" <?= ($categoria == "Social") ? 'selected' : '' ?>>Social</option>
-                <option value="Salud" <?= ($categoria == "Salud") ? 'selected' : '' ?>>Salud</option>
-                <option value="Medio ambiente" <?= ($categoria == "Medio ambiente") ? 'selected' : '' ?>>Medio ambiente</option>
-                <option value="Tendencia" <?= ($categoria == "Tendencia") ? 'selected' : '' ?>>Tendencia</option>
-            </select>
-        </div>
-
         <div class="campo">
             <label for="titulo" class="requerido" >Título:</label>
             <input type="text" class="titulocampo" id="titulo" name="titulo" value="<?php echo htmlspecialchars($noticia['titulo']); ?>" required autocomplete="off"/>
@@ -1144,9 +1096,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="campo">
-            <label for="fecha" class="requerido">Fecha del evento denunciado:</label>
+            <label for="fecha_evento" class="requerido">Fecha del evento denunciado:</label>
             <div class="input-con-icono">
-              <input type="text" id="fecha" name="fecha" placeholder="Selecciona la fecha" class="fechacampo" value="<?= htmlspecialchars($noticia['fecha'] ?? '') ?>">
+              <input type="text" id="fecha_evento" name="fecha_evento" placeholder="Selecciona la fecha" class="fechacampo" value="<?= htmlspecialchars($noticia['fecha_evento'] ?? '') ?>">
               <span class="icono-calendario"><img src="imagenes/calendario.png" alt="Calendario"></span>
             </div>
         </div>
@@ -1183,7 +1135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <!-- Modal "Volver a denuncias" -->
   <div id="modalConfirmacion" class="modal">
     <div class="modal-contenido">
-      <h2>¿Estás seguro de volver a los detalles de esta noticia?</h2>
+      <h2>¿Estás seguro de volver a los detalles de esta denuncia?</h2>
       <div class="botones">
         <button id="btnCancelar" class="btnCancelar" >Cancelar</button>
         <button id="btnConfirmar" class="btnConfirmar" >Confirmar</button>
@@ -1194,7 +1146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <!-- Modal boton "Cancelar" -->
   <div id="modalCancelarCambios" class="modal">
       <div class="modal-contenido">
-          <h2>¿Estás seguro de cancelar los cambios realizados de esta noticia?</h2>
+          <h2>¿Estás seguro de cancelar los cambios realizados de esta denuncia?</h2>
           <div class="botones">
               <button id="btnCancelarModalCancelar" class="btn-cancelar-modal">Cancelar</button>
               <button id="btnConfirmarModalCancelar" class="btn-confirmar-modal">Confirmar</button>
@@ -1205,7 +1157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <!-- Modal boton "Guardar" -->
   <div id="modalConfirmar" class="modal">
       <div class="modal-contenido">
-          <h2 class="titulo-modal">¿Estás seguro de guardar los cambios de esta noticia?</h2>
+          <h2 class="titulo-modal">¿Estás seguro de guardar los cambios de esta denuncia?</h2>
           <div class="botones">
               <button id="btnCancelarGuardar" class="btn-cancelar">Cancelar</button>
               <button id="btnConfirmarGuardar" class="btn-confirmar">Confirmar</button>
@@ -1255,18 +1207,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $("btnConfirmar")?.addEventListener("click", e => {
             e.preventDefault();
             setTimeout(() => {
-                history.back();
+                location.href = "denuncia.php";
             }, 220);
         });
         window.addEventListener("click", e => { if (e.target === modalConfirmacion) modalClose(modalConfirmacion); });
 
         // Funcion para el campo de fecha
-        const fpFecha = (typeof flatpickr !== 'undefined') ? flatpickr("#fecha", {
+        const fpFecha = (typeof flatpickr !== 'undefined') ? flatpickr("#fecha_evento", {
             dateFormat:"Y-m-d",
             allowInput:false,
             altInput:true,
             altFormat:"d-m-Y",
-            defaultDate:"<?= (!empty($noticia['fecha']) && $noticia['fecha'] !== '0000-00-00') ? htmlspecialchars($noticia['fecha']) : '' ?>",
+            defaultDate:"<?= (!empty($noticia['fecha_evento']) && $noticia['fecha_evento'] !== '0000-00-00') ? htmlspecialchars($noticia['fecha_evento']) : '' ?>",
             onChange(_, dateStr, inst){
                 if (dateStr && dateStr.trim()){
                     // limpiar error si existía
@@ -1282,7 +1234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const contadorTitulo = $("contadorTitulo");
         const textareaDescripcion = $("descripcion");
         const contadorDescripcion = $("contadorDescripcion");
-        const fechaInput = $("fecha");
+        const fechaInput = $("fecha_evento");
 
         // Verificación de elementos críticos
         if (!inputTitulo || !textareaDescripcion || !fechaInput) {
@@ -1326,7 +1278,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             contenedor.appendChild(errorMsg);
 
             // aplicar estilo de borde de error y animación
-            if (input.id === 'fecha' && fpFecha && fpFecha.altInput) {
+            if (input.id === 'fecha_evento' && fpFecha && fpFecha.altInput) {
                 fpFecha.altInput.classList.add('error-borde', 'shake');
                 setTimeout(()=> fpFecha.altInput.classList.remove('shake'), 500);
             } else {
@@ -1337,7 +1289,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Quitar mensaje y borde después de 5s
             setTimeout(() => {
                 if (errorMsg && errorMsg.parentNode) errorMsg.remove();
-                if (input.id === 'fecha' && fpFecha && fpFecha.altInput) {
+                if (input.id === 'fecha_evento' && fpFecha && fpFecha.altInput) {
                     fpFecha.altInput.classList.remove('error-borde');
                 } else {
                     input.classList.remove('error-borde');
@@ -1376,7 +1328,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             [inputTitulo, textareaDescripcion, fechaInput].forEach(i => {
                 const cont = i.closest ? i.closest('.campo') : i.parentNode;
                 cont?.querySelector('.mensaje-error')?.remove();
-                if (i.id === 'fecha' && fpFecha && fpFecha.altInput) fpFecha.altInput.classList.remove('error-borde');
+                if (i.id === 'fecha_evento' && fpFecha && fpFecha.altInput) fpFecha.altInput.classList.remove('error-borde');
                 i.classList.remove('error-borde');
             });
 
@@ -1553,7 +1505,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
         document.getElementById("btnConfirmarModalCancelar")?.addEventListener("click", () => {
             setTimeout(() => {
-                history.back();
+                location.href = "denuncia.php";
             }, 220); //Espera para que el ripple se vea
         });
         window.addEventListener("click", e => { if (e.target===modalCancelar) modalClose(modalCancelar); });
@@ -1590,7 +1542,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (toastEl) {
                 toastEl.style.opacity = "1";
                 setTimeout(() => { toastEl.style.opacity = "0"; }, 4000);
-                setTimeout(() => { window.location.href = "inicio.php"; }, 4000);
+                setTimeout(() => { window.location.href = "ver_denuncia.php?id=<?= $id_noticia ?>"; }, 4000);
             }
 
             // Inicializar contadores con valores iniciales si el campo ya tiene texto.

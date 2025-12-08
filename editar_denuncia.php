@@ -1542,7 +1542,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (toastEl) {
                 toastEl.style.opacity = "1";
                 setTimeout(() => { toastEl.style.opacity = "0"; }, 4000);
-                setTimeout(() => { window.location.href = "denuncia.php"; }, 4000);
+                setTimeout(() => { window.location.href = "ver_denuncia.php?id=<?= $id_noticia ?>"; }, 4000);
             }
 
             // Inicializar contadores con valores iniciales si el campo ya tiene texto.

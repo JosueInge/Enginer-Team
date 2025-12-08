@@ -1,35 +1,39 @@
-VER_DENUNCIA.PHP 
-
-
 <?php
 session_start();
 include 'conexion.php';
+include 'chatbot.php';
+
+if (isset($_SESSION['usuario_id'])) {
+    include 'menu2.php';
+} else {
+    include 'menu.php';
+}
 
 if (!isset($_GET['id'])) {
     header("Location: noticias.php");
     exit();
 }
 
-$id_noticia = intval($_GET['id']);
+$id_denuncia = intval($_GET['id']);
 $usuario_id = $_SESSION['usuario_id'] ?? null;
 $es_admin = ($_SESSION['usuario_rol'] ?? '') === 'Administrador';
 $es_poblador = isset($_SESSION['usuario_id']); // Verificar si es poblador (usuario logueado)
 
-// Obtener datos de la noticia
+// Obtener datos de la denuncia
 $stmt = $conexion->prepare("SELECT * FROM propuestas_denuncias WHERE id = ?");
-$stmt->bind_param("i", $id_noticia);
+$stmt->bind_param("i", $id_denuncia);
 $stmt->execute();
-$noticia = $stmt->get_result()->fetch_assoc();
+$denuncia = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
-if (!$noticia) {
+if (!$denuncia) {
     header("Location: noticias.php");
     exit();
 }
 
 // Obtener todos los comentarios
 $stmt = $conexion->prepare("SELECT c.*, u.nombre, u.avatar FROM comentariosdenuncias c JOIN usuarios u ON c.usuario_id = u.id WHERE c.propuestas_denuncias_id = ? ORDER BY c.fecha DESC");
-$stmt->bind_param("i", $id_noticia);
+$stmt->bind_param("i", $id_denuncia);
 $stmt->execute();
 $todos_comentarios = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
@@ -41,7 +45,32 @@ $hay_mas_comentarios = $total_comentarios > 3;
 
 // Manejar acciones AJAX para comentarios
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['eliminar_id'])) {
+        // Eliminar denuncia (nuevo POST handler)
+        if (isset($_POST['eliminar']) && isset($_POST['id_denuncia'])) {
+            $id_eliminar = intval($_POST['id_denuncia']);
+            
+            // Eliminar comentarios
+            $stmt = $conexion->prepare("DELETE FROM comentariosdenuncias WHERE propuestas_denuncias_id = ?");
+            $stmt->bind_param("i", $id_eliminar);
+            $stmt->execute();
+            $stmt->close();
+            
+            // Eliminar reportes
+            $stmt = $conexion->prepare("DELETE FROM reportesdenuncias WHERE propuestas_denuncias_id = ?");
+            $stmt->bind_param("i", $id_eliminar);
+            $stmt->execute();
+            $stmt->close();
+            
+            // Eliminar denuncia
+            $stmt = $conexion->prepare("DELETE FROM propuestas_denuncias WHERE id = ?");
+            $stmt->bind_param("i", $id_eliminar);
+            $stmt->execute();
+            $stmt->close();
+            
+            // Redirigir a denuncia
+            header("Location: denuncia.php");
+            exit();
+        }    if (isset($_POST['eliminar_id'])) {
         $id_comentario = intval($_POST['eliminar_id']);
         $stmt = $conexion->prepare("DELETE FROM comentariosdenuncias WHERE id = ? AND (usuario_id = ? OR ? = 1)");
         $es_admin_flag = $es_admin ? 1 : 0;
@@ -67,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $texto = trim($_POST['nuevo_comentario']);
         if (!empty($texto)) {
             $stmt = $conexion->prepare("INSERT INTO comentariosdenuncias (propuestas_denuncias_id, usuario_id, texto, fecha) VALUES (?, ?, ?, NOW())");
-            $stmt->bind_param("iis", $id_noticia, $usuario_id, $texto);
+            $stmt->bind_param("iis", $id_denuncia, $usuario_id, $texto);
             $stmt->execute();
             $stmt->close();
         }
@@ -81,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $limite = 3;
         
         $stmt = $conexion->prepare("SELECT c.*, u.nombre, u.avatar FROM comentariosdenuncias c JOIN usuarios u ON c.usuario_id = u.id WHERE c.propuestas_denuncias_id = ? ORDER BY c.fecha DESC LIMIT ?, ?");
-        $stmt->bind_param("iii", $id_noticia, $offset, $limite);
+        $stmt->bind_param("iii", $id_denuncia, $offset, $limite);
         $stmt->execute();
         $mas_comentarios = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
@@ -98,8 +127,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Obtener imágenes
 $imagenes = [];
 foreach (['imagen', 'imagen2', 'imagen3'] as $campo) {
-    if (!empty($noticia[$campo]) && file_exists('imagenes/denuncias/' . $noticia[$campo])) {
-        $imagenes[] = $noticia[$campo];
+    if (!empty($denuncia[$campo]) && file_exists('imagenes/denuncias/' . $denuncia[$campo])) {
+        $imagenes[] = $denuncia[$campo];
     }
 }
 ?>
@@ -108,7 +137,7 @@ foreach (['imagen', 'imagen2', 'imagen3'] as $campo) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= htmlspecialchars($noticia['titulo']) ?> - Comunicado Digital</title>
+<title><?= htmlspecialchars($denuncia['titulo']) ?> - Comunicado Digital</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;600&family=Open+Sans:wght@700&display=swap" rel="stylesheet">
 <style>
 * {
@@ -124,57 +153,7 @@ body {
     padding: 0;
 }
 
-/* HEADER MEJORADO - COLOR CORREGIDO #061F3E Y SIN TEXTO */
-.header {
-    background-color: #061F3E;
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    height: 80px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
 
-.logo {
-    font-family: 'Poppins', sans-serif;
-    font-size: 24px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.logo-img {
-    height: 40px;
-    width: auto;
-}
-
-.nav-links {
-    display: flex;
-    gap: 15px;
-}
-
-.nav-links a {
-    color: white;
-    text-decoration: none;
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 16px;
-    transition: opacity 0.3s;
-    padding: 8px 16px;
-    border-radius: 6px;
-}
-
-.nav-links a:hover {
-    opacity: 0.8;
-    background-color: rgba(255,255,255,0.1);
-}
 
 /* MODAL CERRAR SESIÓN */
 .modal-overlay {
@@ -248,6 +227,107 @@ body {
     background-color: #4ab894;
 }
 
+/* MODAL ELIMINACIÓN - ESTILOS PERSONALIZADOS */
+.modal-overlay.activo {
+    display: flex;
+}
+
+.modal-contenedor {
+    background-color: #FFFFFF;
+    padding: 40px;
+    border-radius: 12px;
+    width: 400px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-titulo {
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: #403F48;
+    text-align: center;
+    margin: 0 0 30px 0;
+    line-height: 1.5;
+}
+
+.modal-botones {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.btn-modal {
+    flex: 1;
+    height: 45px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-cancelar {
+    background-color: #EB7373;
+    color: #061F3E;
+}
+
+.btn-cancelar:hover {
+    background-color: #d45c5c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(235, 115, 115, 0.3);
+}
+
+.btn-confirmar {
+    background-color: #61C9A8;
+    color: #FFFFFF;
+}
+
+.btn-confirmar:hover {
+    background-color: #4ab894;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(97, 201, 168, 0.3);
+}
+
+/* ALERTA DE ÉXITO */
+.alerta-exito {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #28a745;
+    color: white;
+    padding: 20px 40px;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.alerta-exito.mostrar {
+    display: block;
+    opacity: 1;
+}
+
 /* CONTENEDOR PRINCIPAL */
 .contenedor-detalle {
     display: flex;
@@ -255,7 +335,7 @@ body {
     align-items: flex-start;
     gap: 30px;
     max-width: 1300px;
-    margin: 100px auto 40px;
+    margin: 150px auto 40px;
     padding: 20px;
 }
 
@@ -274,6 +354,41 @@ body {
     text-align: left;
     margin: 20px 0 10px 0;
     line-height: 1.3;
+}
+
+/* Título + Iconos alineados */
+.contenedor-titulo-acciones {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.titulo-noticia {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 32px;
+    color: #044372;
+    margin: 0;
+}
+
+/* Iconos a la derecha */
+.acciones-noticia {
+    display: flex;
+    gap: 12px;
+}
+
+/* Estilo de iconos */
+.icono-accion {
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: transform .2s, opacity .2s;
+}
+
+.icono-accion:hover {
+    transform: scale(1.15);
+    opacity: 0.85;
 }
 
 /* META INFO */
@@ -789,10 +904,6 @@ body {
 }
 
 @media (max-width: 768px) {
-    .header {
-        padding: 10px 15px;
-        height: 70px;
-    }
     
     .logo {
         font-size: 20px;
@@ -841,11 +952,6 @@ body {
 }
 
 @media (max-width: 480px) {
-    .header {
-        flex-direction: column;
-        height: auto;
-        padding: 10px;
-    }
     
     .logo {
         margin-bottom: 10px;
@@ -872,36 +978,40 @@ body {
 </style>
 </head>
 <body>
-    <!-- Header Mejorado - Solo logo sin texto y color #061F3E -->
-    <header class="header">
-        <div class="logo">
-            <img src="imagenes/logo.png" alt="Comunicado Digital" class="logo-img">
-        </div>
-        <nav class="nav-links">
-            <a href="javascript:history.back()">Volver</a>
-            <?php if($es_poblador): ?>
-                <!-- Solo mostrar "Cerrar Sesión" para pobladores (usuarios logueados) -->
-                <a href="#" id="cerrarSesionBtn">Cerrar Sesión</a>
-            <?php else: ?>
-                <!-- Para invitados, mostrar "Iniciar Sesión" -->
-                <a href="login.php">Iniciar Sesión</a>
-            <?php endif; ?>
-        </nav>
-    </header>
 
     <div class="contenedor-detalle">
         <!-- Columna izquierda: contenido -->
         <div class="columna-noticia">
-            <h1 class="titulo-noticia"><?= htmlspecialchars($noticia['titulo']) ?></h1>
+            <div class="contenedor-titulo-acciones">
+                <h1 class="titulo-noticia"><?= htmlspecialchars($denuncia['titulo']) ?></h1>
+
+                <?php if(isset($_SESSION['usuario_id']) && $es_admin): ?>
+                <div class="acciones-noticia">
+                    <a href="editar_denuncia.php?id=<?= $denuncia['id'] ?>">
+                        <img src="imagenes/Lapiz.png" alt="Editar" class="icono-accion">
+                    </a>
+
+                    <button onclick="abrirModalEliminarDenuncia()" style="background: none; border: none; padding: 0; cursor: pointer;">
+                        <img src="imagenes/Basurero.png" alt="Eliminar" class="icono-accion">
+                    </button>
+                    
+                    <!-- Formulario oculto para enviar eliminación -->
+                    <form id="formEliminarDenuncia" method="POST" style="display: none;">
+                        <input type="hidden" name="id_denuncia" value="<?= $denuncia['id'] ?>">
+                        <input type="hidden" name="eliminar" value="1">
+                    </form>
+                </div>
+                <?php endif; ?>
+            </div>
 
             <div class="meta-noticia">
-                <?php if ($noticia['publica'] ?? true): ?>
-                    <span><?= htmlspecialchars($noticia['autor'] ?? 'Anónimo') ?></span>
+                <?php if ($denuncia['publica'] ?? true): ?>
+                    <span><?= htmlspecialchars($denuncia['autor'] ?? 'Anónimo') ?></span>
                     <span>|</span>
                 <?php endif; ?>
-                <span><?= date('d/m/Y', strtotime($noticia['fecha'])) ?></span>
+                <span><?= date('d/m/Y', strtotime($denuncia['fecha'])) ?></span>
                 <span>|</span>
-                <span><?= date('H:i', strtotime($noticia['fecha'])) ?></span>
+                <span><?= date('H:i', strtotime($denuncia['fecha'])) ?></span>
             </div>
 
             <!-- Galería -->
@@ -925,7 +1035,7 @@ body {
 
             <!-- DESCRIPCIÓN -->
             <div class="descripcion-denuncia">
-                <?= nl2br(htmlspecialchars($noticia['descripcion'] ?? '')) ?>
+                <?= nl2br(htmlspecialchars($denuncia['descripcion'] ?? '')) ?>
             </div>
 
             <!-- Icono Reportar - MEJORADO: "Reportar denuncia" con diseño mejorado -->
@@ -1046,6 +1156,22 @@ body {
         </div>
     </div>
 
+    <!-- Modal Eliminación de Denuncia -->
+    <div class="modal-overlay" id="modalEliminarDenuncia">
+        <div class="modal-contenedor">
+            <h2 class="modal-titulo">¿Estás seguro de eliminar esta denuncia?</h2>
+            <div class="modal-botones">
+                <button class="btn-modal btn-cancelar" onclick="cerrarModalEliminarDenuncia()">Cancelar</button>
+                <button class="btn-modal btn-confirmar" onclick="confirmarEliminarDenuncia()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerta de Éxito -->
+    <div id="alertaExito" class="alerta-exito">
+        Denuncia eliminada correctamente
+    </div>
+
     <!-- Modal volver a detalles -->
     <div class="modal" id="modalVolver">
         <div class="modal-contenido">
@@ -1087,6 +1213,50 @@ body {
     let comentarioAEliminar = null;
     let cargandoComentarios = false;
 
+    // Función para abrir modal de eliminación de denuncia
+    function abrirModalEliminarDenuncia() {
+        document.getElementById('modalEliminarDenuncia').classList.add('activo');
+    }
+
+    // Función para cerrar modal de eliminación de denuncia
+    function cerrarModalEliminarDenuncia() {
+        document.getElementById('modalEliminarDenuncia').classList.remove('activo');
+    }
+
+    // Función para confirmar eliminación de denuncia
+    function confirmarEliminarDenuncia() {
+        // Cerrar el modal
+        cerrarModalEliminarDenuncia();
+        
+        // Mostrar alerta de éxito
+        const alerta = document.getElementById('alertaExito');
+        alerta.classList.add('mostrar');
+        
+        // Enviar la eliminación por AJAX
+        const form = document.getElementById('formEliminarDenuncia');
+        const formData = new FormData(form);
+        
+        setTimeout(() => {
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(() => {
+                // Redirigir a denuncia después de que se complete la eliminación
+                setTimeout(() => {
+                    window.location.href = 'denuncia.php';
+                }, 1000);
+            });
+        }, 1000);
+    }
+
+    // Cerrar modal al hacer click fuera
+    document.getElementById('modalEliminarDenuncia').addEventListener('click', function(e) {
+        if (e.target === this) {
+            cerrarModalEliminarDenuncia();
+        }
+    });
+
     // Galería de imágenes
     function cambiarImagen(imagen, elemento) {
         document.getElementById('imagenPrincipal').src = 'imagenes/denuncias/' + imagen;
@@ -1102,7 +1272,7 @@ body {
 
     // Reportar denuncia
     function redirigirReporte() {
-        window.location.href = 'formulario_reporte.php?id=<?= $id_noticia ?>';
+        window.location.href = 'formulario_reporte.php?id=<?= $id_denuncia ?>';
     }
 
     // Modal Cerrar Sesión - SOLO PARA POBLADORES
