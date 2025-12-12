@@ -12,7 +12,7 @@ if ($_SESSION['usuario_rol'] !== 'Administrador') {
     exit();
 }
 
-$stmt = $conexion->prepare("SELECT * FROM propuestas_noticias WHERE estado = 'pendiente' ORDER BY fecha DESC");
+$stmt = $conexion->prepare("SELECT * FROM propuestas_noticias WHERE estado = 'pendiente' ORDER BY fecha DESC LIMIT 20");
 $stmt->execute();
 $noticias = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 ?>
@@ -23,6 +23,7 @@ $noticias = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Revision de Noticias - Periódico Digital Comunitario</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700;400&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,6 +36,57 @@ $noticias = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             margin: 120px auto 30px;
             padding: 0 20px;
         }
+        .titulo-session {
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            color: #403F48;
+            margin-left: -40px;
+        }
+        /*contenedor del buscador*/
+        .search-container {
+            display: flex;
+            align-items: center;
+            width: 60%;
+            max-width: 550px;
+            margin-left: -40px;
+        }
+        .search-container input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #438DCB;
+            border-radius: 10px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 16px;
+            color: #8A8991;
+        }
+        .search-icon {
+            width: 20px;
+            height: 20px;
+            opacity: 0.8;
+            margin-right: 10px; /* separa la lupa del input */
+            cursor: pointer;
+            color: #403F48;
+        }
+        /* Efectos al pasar el mouse */
+        .search-container input:hover,
+        .search-container input:focus {
+            transform: scale(1.03);
+            box-shadow: 0px 0px 6px #438DCB;
+            border-color: #438DCB; 
+        }
+        .search-container input:focus {
+            outline: none;
+        }
+        /* Efecto hover en la lupa */
+        .search-icon:hover {
+            transform: scale(1.15);
+            filter: brightness(1.2);
+        }
+        .search-container input,
+        .search-icon {
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        }
         .titulo-seccion {
             color: #0d5c9b;
             border-bottom: 2px solid #0d5c9b;
@@ -43,9 +95,21 @@ $noticias = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         }
         .noticias-pendientes {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(4, 320px);
+            gap: 15px;
             margin-top: 30px;
+            justify-content: center; 
+        }
+
+        /* Responsivo*/
+        @media (max-width: 1300px) {
+            .noticias-pendientes { grid-template-columns: repeat(3, 320px); }
+        }
+        @media (max-width: 1000px) {
+            .noticias-pendientes { grid-template-columns: repeat(2, 320px); }
+        }
+        @media (max-width: 700px) {
+            .noticias-pendientes { grid-template-columns: 1fr; }
         }
         .noticia-card {
             background-color: #fff;
@@ -53,6 +117,11 @@ $noticias = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             overflow: hidden;
             box-shadow: 0 3px 10px rgba(0,0,0,0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            max-width: 320px;
+            width: 100%;
+            margin: 0 auto; 
+            display: flex;
+            flex-direction: column;
         }
         .noticia-card:hover {
             transform: translateY(-5px);
@@ -60,70 +129,61 @@ $noticias = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         }
         .noticia-imagen {
             width: 100%;
-            height: 200;
+            height: 220px;
             object-fit: cover;
+            border-radius: 12px;
+            display: block;
+        }
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            border-radius: 12px;
+            background-color: #ddd;
+            cursor: pointer;
+        }
+        .carousel img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+        }
+        .carousel img.activa {
+            opacity: 1;
         }
         .noticia-contenido {
-            padding: 20px;
-        }
-        .noticia-categoria {
-            display: inline-block;
-            background-color: #0d5c9b;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            margin-bottom: 10px;
+            padding: 5px;
         }
         .noticia-titulo {
-            font-size: 18px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
             margin: 10px 0;
-            color: #0d5c9b;
+            font-weight: bold;
+            color: #1661AC;
+            cursor: pointer;
+            transition: color 0.2s ease;
         }
-        .noticia-descripcion {
-            color: gray;
-            font-size: 14px;
-            margin-bottom: 15px;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        .noticia-titulo:hover {
+            color: #2D8EFF;
         }
         .noticia-meta {
             display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #888;
-            margin-top: 15px;
-            border-top: 1px solid #eee;
-            padding-top: 10px;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            color: #74737C;
+            margin-top: 10px;
+            border-top: none;
+            padding-top: 0;
         }
-        .noticia-acciones {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-        }
-        .btn-accion {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        .btn-aprobar {
-            background-color: #28a745;
-            color: white;
-        }
-        .btn-aprobar:hover {
-            background-color: #28a745;
-        }
-        .btn-rechazar {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-rechazar:hover {
-            background-color: #dc3545;
+        .noticia-meta span:not(:last-child)::after {
+            content: "|";
+            margin-left: 10px;
         }
         .sin-noticias {
             text-align: center;
@@ -132,18 +192,60 @@ $noticias = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             font-size: 18px;
             grid-column: 1 / -1;
         }
+        .sin-coincidencias {
+            text-align: center;
+            padding: 60px 20px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            color: #403F48;
+            display: none;
+        }
+        /* Boton ver más */
+        .vermas-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0 40px;
+        }
+        .btn-vermas {
+            width: 170px;
+            height: 50px;
+            background-color: #1661AC;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        }
+        .btn-vermas:hover {
+            background-color: #2D8EFF;
+            transform: translateY(-6px);
+            box-shadow: 0 8px 20px rgba(45,142,255,0.18);
+        }
+        .btn-vermas:active {
+            transform: translateY(-3px);
+        }
+        /* Elevacion de las card */
+        .lista-elevada .noticia-card {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.18) !important;
+        }
     </style>
 </head>
 <body>
         
         <div class="contenedor">
-            <h1 class="titulo-session">Revision de Noticias Pendientes</h1>
+            <h1 class="titulo-session">Noticias pendientes de publicar</h1>
             <div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">
-                <input type="text" id="buscador" placeholder="Buscar por titulo, autor o categoria..."
-                    style="padding: 8px 12px; width: 60%; max-width: 400px; border: 1px solid #ccc; border-radius: 4px;">
-                <button onclick="filtrarNoticias()" style="background-color: #0d5c9b; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer;">
-                    Buscar
-                </button>
+                <div class="search-container">
+                    <img src="imagenes/lupa1.png" class="search-icon" onclick="filtrarNoticias()">
+                    <input type="text" id="buscador" placeholder="Buscar por título, autor o categoría" oninput="filtrarNoticias()">
+                </div>
             </div>
 
             <?php if (empty($noticias)): ?>
@@ -151,63 +253,161 @@ $noticias = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                     No hay noticias pendientes de revision en este momento.
                 </div>
             <?php else: ?>
+                <div class="sin-coincidencias" id="sin-coincidencias">
+                    No se encontraron coincidencias
+                </div>
                 <div class="noticias-pendientes" id="lista-noticias">
                     <?php foreach ($noticias as $noticia): ?>
-                        <div class="noticia-card">
-                            <?php if (!empty($noticia['imagen'])): ?>
-                                <img src="imagenes/noticias/<?php echo htmlspecialchars($noticia['imagen']); ?>"
-                                alt="<?php echo htmlspecialchars($noticia['titulo']); ?>"
-                                class="noticia-imagen">
+                        <?php
+                            // Preparar arreglo de imágenes (soporta imagen, imagen2, imagen3)
+                            $imgs = [];
+                            foreach (['imagen', 'imagen2', 'imagen3'] as $campo) {
+                                if (!empty($noticia[$campo]) && file_exists('imagenes/noticias/' . $noticia[$campo])) {
+                                    $imgs[] = $noticia[$campo];
+                                }
+                            }
+                        ?>
+                        <div class="noticia-card" data-noticia-id="<?php echo htmlspecialchars($noticia['id']); ?>">
+                            <?php if (!empty($imgs)): ?>
+                                <div class="carousel" data-interval="5000" data-id="<?php echo htmlspecialchars($noticia['id']); ?>">
+                                    <?php foreach ($imgs as $i => $img): ?>
+                                        <img src="imagenes/noticias/<?php echo htmlspecialchars($img); ?>" 
+                                             alt="<?php echo htmlspecialchars($noticia['titulo']); ?>"
+                                             class="<?php echo $i === 0 ? 'activa' : ''; ?>">
+                                    <?php endforeach; ?>
+                                </div>
                             <?php else: ?>
-                                <div class="noticia-imagen" style="background-color: #ddd; display: flex; align-items: center; justify-content: center;">
-                                    <span style="color: #888;">Sin imagen</span>
-                                </div> 
+                                <div class="carousel" data-interval="5000" data-id="<?php echo htmlspecialchars($noticia['id']); ?>">
+                                    <img src="imagenes/noticias/default.jpg" alt="Sin imagen" class="activa">
+                                </div>
                             <?php endif; ?>
 
                             <div class="noticia-contenido">
-                                <span class="noticia-categoria"><?php echo htmlspecialchars($noticia['categoria']); ?></span>
-                                <h3 class="noticia-titulo"><?php echo htmlspecialchars($noticia['titulo']); ?></h3>
-                                <p class="noticia-descripcion"><?php echo htmlspecialchars($noticia['descripcion']); ?></p>
+                                <h3 class="noticia-titulo" data-id="<?php echo htmlspecialchars($noticia['id']); ?>"><?php echo htmlspecialchars($noticia['titulo']); ?></h3>
 
                                 <div class="noticia-meta">
-                                    <span>Autor: <?php echo htmlspecialchars($noticia['autor']); ?></span>
                                     <span><?php echo date('d/m/Y', strtotime($noticia['fecha'])); ?></span>
+                                    <span><?php echo htmlspecialchars($noticia['autor']); ?></span>
                                 </div>
-
-                                <div class="noticia-acciones">
-                                    <form method="POST" action="aprobar_noticia.php" style="flex: 1; margin-rigth: 10px;">
-                                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($noticia['id']); ?>">
-                                        <button type="submit" class="btn-accion btn-aprobar">Aprobar</button>
-                                    </form>
-                                    <form method="POST" action="rechazar_noticias.php" style="flex: 1;">
-                                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($noticia['id']); ?>">
-                                        <button type="submit" class="btn-accion btn-rechazar">Rechazar</button>
-                                    </form>
-                                </div> 
                             </div>
-                            <script>
-                            function filtrarNoticias() {
-                                const termino = document.getElementById('buscador').value.toLowerCase().trim();
-                                const noticias = document.querySelectorAll('#lista-noticias .noticia-card');
-
-                                noticias.forEach(noticia => {
-                                    const titulo = noticia.querySelector('.noticia-titulo')?.textContent.toLowerCase() || '';
-                                    const autor = noticia.querySelector('.noticia-meta span')?.textContent.toLowerCase() || '';
-                                    const categoria = noticia.querySelector('.noticia-categoria')?.textContent.toLowerCase() || '';
-
-                                    if (titulo.includes(termino) || autor.includes(termino) || categoria.includes(termino)) {
-                                        noticia.style.display = 'block';
-                                    } else {
-                                        noticia.style.display = 'none';
-                                    }
-                                });
-                            }
-                            </script>
                         </div>
                     <?php endforeach; ?>
+                </div>
+                <div class="vermas-container">
+                    <button id="btn-vermas" class="btn-vermas">Ver más</button>
                 </div>
             <?php endif; ?>
     
         </div>
+
+        <script>
+        // Inicializar carruseles y paginación
+        document.addEventListener('DOMContentLoaded', function() {
+            // Click handlers para redirigir a detalles
+            document.querySelectorAll('.carousel, .noticia-titulo').forEach(el => {
+                el.addEventListener('click', function(e) {
+                    const id = this.dataset.id;
+                    if (id) {
+                        window.location.href = 'detalle_noticia.php?id=' + id;
+                    }
+                });
+            });
+
+            // Carruseles por tarjeta
+            const carousels = document.querySelectorAll('.carousel');
+            carousels.forEach(carousel => {
+                const imgs = carousel.querySelectorAll('img');
+                if (imgs.length <= 1) return; // No rotar si hay una sola imagen
+
+                let currentIndex = 0;
+                const interval = parseInt(carousel.dataset.interval || 5000, 10);
+
+                setInterval(() => {
+                    imgs[currentIndex].classList.remove('activa');
+                    currentIndex = (currentIndex + 1) % imgs.length;
+                    imgs[currentIndex].classList.add('activa');
+                }, interval);
+            });
+
+            const lista = document.getElementById('lista-noticias');
+            const cards = Array.from(document.querySelectorAll('#lista-noticias .noticia-card'));
+            const btn = document.getElementById('btn-vermas');
+            const INITIAL_SHOW = 20; 
+            const BATCH = 8; 
+            let shownCount = INITIAL_SHOW;
+
+            cards.forEach((c, i) => { c.dataset.index = i; });
+
+            function applyInitialPagination() {
+                cards.forEach((c, i) => {
+                    if (i < shownCount) c.style.display = 'block';
+                    else c.style.display = 'none';
+                });
+                // Mostrar siempre el botón mientras exista al menos una tarjeta
+                if (cards.length === 0) btn.style.display = 'none';
+                else btn.style.display = 'inline-flex';
+            }
+
+            if (cards.length === 0) {
+                if (btn) btn.style.display = 'none';
+            } else {
+                applyInitialPagination();
+            }
+
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    const prev = shownCount;
+                    shownCount += BATCH;
+                    cards.forEach((c, i) => {
+                        if (i < shownCount) c.style.display = 'block';
+                    });
+                    if (cards.length <= shownCount) btn.style.display = 'none';
+
+                    // desplazar suavemente hasta la primera tarjeta nueva
+                    const firstNew = cards[prev];
+                    if (firstNew) firstNew.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                });
+            }
+        });
+
+        function filtrarNoticias() {
+            const termino = document.getElementById('buscador').value.toLowerCase().trim();
+            const noticias = document.querySelectorAll('#lista-noticias .noticia-card');
+            let hayCoincidencias = false;
+
+            noticias.forEach(noticia => {
+                const titulo = noticia.querySelector('.noticia-titulo')?.textContent.toLowerCase() || '';
+                const autor = noticia.querySelector('.noticia-meta span:first-child')?.textContent.toLowerCase() || '';
+
+                if (titulo.includes(termino) || autor.includes(termino)) {
+                    noticia.style.display = 'block';
+                    hayCoincidencias = true;
+                } else {
+                    noticia.style.display = 'none';
+                }
+            });
+
+            // Mostrar/ocultar mensaje de sin coincidencias
+            const mensajeSinCoincidencias = document.getElementById('sin-coincidencias');
+            if (termino !== '' && !hayCoincidencias) {
+                mensajeSinCoincidencias.style.display = 'block';
+            } else {
+                mensajeSinCoincidencias.style.display = 'none';
+            }
+
+            // Si hay botón Ver más, ocultarlo si ya están todas las tarjetas visibles
+            const btn = document.getElementById('btn-vermas');
+            if (btn) {
+                const total = document.querySelectorAll('#lista-noticias .noticia-card').length;
+                // Durante búsqueda, ocultar el botón
+                if (termino !== '') {
+                    btn.style.display = 'none';
+                } else {
+                    // Mostrar el botón mientras exista al menos una tarjeta
+                    btn.style.display = (total === 0) ? 'none' : 'inline-flex';
+                }
+            }
+        }
+        </script>
 </body>
 </html>

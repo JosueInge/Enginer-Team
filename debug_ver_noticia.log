@@ -200,3 +200,329 @@
 [2025-12-08 04:43:30] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
 [2025-12-08 04:43:46] GET id=54, fuente=noticia
 [2025-12-08 04:43:46] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-10 03:42:28] GET id=55, fuente=noticia
+[2025-12-10 03:42:28] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-10 15:43:08] GET id=45, fuente=noticia
+[2025-12-10 15:43:08] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-10 15:43:25] GET id=55, fuente=noticia
+[2025-12-10 15:43:25] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-10 17:16:32] GET id=59, fuente=noticia
+[2025-12-10 17:16:32] ✗ Noticia NO encontrada para id=59 en tabla noticia
+[2025-12-10 17:16:37] GET id=57, fuente=noticia
+[2025-12-10 17:16:37] ✗ Noticia NO encontrada para id=57 en tabla noticia
+[2025-12-10 17:16:41] GET id=40, fuente=noticia
+[2025-12-10 17:16:41] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-10 17:22:04] GET id=51, fuente=noticia
+[2025-12-10 17:22:04] ✓ Noticia encontrada: ID=51, Título=Selecta Sub 17 alista su debut ante Corea del Norte en el Mundial de Catar 2025
+[2025-12-10 19:41:11] GET id=43, fuente=noticia
+[2025-12-10 19:41:11] ✓ Noticia encontrada: ID=43, Título=5 actividades que podés disfrutar este fin de semana en el Centro Histórico de San Salvador
+[2025-12-11 00:32:29] GET id=53, fuente=noticia
+[2025-12-11 00:32:29] ✓ Noticia encontrada: ID=53, Título=Por qué la mayoría de los plásticos no se puede reciclar
+[2025-12-11 00:32:44] GET id=55, fuente=noticia
+[2025-12-11 00:32:44] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-11 00:49:48] GET id=45, fuente=noticia
+[2025-12-11 00:49:48] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 00:50:04] GET id=45, fuente=noticia
+[2025-12-11 00:50:04] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 00:53:28] GET id=45, fuente=noticia
+[2025-12-11 00:53:28] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 00:59:15] GET id=45, fuente=noticia
+[2025-12-11 00:59:15] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 00:59:26] GET id=41, fuente=noticia
+[2025-12-11 00:59:26] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 01:02:28] GET id=41, fuente=noticia
+[2025-12-11 01:02:28] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 01:03:44] GET id=55, fuente=noticia
+[2025-12-11 01:03:44] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-11 01:03:56] GET id=45, fuente=noticia
+[2025-12-11 01:03:56] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 01:04:16] GET id=38, fuente=noticia
+[2025-12-11 01:04:16] ✓ Noticia encontrada: ID=38, Título=Vientos nortes y lluvias moderadas marcarán el clima este martes
+[2025-12-11 01:04:21] GET id=55, fuente=noticia
+[2025-12-11 01:04:21] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-11 01:04:26] GET id=50, fuente=noticia
+[2025-12-11 01:04:26] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-11 01:04:33] GET id=45, fuente=noticia
+[2025-12-11 01:04:33] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 01:04:37] GET id=39, fuente=noticia
+[2025-12-11 01:04:37] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-11 01:04:44] GET id=45, fuente=noticia
+[2025-12-11 01:04:44] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 01:12:34] GET id=41, fuente=noticia
+[2025-12-11 01:12:34] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 01:14:07] GET id=41, fuente=noticia
+[2025-12-11 01:14:07] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 01:15:54] GET id=35, fuente=noticia
+[2025-12-11 01:15:54] ✓ Noticia encontrada: ID=35, Título=Fox Racing El Salvador
+[2025-12-11 01:16:01] GET id=34, fuente=noticia
+[2025-12-11 01:16:01] ✗ Noticia NO encontrada para id=34 en tabla noticia
+[2025-12-11 01:16:05] GET id=40, fuente=noticia
+[2025-12-11 01:16:05] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:21:18] GET id=45, fuente=noticia
+[2025-12-11 01:21:18] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 01:24:06] GET id=45, fuente=noticia
+[2025-12-11 01:24:06] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 01:24:55] GET id=45, fuente=noticia
+[2025-12-11 01:24:55] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 01:25:02] GET id=45, fuente=noticia
+[2025-12-11 01:25:02] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 01:30:40] GET id=41, fuente=noticia
+[2025-12-11 01:30:40] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 01:34:10] GET id=45, fuente=noticia
+[2025-12-11 01:34:10] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 01:34:18] GET id=34, fuente=noticia
+[2025-12-11 01:34:18] ✗ Noticia NO encontrada para id=34 en tabla noticia
+[2025-12-11 01:34:22] GET id=34, fuente=noticia
+[2025-12-11 01:34:22] ✗ Noticia NO encontrada para id=34 en tabla noticia
+[2025-12-11 01:34:26] GET id=40, fuente=noticia
+[2025-12-11 01:34:26] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:34:54] GET id=40, fuente=noticia
+[2025-12-11 01:34:54] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:34:55] GET id=40, fuente=noticia
+[2025-12-11 01:34:55] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:34:55] GET id=40, fuente=noticia
+[2025-12-11 01:34:55] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:35:13] GET id=40, fuente=noticia
+[2025-12-11 01:35:13] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:35:22] GET id=40, fuente=noticia
+[2025-12-11 01:35:22] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:35:50] GET id=40, fuente=noticia
+[2025-12-11 01:35:50] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:35:57] GET id=40, fuente=noticia
+[2025-12-11 01:35:57] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:36:02] GET id=38, fuente=noticia
+[2025-12-11 01:36:02] ✓ Noticia encontrada: ID=38, Título=Vientos nortes y lluvias moderadas marcarán el clima este martes
+[2025-12-11 01:36:10] GET id=38, fuente=noticia
+[2025-12-11 01:36:10] ✓ Noticia encontrada: ID=38, Título=Vientos nortes y lluvias moderadas marcarán el clima este martes
+[2025-12-11 01:36:13] GET id=40, fuente=noticia
+[2025-12-11 01:36:13] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:36:17] GET id=35, fuente=noticia
+[2025-12-11 01:36:17] ✓ Noticia encontrada: ID=35, Título=Fox Racing El Salvador
+[2025-12-11 01:36:22] GET id=34, fuente=noticia
+[2025-12-11 01:36:22] ✗ Noticia NO encontrada para id=34 en tabla noticia
+[2025-12-11 01:41:42] GET id=38, fuente=noticia
+[2025-12-11 01:41:42] ✓ Noticia encontrada: ID=38, Título=Vientos nortes y lluvias moderadas marcarán el clima este martes
+[2025-12-11 01:42:42] GET id=38, fuente=noticia
+[2025-12-11 01:42:42] ✓ Noticia encontrada: ID=38, Título=Vientos nortes y lluvias moderadas marcarán el clima este martes
+[2025-12-11 01:42:51] GET id=38, fuente=noticia
+[2025-12-11 01:42:51] ✓ Noticia encontrada: ID=38, Título=Vientos nortes y lluvias moderadas marcarán el clima este martes
+[2025-12-11 01:45:35] GET id=38, fuente=noticia
+[2025-12-11 01:45:35] ✓ Noticia encontrada: ID=38, Título=Vientos nortes y lluvias moderadas marcarán el clima este martes
+[2025-12-11 01:48:24] GET id=38, fuente=noticia
+[2025-12-11 01:48:24] ✓ Noticia encontrada: ID=38, Título=Vientos nortes y lluvias moderadas marcarán el clima este martes
+[2025-12-11 01:48:35] GET id=40, fuente=noticia
+[2025-12-11 01:48:35] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:56:20] GET id=40, fuente=noticia
+[2025-12-11 01:56:20] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:56:51] GET id=40, fuente=noticia
+[2025-12-11 01:56:51] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:57:02] GET id=40, fuente=noticia
+[2025-12-11 01:57:02] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:57:14] GET id=40, fuente=noticia
+[2025-12-11 01:57:14] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:57:22] GET id=40, fuente=noticia
+[2025-12-11 01:57:22] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:57:48] GET id=40, fuente=noticia
+[2025-12-11 01:57:48] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:58:08] GET id=40, fuente=noticia
+[2025-12-11 01:58:08] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:58:54] GET id=40, fuente=noticia
+[2025-12-11 01:58:54] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:59:11] GET id=40, fuente=noticia
+[2025-12-11 01:59:11] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:59:21] GET id=45, fuente=noticia
+[2025-12-11 01:59:21] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 01:59:33] GET id=41, fuente=noticia
+[2025-12-11 01:59:33] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 01:59:38] GET id=40, fuente=noticia
+[2025-12-11 01:59:38] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 01:59:46] GET id=45, fuente=noticia
+[2025-12-11 01:59:46] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 02:00:57] GET id=40, fuente=noticia
+[2025-12-11 02:00:57] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 02:07:45] GET id=41, fuente=noticia
+[2025-12-11 02:07:45] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 02:13:47] GET id=35, fuente=noticia
+[2025-12-11 02:13:47] ✓ Noticia encontrada: ID=35, Título=Fox Racing El Salvador
+[2025-12-11 02:13:57] GET id=45, fuente=noticia
+[2025-12-11 02:13:57] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 02:14:06] GET id=45, fuente=noticia
+[2025-12-11 02:14:06] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 02:14:12] GET id=45, fuente=noticia
+[2025-12-11 02:14:12] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 02:16:52] GET id=45, fuente=noticia
+[2025-12-11 02:16:52] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 02:16:58] GET id=45, fuente=noticia
+[2025-12-11 02:16:58] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 02:17:05] GET id=45, fuente=noticia
+[2025-12-11 02:17:05] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 02:17:22] GET id=45, fuente=noticia
+[2025-12-11 02:17:22] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 02:28:12] GET id=38, fuente=noticia
+[2025-12-11 02:28:12] ✓ Noticia encontrada: ID=38, Título=Vientos nortes y lluvias moderadas marcarán el clima este martes
+[2025-12-11 02:28:21] GET id=38, fuente=noticia
+[2025-12-11 02:28:21] ✓ Noticia encontrada: ID=38, Título=Vientos nortes y lluvias moderadas marcarán el clima este martes
+[2025-12-11 02:29:11] GET id=45, fuente=noticia
+[2025-12-11 02:29:11] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 02:29:34] GET id=35, fuente=noticia
+[2025-12-11 02:29:34] ✓ Noticia encontrada: ID=35, Título=Fox Racing El Salvador
+[2025-12-11 02:30:11] GET id=41, fuente=noticia
+[2025-12-11 02:30:11] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 02:30:25] GET id=41, fuente=noticia
+[2025-12-11 02:30:25] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 03:06:03] GET id=42, fuente=noticia
+[2025-12-11 03:06:03] ✓ Noticia encontrada: ID=42, Título=¿Cómo reservar una cabaña en el Club de Playa del Instituto Salvadoreño de Pensiones?
+[2025-12-11 03:06:08] GET id=39, fuente=noticia
+[2025-12-11 03:06:08] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-11 03:06:51] GET id=40, fuente=noticia
+[2025-12-11 03:06:51] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:09:19] GET id=40, fuente=noticia
+[2025-12-11 03:09:19] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:09:29] GET id=40, fuente=noticia
+[2025-12-11 03:09:29] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:09:37] GET id=40, fuente=noticia
+[2025-12-11 03:09:37] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:12:33] GET id=40, fuente=noticia
+[2025-12-11 03:12:33] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:13:11] GET id=40, fuente=noticia
+[2025-12-11 03:13:11] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:13:21] GET id=40, fuente=noticia
+[2025-12-11 03:13:21] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:15:03] GET id=40, fuente=noticia
+[2025-12-11 03:15:03] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:17:02] GET id=40, fuente=noticia
+[2025-12-11 03:17:02] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:17:02] GET id=40, fuente=noticia
+[2025-12-11 03:17:02] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:17:03] GET id=40, fuente=noticia
+[2025-12-11 03:17:03] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:17:03] GET id=40, fuente=noticia
+[2025-12-11 03:17:03] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:17:34] GET id=40, fuente=noticia
+[2025-12-11 03:17:34] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:18:55] GET id=40, fuente=noticia
+[2025-12-11 03:18:55] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:19:11] GET id=40, fuente=noticia
+[2025-12-11 03:19:11] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:19:24] GET id=40, fuente=noticia
+[2025-12-11 03:19:24] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:20:43] GET id=40, fuente=noticia
+[2025-12-11 03:20:43] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:21:04] GET id=40, fuente=noticia
+[2025-12-11 03:21:04] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:21:15] GET id=40, fuente=noticia
+[2025-12-11 03:21:15] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:21:38] GET id=40, fuente=noticia
+[2025-12-11 03:21:38] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:22:58] GET id=40, fuente=noticia
+[2025-12-11 03:22:58] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:23:53] GET id=40, fuente=noticia
+[2025-12-11 03:23:53] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:27:29] GET id=40, fuente=noticia
+[2025-12-11 03:27:29] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:27:57] GET id=40, fuente=noticia
+[2025-12-11 03:27:57] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:28:07] GET id=40, fuente=noticia
+[2025-12-11 03:28:07] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:29:39] GET id=40, fuente=noticia
+[2025-12-11 03:29:39] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:31:27] GET id=40, fuente=noticia
+[2025-12-11 03:31:27] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:31:36] GET id=40, fuente=noticia
+[2025-12-11 03:31:36] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:31:54] GET id=40, fuente=noticia
+[2025-12-11 03:31:54] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:48:17] GET id=40, fuente=noticia
+[2025-12-11 03:48:17] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:48:44] GET id=40, fuente=noticia
+[2025-12-11 03:48:44] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:49:53] GET id=40, fuente=noticia
+[2025-12-11 03:49:53] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:50:12] GET id=40, fuente=noticia
+[2025-12-11 03:50:12] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:53:08] GET id=40, fuente=noticia
+[2025-12-11 03:53:08] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:53:44] GET id=40, fuente=noticia
+[2025-12-11 03:53:44] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:54:14] GET id=40, fuente=noticia
+[2025-12-11 03:54:14] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:54:39] GET id=40, fuente=noticia
+[2025-12-11 03:54:39] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:56:02] GET id=40, fuente=noticia
+[2025-12-11 03:56:02] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:56:53] GET id=40, fuente=noticia
+[2025-12-11 03:56:53] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:58:14] GET id=42, fuente=noticia
+[2025-12-11 03:58:14] ✓ Noticia encontrada: ID=42, Título=¿Cómo reservar una cabaña en el Club de Playa del Instituto Salvadoreño de Pensiones?
+[2025-12-11 03:59:00] GET id=40, fuente=noticia
+[2025-12-11 03:59:00] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 03:59:20] GET id=40, fuente=noticia
+[2025-12-11 03:59:20] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 04:02:31] GET id=40, fuente=noticia
+[2025-12-11 04:02:31] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-11 04:02:53] GET id=41, fuente=noticia
+[2025-12-11 04:02:53] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 04:03:10] GET id=41, fuente=noticia
+[2025-12-11 04:03:10] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 04:03:30] GET id=45, fuente=noticia
+[2025-12-11 04:03:30] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 04:15:58] GET id=45, fuente=noticia
+[2025-12-11 04:15:58] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 04:16:03] GET id=45, fuente=noticia
+[2025-12-11 04:16:03] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 04:16:27] GET id=45, fuente=noticia
+[2025-12-11 04:16:27] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 04:33:27] GET id=45
+[2025-12-11 04:33:27] ✓ Noticia encontrada: ID=45, Título=Protección civil mantiene alerta naranja por lluvias en todo el país
+[2025-12-11 04:33:57] GET id=41
+[2025-12-11 04:33:57] ✓ Noticia encontrada: ID=41, Título=Rusia endurece su 'telón de acero digital' y limita la libertad de expresión
+[2025-12-11 04:34:09] GET id=45
+[2025-12-11 04:34:09] ✓ Noticia encontrada: ID=45, Título=Protección civil mantiene alerta naranja por lluvias en todo el país
+[2025-12-11 04:34:30] GET id=45
+[2025-12-11 04:34:30] ✓ Noticia encontrada: ID=45, Título=Protección civil mantiene alerta naranja por lluvias en todo el país
+[2025-12-11 04:34:45] GET id=45
+[2025-12-11 04:34:45] ✓ Noticia encontrada: ID=45, Título=Protección civil mantiene alerta naranja por lluvias en todo el país
+[2025-12-11 04:36:29] GET id=41
+[2025-12-11 04:36:29] ✓ Noticia encontrada: ID=41, Título=Rusia endurece su 'telón de acero digital' y limita la libertad de expresión
+[2025-12-11 04:36:40] GET id=45
+[2025-12-11 04:36:40] ✓ Noticia encontrada: ID=45, Título=Protección civil mantiene alerta naranja por lluvias en todo el país
+[2025-12-11 04:41:09] GET id=45
+[2025-12-11 04:41:09] ✓ Noticia encontrada: ID=45, Título=Protección civil mantiene alerta naranja por lluvias en todo el país
+[2025-12-11 04:45:19] GET id=45, fuente=noticia
+[2025-12-11 04:45:19] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 04:45:34] GET id=45, fuente=noticia
+[2025-12-11 04:45:34] ✗ Noticia NO encontrada para id=45 en tabla noticia
+[2025-12-11 04:45:38] GET id=45, fuente=noticia
+[2025-12-11 04:45:38] ✗ Noticia NO encontrada para id=45 en tabla noticia
+[2025-12-11 04:45:45] GET id=41, fuente=noticia
+[2025-12-11 04:45:45] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 04:45:52] GET id=45, fuente=noticia
+[2025-12-11 04:45:52] ✗ Noticia NO encontrada para id=45 en tabla noticia
+[2025-12-11 04:46:05] GET id=45, fuente=noticia
+[2025-12-11 04:46:05] ✗ Noticia NO encontrada para id=45 en tabla noticia
+[2025-12-11 04:46:16] GET id=38, fuente=noticia
+[2025-12-11 04:46:16] ✓ Noticia encontrada: ID=38, Título=Vientos nortes y lluvias moderadas marcarán el clima este martes
+[2025-12-11 04:46:57] GET id=45, fuente=noticia
+[2025-12-11 04:46:57] ✗ Noticia NO encontrada para id=45 en tabla noticia
+[2025-12-11 04:47:05] GET id=41, fuente=noticia
+[2025-12-11 04:47:05] ✓ Noticia encontrada: ID=41, Título=Ante la negativa del Camp Nou: Definen el estadio para el Barcelona-PSG
+[2025-12-11 05:00:36] GET id=42, fuente=noticia
+[2025-12-11 05:00:36] ✓ Noticia encontrada: ID=42, Título=¿Cómo reservar una cabaña en el Club de Playa del Instituto Salvadoreño de Pensiones?
+[2025-12-11 05:07:49] GET id=39, fuente=noticia
+[2025-12-11 05:07:49] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-11 06:03:55] GET id=45, fuente=noticia
+[2025-12-11 06:03:55] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 13:24:12] GET id=45, fuente=noticia
+[2025-12-11 13:24:12] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 13:28:11] GET id=39, fuente=noticia
+[2025-12-11 13:28:11] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-11 13:29:31] GET id=45, fuente=noticia
+[2025-12-11 13:29:31] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-11 13:32:21] GET id=45, fuente=noticia
+[2025-12-11 13:32:21] ✓ Noticia encontrada: ID=45, Título=El Salvador inaugura 70 escuelas con el programa “Dos Escuelas por Día”
+[2025-12-12 00:36:29] GET id=55, fuente=noticia
+[2025-12-12 00:36:29] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-12 00:38:05] GET id=40, fuente=noticia
+[2025-12-12 00:38:05] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-12 04:59:03] GET id=40, fuente=noticia
+[2025-12-12 04:59:03] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
