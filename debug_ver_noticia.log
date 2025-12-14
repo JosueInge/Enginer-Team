@@ -526,3 +526,163 @@
 [2025-12-12 00:38:05] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
 [2025-12-12 04:59:03] GET id=40, fuente=noticia
 [2025-12-12 04:59:03] ✓ Noticia encontrada: ID=40, Título=Los aviones más feos de la historia
+[2025-12-13 04:50:21] GET id=51, fuente=noticia
+[2025-12-13 04:50:21] ✓ Noticia encontrada: ID=51, Título=Selecta Sub 17 alista su debut ante Corea del Norte en el Mundial de Catar 2025
+[2025-12-13 04:50:35] GET id=54, fuente=noticia
+[2025-12-13 04:50:35] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-13 05:08:01] GET id=54, fuente=noticia
+[2025-12-13 05:08:01] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-13 05:26:39] GET id=54, fuente=noticia
+[2025-12-13 05:26:39] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-13 05:26:45] GET id=50, fuente=noticia
+[2025-12-13 05:26:45] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-13 05:55:15] GET id=50, fuente=noticia
+[2025-12-13 05:55:15] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-13 06:00:45] GET id=55, fuente=noticia
+[2025-12-13 06:00:45] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-13 06:00:56] GET id=55, fuente=noticia
+[2025-12-13 06:00:56] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 01:05:02] GET id=64, fuente=noticia
+[2025-12-14 01:05:02] ✗ Noticia NO encontrada para id=64 en tabla noticia
+[2025-12-14 01:05:13] GET id=54, fuente=noticia
+[2025-12-14 01:05:13] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 01:05:33] GET id=54, fuente=noticia
+[2025-12-14 01:05:33] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 01:05:53] GET id=50, fuente=noticia
+[2025-12-14 01:05:53] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-14 01:19:33] GET id=50, fuente=noticia
+[2025-12-14 01:19:33] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-14 02:13:51] GET id=55, fuente=noticia
+[2025-12-14 02:13:51] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 02:42:31] GET id=54, fuente=noticia
+[2025-12-14 02:42:31] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 02:55:06] GET id=54, fuente=noticia
+[2025-12-14 02:55:06] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:06:12] GET id=66, fuente=noticia
+[2025-12-14 03:06:12] ✗ Noticia NO encontrada para id=66 en tabla noticia
+[2025-12-14 03:06:15] GET id=55, fuente=noticia
+[2025-12-14 03:06:15] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 03:06:24] GET id=53, fuente=noticia
+[2025-12-14 03:06:24] ✓ Noticia encontrada: ID=53, Título=Por qué la mayoría de los plásticos no se puede reciclar
+[2025-12-14 03:06:32] GET id=52, fuente=noticia
+[2025-12-14 03:06:32] ✓ Noticia encontrada: ID=52, Título=Tormentas de arena avanzan sobre América del Sur y el Caribe
+[2025-12-14 03:06:43] GET id=51, fuente=noticia
+[2025-12-14 03:06:43] ✓ Noticia encontrada: ID=51, Título=Selecta Sub 17 alista su debut ante Corea del Norte en el Mundial de Catar 2025
+[2025-12-14 03:06:50] GET id=50, fuente=noticia
+[2025-12-14 03:06:50] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-14 03:06:57] GET id=68, fuente=noticia
+[2025-12-14 03:06:57] ✗ Noticia NO encontrada para id=68 en tabla noticia
+[2025-12-14 03:07:04] GET id=67, fuente=noticia
+[2025-12-14 03:07:04] ✗ Noticia NO encontrada para id=67 en tabla noticia
+[2025-12-14 03:07:09] GET id=50, fuente=noticia
+[2025-12-14 03:07:09] ✓ Noticia encontrada: ID=50, Título=Mientras Saprissa ya se despidió de la Copa Centroamericana, Concacaf confirma el duro castigo que golpea a Vladimir Quesada
+[2025-12-14 03:07:14] GET id=49, fuente=noticia
+[2025-12-14 03:07:14] ✓ Noticia encontrada: ID=49, Título=Cómo es el nuevo formato del Mundial Sub 17: 48 equipos, más partidos y cambios históricos de FIFA en Qatar 2025
+[2025-12-14 03:07:22] GET id=44, fuente=noticia
+[2025-12-14 03:07:22] ✓ Noticia encontrada: ID=44, Título=Oleaje alto y mar de fondo afectarán la costa salvadoreña hasta el 2 de noviembre
+[2025-12-14 03:07:29] GET id=38, fuente=noticia
+[2025-12-14 03:07:29] ✓ Noticia encontrada: ID=38, Título=Vientos nortes y lluvias moderadas marcarán el clima este martes
+[2025-12-14 03:07:38] GET id=43, fuente=noticia
+[2025-12-14 03:07:38] ✓ Noticia encontrada: ID=43, Título=5 actividades que podés disfrutar este fin de semana en el Centro Histórico de San Salvador
+[2025-12-14 03:07:54] GET id=11, fuente=noticia
+[2025-12-14 03:07:54] ✗ Noticia NO encontrada para id=11 en tabla noticia
+[2025-12-14 03:07:59] GET id=49, fuente=noticia
+[2025-12-14 03:07:59] ✓ Noticia encontrada: ID=49, Título=Cómo es el nuevo formato del Mundial Sub 17: 48 equipos, más partidos y cambios históricos de FIFA en Qatar 2025
+[2025-12-14 03:08:10] GET id=46, fuente=noticia
+[2025-12-14 03:08:10] ✓ Noticia encontrada: ID=46, Título=El Salvador vs. Corea del Norte: ¿A qué hora y cómo ver por TV y ONLINE el debut de La Selecta? Mundial Sub 17 Qatar 2025
+[2025-12-14 03:08:18] GET id=23, fuente=noticia
+[2025-12-14 03:08:18] ✓ Noticia encontrada: ID=23, Título=Los coches más bonitos de la historia
+[2025-12-14 03:08:25] GET id=31, fuente=noticia
+[2025-12-14 03:08:25] ✗ Noticia NO encontrada para id=31 en tabla noticia
+[2025-12-14 03:08:28] GET id=39, fuente=noticia
+[2025-12-14 03:08:28] ✓ Noticia encontrada: ID=39, Título=¿Querés hacer camping y no sabés dónde? 5 destinos que te van a encantar
+[2025-12-14 03:13:10] GET id=54, fuente=noticia
+[2025-12-14 03:13:10] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:03] GET id=54, fuente=noticia
+[2025-12-14 03:46:03] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:08] GET id=54, fuente=noticia
+[2025-12-14 03:46:08] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:09] GET id=54, fuente=noticia
+[2025-12-14 03:46:09] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:10] GET id=54, fuente=noticia
+[2025-12-14 03:46:10] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:10] GET id=54, fuente=noticia
+[2025-12-14 03:46:10] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:10] GET id=54, fuente=noticia
+[2025-12-14 03:46:10] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:11] GET id=54, fuente=noticia
+[2025-12-14 03:46:11] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:12] GET id=54, fuente=noticia
+[2025-12-14 03:46:12] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:12] GET id=54, fuente=noticia
+[2025-12-14 03:46:12] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:13] GET id=54, fuente=noticia
+[2025-12-14 03:46:13] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:13] GET id=54, fuente=noticia
+[2025-12-14 03:46:13] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:13] GET id=54, fuente=noticia
+[2025-12-14 03:46:13] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:13] GET id=54, fuente=noticia
+[2025-12-14 03:46:13] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:14] GET id=54, fuente=noticia
+[2025-12-14 03:46:14] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:18] GET id=54, fuente=noticia
+[2025-12-14 03:46:18] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:18] GET id=54, fuente=noticia
+[2025-12-14 03:46:18] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:19] GET id=54, fuente=noticia
+[2025-12-14 03:46:19] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:19] GET id=54, fuente=noticia
+[2025-12-14 03:46:19] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:19] GET id=54, fuente=noticia
+[2025-12-14 03:46:19] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:20] GET id=54, fuente=noticia
+[2025-12-14 03:46:20] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:22] GET id=54, fuente=noticia
+[2025-12-14 03:46:22] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:22] GET id=54, fuente=noticia
+[2025-12-14 03:46:22] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:23] GET id=54, fuente=noticia
+[2025-12-14 03:46:23] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:23] GET id=54, fuente=noticia
+[2025-12-14 03:46:23] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:24] GET id=54, fuente=noticia
+[2025-12-14 03:46:24] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:24] GET id=54, fuente=noticia
+[2025-12-14 03:46:24] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:24] GET id=54, fuente=noticia
+[2025-12-14 03:46:24] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 03:46:24] GET id=54, fuente=noticia
+[2025-12-14 03:46:24] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 04:09:24] GET id=54, fuente=noticia
+[2025-12-14 04:09:24] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 16:03:02] GET id=54, fuente=noticia
+[2025-12-14 16:03:02] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 16:03:10] GET id=53, fuente=noticia
+[2025-12-14 16:03:10] ✓ Noticia encontrada: ID=53, Título=Por qué la mayoría de los plásticos no se puede reciclar
+[2025-12-14 16:05:30] GET id=53, fuente=noticia
+[2025-12-14 16:05:30] ✓ Noticia encontrada: ID=53, Título=Por qué la mayoría de los plásticos no se puede reciclar
+[2025-12-14 17:54:43] GET id=55, fuente=noticia
+[2025-12-14 17:54:43] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 17:56:45] GET id=55, fuente=noticia
+[2025-12-14 17:56:45] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 18:13:30] GET id=55, fuente=noticia
+[2025-12-14 18:13:30] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 18:13:37] GET id=55, fuente=noticia
+[2025-12-14 18:13:37] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 18:13:39] GET id=55, fuente=noticia
+[2025-12-14 18:13:39] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 18:13:43] GET id=55, fuente=noticia
+[2025-12-14 18:13:43] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 18:13:50] GET id=55, fuente=noticia
+[2025-12-14 18:13:50] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 18:13:51] GET id=55, fuente=noticia
+[2025-12-14 18:13:51] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 18:13:51] GET id=55, fuente=noticia
+[2025-12-14 18:13:51] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 18:13:51] GET id=55, fuente=noticia
+[2025-12-14 18:13:51] ✓ Noticia encontrada: ID=55, Título=Cambio climático: El ser humano ha calentado el planeta a un nivel nunca visto en los últimos 2000 años
+[2025-12-14 18:29:56] GET id=54, fuente=noticia
+[2025-12-14 18:29:56] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 18:54:27] GET id=54, fuente=noticia
+[2025-12-14 18:54:27] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
