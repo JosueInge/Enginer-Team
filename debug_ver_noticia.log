@@ -686,3 +686,5 @@
 [2025-12-14 18:29:56] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
 [2025-12-14 18:54:27] GET id=54, fuente=noticia
 [2025-12-14 18:54:27] ✓ Noticia encontrada: ID=54, Título=Estudio vincula el exceso de ozono en la atmósfera con un aumento de riesgos cardíacos
+[2025-12-14 20:48:33] GET id=66, fuente=noticia
+[2025-12-14 20:48:33] ✗ Noticia NO encontrada para id=66 en tabla noticia

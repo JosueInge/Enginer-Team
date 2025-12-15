@@ -8,127 +8,263 @@ include 'conexion.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminos y Condiciones - Periodico Digital Comunitario</title>
+    <title>Términos y Condiciones - Periódico Digital Comunitario</title>
+    <!-- Google Fonts para Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: Arial,sans-serif;
-            line-height: 1.6;
+        * {
             margin: 0;
-            padding: 20px;
-            background-color: #f9f9f9;
-            color: #333;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .container {
-            max-width: 800px;
-            margin: auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #403F48;
+            background-color: #ffffff;
         }
-        h1 {
-            color: #0d5c9b;
-            border-bottom: 2px solid #0d5c9b;
-            padding-bottom: 10px;
-        }
-        h2 {
-            color: #0d5c9b;
-            margin-top: #0d5c9b;
-        }
-        h3 {
-            color: #0d5c9b;
-        }
-        .date {
-            font-style: italic;
-            color: #666;
-            margin-bottom: 20px;
-        }
-        .back-buttom {
-            display:inline-block;
-            margin-top: 20px;
-            padding: 10px 15px;
-            background-color: #0d5c9b;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .back-buttom:hover {
-            background-color: #0d5c9b;
-        }
-        header {
-            background-color: #0d5c9b;
-            color: white;
-            padding: 15px 30px;
+
+        /* ENCABEZADO */
+        .header-container {
+            background-color: #061F3E;
+            padding: 15px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            width: 100%;
         }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-        }
+
         .logo img {
             height: 50px;
-            margin-right: 10px;
         }
-        .informacion a {
-            color: white;
-            margin-left: 20px;
+
+        .back-link {
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: #FFFFFF;
             text-decoration: none;
-            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #1661AC;
+            text-decoration: underline;
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-container {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* TÍTULO PRINCIPAL */
+        .main-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1661AC;
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        /* LÍNEA DIVISORA */
+        .divider {
+            width: 1250px;
+            max-width: 100%;
+            height: 2px;
+            background-color: #061F3E;
+            margin-bottom: 20px;
+        }
+
+        /* FECHA DE ACTUALIZACIÓN */
+        .update-date {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .update-date i {
+            color: #1661AC;
+            font-size: 30px;
+        }
+
+        .update-date span {
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #403F48;
+        }
+
+        /* SECCIONES */
+        .section {
+            margin-bottom: 40px;
+            width: 100%;
+            max-width: 1250px;
+        }
+
+        .section-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1661AC;
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .section-content {
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #403F48;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .section-content strong {
+            font-weight: 700;
+        }
+
+        .section-content ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .section-content li {
+            margin-bottom: 8px;
+        }
+
+        /* RESPONSIVIDAD */
+        @media (max-width: 1300px) {
+            .main-container {
+                padding: 30px 15px;
+            }
+            
+            .divider {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .logo {
+                width: 100%;
+                text-align: center;
+            }
+
+            .back-link-container {
+                width: 100%;
+                text-align: center;
+            }
+
+            .main-title {
+                font-size: 28px;
+                text-align: center;
+            }
+
+            .section-title {
+                font-size: 18px;
+            }
+
+            .section-content {
+                font-size: 15px;
+            }
+
+            .update-date {
+                flex-direction: column;
+                text-align: center;
+                gap: 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-title {
+                font-size: 24px;
+            }
+
+            .back-link {
+                font-size: 20px;
+            }
+
+            .section-title {
+                font-size: 17px;
+            }
+
+            .section-content {
+                font-size: 14px;
+            }
+
+            .update-date span {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
+    <div class="header-container">
         <div class="logo">
-            <img src="imagenes/logo.png" alt="logo">
+            <img src="imagenes/logo.png" alt="Logo Periódico Digital Comunitario">
         </div>
-        <div class="informacion">
-            <a href="#">Contacto</a>
-            <a href="sobrenosotros.php">Sobre Nosotros</a>
-            <a href="login.php">Iniciar Sesion</a>
+        <div class="back-link-container">
+            <a href="javascript:history.back();" class="back-link">Volver</a>
         </div>
-    </header>
-
-    <div class="container">
-        <h1>Terminos y condiciones de uso</h1>
-        <h2>Periodico Digital Comunitario</h2>
-        <div class="date">Ultima actualización: <?php echo date('d/m/Y');?></div>
-
-        <h3>1. ACEPTACIÓN DE LOS TÉRMINOS</h3>
-        <P>Al acceder y utilizar la aplicación web Periódico Digital Comunitario, el usuario acepta estar sujeto a estos Términos y Condiciones, así como a nuestra Política de Privacidad. Si no está de acuerdo, debe abstenerse de utilizar la aplicación.</P>
-
-        <h3>2. DESCRIPCIÓN DEL SERVICIO</h3>
-        <p>Periódico Digital Comunitario es una plataforma digital destinada a la difusión de noticias y contenido informativo de carácter comunitario en El Salvador. Los usuarios pueden registrarse para acceder a funciones adicionales, como comentar o interactuar con el contenido.</p>
-
-        <h3>3. REGISTRO DE USUARIOS</h3>
-        <p>Para acceder a ciertas funcionalidades, el usuario debe registrarse proporcionando información personal como nombre, apellidos y correo electrónico. Es responsabilidad del usuario proporcionar datos verídicos y mantener la confidencialidad de su cuenta.</p>
-
-        <h3>4. PRIVACIDAD Y PROTECCIÓN DE DATOS</h3>
-        <p>Los datos personales recopilados durante el registro serán tratados conforme a la legislación vigente en El Salvador y nuestra Política de Privacidad. La información es almacenada y gestionada mediante los servicios de Firebase, ofrecidos por Google LLC, lo cual puede implicar transferencias internacionales de datos</p>
-
-        <h3>5. USO ADECUADO</h3>
-        <p>El usuario se compromete a utilizar la plataforma de forma lícita y respetuosa, absteniéndose de publicar contenido ofensivo, difamatorio, ilegal o que viole derechos de terceros. Periódico Digital Comunitario se reserva el derecho de suspender o eliminar cuentas que incumplan estas normas.</p>
-
-        <h3>6. EDAD MÍNIMA</h3>
-        <p>El uso de la aplicación está dirigido a personas mayores de 13 años. Al registrarse, el usuario declara cumplir con este requisito.</p>
-
-        <h3>7. SERVICIOS DE TERCEROS</h3>
-        <p>La plataforma utiliza servicios de terceros como Firebase para el almacenamiento y autenticación de usuarios. El uso de dichos servicios está sujeto a sus propios términos y condiciones, los cuales el usuario también acepta al utilizar nuestra aplicación.</p>
-
-        <h3>8. MODIFICACIONES</h3>
-        <p>Periódico Digital Comunitario se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento. Las modificaciones serán publicadas en la plataforma y entrarán en vigor desde su publicación.</p>
-
-        <h3>9. RESPONSABILIDAD</h3>
-        <p>La plataforma no se hace responsable por las opiniones emitidas por los usuarios, ni por interrupciones del servicio causadas por problemas técnicos o ajenos a nuestro control.</p>
-
-        <h3>10. LEGISLACIÓN APLICABLE</h3>
-        <p>Estos Términos y Condiciones se rigen por las leyes de la República de El Salvador. Cualquier disputa será resuelta en los tribunales competentes del país.</p>
-
-        <a href="javascript:history.back()" class="back-buttom">Volver al Registro</a>
     </div>
+
+    <div class="main-container">
+        <h1 class="main-title">Términos y condiciones</h1>
+        
+        <div class="divider"></div>
+
+        <!-- Fecha de actualización -->
+        <div class="update-date">
+            <i class="fas fa-clock"></i>
+            <span>Última actualización: 14 de noviembre de 2025</span>
+        </div>
+
+        <!-- Sección 1: Denuncias anónimas -->
+        <div class="section">
+            <h2 class="section-title">Denuncias anónimas.</h2>
+            <h2 class="section-title">Definición jurídica de denuncia anónima.</h2>
+            <p class="section-content">
+                  Se entiende por <strong>denuncia anónima</strong> toda información enviada a Comunicado Digital sin que el sistema solicite datos identificables del denunciante, tales como nombre, correo electrónico, número telefónico u otros identificadores directos.
+                </p>
+                <p class="section-content">
+                    El usuario decide voluntariamente el contenido que envía, asumiendo la responsabilidad legal del mismo.
+                </p>
+                <h2 class="section-title">Tratamiento técnico del anonimato.</h2>
+                <ul class="section-content">
+                    <li>Comunicado Digital <strong>no utiliza mecanismos activos de identificación del denunciante.</strong></li>
+                    <li>Los registros técnicos del servidor (logs) se utilizan únicamente para fines de seguridad informática y prevención de abusos, y <strong>no se emplean para identificar al denunciante,</strong> salvo requerimiento legal expreso.</li>
+                    <li>Los logs se conservan por un plazo limitado y razonable conforme a estándares de seguridad y luego son eliminados.</li>
+                </ul>
+        </div>
+    </div>
+
+    <script>
+        // Script para manejar el hover del enlace "Volver"
+        document.addEventListener('DOMContentLoaded', function() {
+            const backLink = document.querySelector('.back-link');
+            
+            backLink.addEventListener('mouseenter', function() {
+                this.style.color = '#1661AC';
+                this.style.textDecoration = 'underline';
+            });
+            
+            backLink.addEventListener('mouseleave', function() {
+                this.style.color = '#FFFFFF';
+                this.style.textDecoration = 'none';
+            });
+        });
+    </script>
 </body>
 </html>
