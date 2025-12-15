@@ -1,3 +1,39 @@
+<?php
+// Mostrar Ayuda solo para usuarios con rol "Poblador"
+if (session_status() !== PHP_SESSION_ACTIVE) {
+  session_start();
+}
+
+$mostrarAyuda = false;
+
+if (!empty($_SESSION['usuario_id'])) {
+  // Usa el rol en sesión si ya está disponible para evitar consultas adicionales
+  if (!empty($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'Poblador') {
+    $mostrarAyuda = true;
+  } else {
+    // Consulta a la tabla usuarios para validar el rol
+    if (!isset($conexion)) {
+      include_once __DIR__ . '/conexion.php';
+    }
+
+    if (isset($conexion) && $conexion instanceof mysqli) {
+      $stmt = $conexion->prepare('SELECT rol FROM usuarios WHERE id = ? LIMIT 1');
+      if ($stmt) {
+        $stmt->bind_param('i', $_SESSION['usuario_id']);
+        if ($stmt->execute()) {
+          $resultado = $stmt->get_result();
+          $fila = $resultado->fetch_assoc();
+          if (!empty($fila['rol']) && $fila['rol'] === 'Poblador') {
+            $mostrarAyuda = true;
+          }
+        }
+        $stmt->close();
+      }
+    }
+  }
+}
+?>
+
 <footer class="site-footer">
   <div class="footer-container">
     
@@ -11,6 +47,9 @@
       <a href="sobrenosotros.php">Sobre Nosotros</a>
       <a href="terminos.php">Términos y Condiciones</a>
       <a href="#">Políticas de Privacidad</a>
+      <?php if ($mostrarAyuda): ?>
+        <a href="Ayuda.php">Ayuda</a>
+      <?php endif; ?>
     </div>
 
     <!-- Contacto -->
