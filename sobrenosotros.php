@@ -1,5 +1,3 @@
-SOBRE NOSOTROS    https://dev.azure.com/EngenerTeam/Periodico%20Digital%20Comunitario
-
 <!DOCTYPE html>
 <html lang="es">
 <head>

@@ -11,9 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = $_POST['id'] ?? null;
 
     if ($id) {
-        $stmt = $conexion->prepare("UPDATE propuestas_noticias SET estado = 'rechazada' WHERE id = ?");
+        // Eliminar la noticia de propuestas_noticias
+        $stmt = $conexion->prepare("DELETE FROM propuestas_noticias WHERE id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
+        $stmt->close();
     }
 }
 
