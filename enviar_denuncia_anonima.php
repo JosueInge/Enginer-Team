@@ -1,5 +1,3 @@
-enviar_denuncia_anonima.php
-
 <?php
 session_start();
 include 'conexion.php'; // debe definir $conexion (mysqli)
@@ -838,8 +836,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p class="Subtítuloinformativo">Tu denuncia será revisada por los administradores</p>
     
     <div class="alert-informacion" role="status">
-        <i class="fas fa-shield-alt"></i>
-        <div>Tu denuncia es 100 % anónima. No pediremos datos personales ni podremos rastrear tu identidad.</div>
+        <img src="imagenes/escudo.png" alt="Escudo" style="width:38px; height:38px; align-self:center;">
+        <div>Tu denuncia es 100 % anónima. No pediremos datos personales ni podremos rastrear tu identidad. Lee los <a href="terminos.php">Términos y condiciones de denuncias anónimas.</a></div>
       </div>
 
     <form action="enviar_denuncia_anonima.php" method="POST" enctype="multipart/form-data">
